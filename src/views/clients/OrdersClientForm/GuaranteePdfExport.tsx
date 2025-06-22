@@ -127,7 +127,7 @@ const GuaranteePdfExport: React.FC<GuaranteePdfExportProps> = ({ guarantees }) =
                             {/* Table Header */}
                             <View style={styles.tableRowHeader}>
                                 <View style={styles.tableCol}>
-                                    <Text style={styles.headerCell}>نوع الضمان</Text>
+                                    <Text style={styles.headerCell}>مدة الضمان</Text>
                                 </View>
                                 <View style={styles.tableCol}>
                                     <Text style={styles.headerCell}>تاريخ البدء</Text>

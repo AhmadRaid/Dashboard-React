@@ -10,7 +10,7 @@ import { Input } from '@/components/ui'
 import { HiPlusCircle } from 'react-icons/hi'
 
 const validationSchema = Yup.object().shape({
-    typeGuarantee: Yup.string().required('نوع الضمان مطلوب'),
+    typeGuarantee: Yup.string().required('مدة الضمان مطلوب'),
     startDate: Yup.string()
         .required('تاريخ البدء مطلوب')
         .matches(
@@ -91,7 +91,7 @@ const CreateGuranteeForm = forwardRef<
                         <FormContainer>
                             <div className="grid grid-cols-1  gap-2">
                                 <FormItem
-                                    label="نوع الضمان"
+                                    label="مدة الضمان"
                                     invalid={
                                         !!errors.typeGuarantee &&
                                         !!touched.typeGuarantee
@@ -102,7 +102,7 @@ const CreateGuranteeForm = forwardRef<
                                         name="typeGuarantee"
                                         size="sm"
                                         component={Input}
-                                        placeholder="ادخل نوع الضمان"
+                                        placeholder="ادخل مدة الضمان"
                                     />
                                 </FormItem>
 
@@ -140,7 +140,7 @@ const CreateGuranteeForm = forwardRef<
                                 </FormItem>
 
                                 <FormItem
-                                    label="الشروط"
+                                    label="شروط الضمان"
                                     invalid={!!errors.terms && !!touched.terms}
                                     errorMessage={errors.terms}
                                 >
@@ -151,6 +151,19 @@ const CreateGuranteeForm = forwardRef<
                                         placeholder="الرجاء ادخال الشروط"
                                     />
                                 </FormItem>
+
+                                {/* <FormItem
+                                    label="ملاحظات الضمان"
+                                    invalid={!!errors.notes && !!touched.notes}
+                                    errorMessage={errors.notes}
+                                >
+                                    <Field
+                                        name="notes"
+                                        size="sm"
+                                        component={Input}
+                                        placeholder="الرجاء ادخال الملاحظات"
+                                    />
+                                </FormItem> */}
                             </div>
 
                             <div className="md:flex items-center">

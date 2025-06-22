@@ -9,16 +9,20 @@ import { apiGetAllServices } from '@/services/ClientsService'
 import { useAppDispatch } from '@/store'
 
 type FormFieldsName = {
-    firstName: string // الاسم الأول
-    middleName: string // الاسم الثاني
-    lastName: string // اسم العائلة    email: string
+    firstName: string
+    middleName: string
+    lastName: string
+    email: string
     phone: string
     clientType: string
     carModel: string
     carColor: string
-    service: string
     guarantee: Guarantee
     branch: string
+    carType: string // Add this
+    carPlateNumber: string // Add this
+    carManufacturer: string // Add this
+    carSize: string // Add this
 }
 
 type ClientFieldsProps = {
@@ -26,6 +30,12 @@ type ClientFieldsProps = {
     errors: FormikErrors<FormFieldsName>
     values: FormFieldsName
 }
+
+const carSizeOptions = [
+    { label: 'صغير', value: 'small' },
+    { label: 'متوسط', value: 'medium' },
+    { label: 'كبير', value: 'large' },
+]
 
 const branchOptions = [
     { label: 'عملاء فرع ابحر', value: 'عملاء فرع ابحر' },
@@ -252,6 +262,133 @@ const ClientFields = (props: ClientFieldsProps) => {
                         component={Input}
                     />
                 </FormItem>
+
+                <FormItem
+                    label="رقم لوحة السيارة"
+                    invalid={
+                        !!errors.carPlateNumber && !!touched.carPlateNumber
+                    }
+                    errorMessage={errors.carPlateNumber as string}
+                >
+                    <Field
+                        name="carPlateNumber"
+                        type="text"
+                        size="sm"
+                        placeholder="رقم لوحة السيارة"
+                        component={Input}
+                    />
+                </FormItem>
+
+                <FormItem
+                    label="الشركة المصنعة"
+                    invalid={
+                        !!errors.carManufacturer && !!touched.carManufacturer
+                    }
+                    errorMessage={errors.carManufacturer}
+                >
+                    <Field name="carManufacturer">
+                        {({ field, form }: FieldProps) => (
+                            <Select
+                                field={field}
+                                size="sm"
+                                form={form}
+                                options={[
+                                    { label: 'NISSAN', value: 'NISSAN' },
+                                    { label: 'BMW', value: 'BMW' },
+                                    { label: 'GOLF', value: 'GOLF' },
+                                    { label: 'TOYOTA', value: 'TOYOTA' },
+                                ]}
+                                value={
+                                    field.value
+                                        ? {
+                                              label: field.value,
+                                              value: field.value,
+                                          }
+                                        : null
+                                }
+                                onChange={(option) => {
+                                    form.setFieldValue(
+                                        field.name,
+                                        option?.value || ''
+                                    )
+                                }}
+                                placeholder="اختر الشركة المصنعة"
+                            />
+                        )}
+                    </Field>
+                </FormItem>
+
+                <FormItem
+                    label="حجم السيارة"
+                    invalid={!!errors.carSize && !!touched.carSize}
+                    errorMessage={errors.carSize as string}
+                >
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        {' '}
+                        {/* تغيير gap من 4 إلى 2 */}
+                        {carSizeOptions.map((option) => (
+                            <label
+                                key={option.value}
+                                className={`relative p-2 border rounded-md cursor-pointer transition-all text-sm
+                    ${
+                        values.carSize === option.value
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                            : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                    }
+                `}
+                            >
+                                <Field
+                                    type="radio"
+                                    name="carSize"
+                                    value={option.value}
+                                    className="absolute opacity-0"
+                                    checked={values.carSize === option.value}
+                                />
+                                <div className="flex flex-col items-center text-center">
+                                    <span className="block font-medium">
+                                        {' '}
+                                        {/* إزالة text-lg و mb-1 */}
+                                        {option.label}
+                                    </span>
+                                    <span className="block text-xs text-gray-500 dark:text-gray-400">
+                                        {' '}
+                                        {/* تغيير text-sm إلى text-xs */}
+                                        {option.value === 'small'}
+                                        {option.value === 'medium'}
+                                        {option.value === 'large'}
+                                    </span>
+                                </div>
+                            </label>
+                        ))}
+                    </div>
+                </FormItem>
+
+                {/* <FormItem
+                    label="حجم السيارة"
+                    invalid={!!errors.carSize && !!touched.carSize}
+                    errorMessage={errors.carSize as string}
+                >
+                    <Field name="carSize">
+                        {({ field, form }: FieldProps) => (
+                            <Select
+                                field={field}
+                                size="sm"
+                                form={form}
+                                options={carSizeOptions}
+                                value={carSizeOptions.find(
+                                    (option) => option.value === values.carSize
+                                )}
+                                onChange={(option) => {
+                                    form.setFieldValue(
+                                        field.name,
+                                        option?.value
+                                    )
+                                }}
+                                placeholder="اختر حجم السيارة"
+                            />
+                        )}
+                    </Field>
+                </FormItem> */}
             </div>
 
             {/* <FormItem
@@ -345,12 +482,12 @@ const ClientFields = (props: ClientFieldsProps) => {
                     </Field>
                 </FormItem> */}
 
-            <h5 className="mt-8">معلومات الضمان</h5>
+            <h5 className="mt-8">اضافة الضمان</h5>
             <p className="mb-6">قسم لإعداد معلومات الضمان</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormItem
-                    label="نوع الضمان"
+                    label="مدة الضمان"
                     invalid={
                         !!errors.guarantee?.typeGuarantee &&
                         !!touched.guarantee?.typeGuarantee
@@ -375,7 +512,7 @@ const ClientFields = (props: ClientFieldsProps) => {
                                         option?.value
                                     )
                                 }}
-                                placeholder="اختر نوع الضمان"
+                                placeholder="اختر مدة الضمان"
                             />
                         )}
                     </Field>
@@ -430,54 +567,20 @@ const ClientFields = (props: ClientFieldsProps) => {
                         component={Input}
                     />
                 </FormItem>
-
                 <FormItem
-                    label="المكونات المشمولة"
+                    label="ملاحظات عل الضمان"
                     invalid={
-                        !!errors.guarantee?.coveredComponents &&
-                        !!touched.guarantee?.coveredComponents
+                        !!errors.guarantee?.Notes && !!touched.guarantee?.Notes
                     }
-                    errorMessage={errors.guarantee?.coveredComponents as string}
+                    errorMessage={errors.guarantee?.Notes as string}
                 >
-                    <Field name="guarantee.coveredComponents">
-                        {({ field, form }: FieldProps) => (
-                            <Select
-                                isMulti
-                                size="sm"
-                                placeholder="اختر المكونات المشمولة"
-                                options={[
-                                    {
-                                        label: 'Windshield',
-                                        value: 'Windshield',
-                                    },
-                                    {
-                                        label: 'Side Windows',
-                                        value: 'Side Windows',
-                                    },
-                                    {
-                                        label: 'Rear Window',
-                                        value: 'Rear Window',
-                                    },
-                                ]}
-                                value={
-                                    field.value
-                                        ? field.value.map((val: string) => ({
-                                              label: val,
-                                              value: val,
-                                          }))
-                                        : []
-                                }
-                                onChange={(selectedOptions) =>
-                                    form.setFieldValue(
-                                        field.name,
-                                        selectedOptions.map(
-                                            (option: any) => option.value
-                                        )
-                                    )
-                                }
-                            />
-                        )}
-                    </Field>
+                    <Field
+                        name="guarantee.Notes"
+                        type="text"
+                        size="sm"
+                        placeholder="اضف ملاحظات عل الضمان"
+                        component={Input}
+                    />
                 </FormItem>
             </div>
         </AdaptableCard>

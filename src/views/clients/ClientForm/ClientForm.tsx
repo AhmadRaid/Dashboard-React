@@ -24,14 +24,16 @@ type InitialData = {
     clientType: 'individual' | 'company' | ''
     carModel: string
     carColor: string
-    service: string
     branch: string
+    carPlateNumber: string
+    carManufacturer: string
+    carSize: string
     guarantee: {
         typeGuarantee: string
         startDate: string
         endDate: string
         terms: string
-        coveredComponents: string[]
+        Notes: string
     }
 }
 
@@ -74,6 +76,17 @@ export const validationSchema = Yup.object().shape({
         )
         .required('نوع العميل مطلوب'),
 
+    carManufacturer: Yup.string().required('الشركة المصنعة مطلوب'),
+    
+    carPlateNumber: Yup.string()
+        .required('لوحة السيارة مطلوبة')
+        .max(100, 'يجب ألا تتجاوز لوحة السيارة 100 رقم'),
+
+
+    carSize: Yup.string()
+        .required('حجم السيارة مطلوب')
+        .oneOf(['small', 'medium', 'large'], 'اختر حجمًا صالحًا للسيارة'),
+
     carType: Yup.string()
         .required('نوع السيارة مطلوب')
         .max(50, 'يجب ألا يتجاوز موديل السيارة 50 حرفًا'),
@@ -86,14 +99,9 @@ export const validationSchema = Yup.object().shape({
         .required('لون السيارة مطلوب')
         .max(30, 'يجب ألا يتجاوز لون السيارة 30 حرفًا'),
 
-    service: Yup.string()
-        .required('الخدمة مطلوبة')
-        .max(100, 'يجب ألا تتجاوز الخدمة 100 حرف'),
-
     guarantee: Yup.object().shape({
         typeGuarantee: Yup.string()
-            .required('نوع الضمان مطلوب')
-            .max(50, 'يجب ألا يتجاوز نوع الضمان 50 حرفًا'),
+            .required('مدة الضمان مطلوب'),
         startDate: Yup.string()
             .required('تاريخ البدء مطلوب')
             .matches(
@@ -131,10 +139,10 @@ export const validationSchema = Yup.object().shape({
             .required('الشروط مطلوبة')
             .max(200, 'يجب ألا تتجاوز الشروط 200 حرف'),
 
-        coveredComponents: Yup.array()
-            .of(Yup.string().required('اسم المكون لا يمكن أن يكون فارغًا'))
-            .min(1, 'يرجى تحديد مكون واحد على الأقل مشمول بالضمان')
-            .required('المكونات المشمولة مطلوبة'),
+        Notes: Yup.string().max(
+            200,
+            'يجب ألا تتجاوز الملاحظات السيارة 200 حرف'
+        ),
     }),
 })
 
@@ -211,18 +219,22 @@ const ClientForm = forwardRef<FormikRef, ClientForm>((props, ref) => {
             clientType: '',
             carModel: '',
             carColor: '',
-            service: '',
+            carSize: '',
+            branch: '',
+            carPlateNumber: '',
+            carManufacturer: '',
             guarantee: {
                 typeGuarantee: '',
                 startDate: '',
                 endDate: '',
                 terms: '',
-                coveredComponents: '',
+                Notes: '',
             },
         },
         onFormSubmit,
         onDiscard,
         onDelete,
+        onE,
     } = props
 
     return (
@@ -234,6 +246,7 @@ const ClientForm = forwardRef<FormikRef, ClientForm>((props, ref) => {
                 }}
                 validationSchema={validationSchema}
                 onSubmit={(values, { setSubmitting }) => {
+                    console.log('values')
                     const data = cloneDeep(values)
                     console.log(data)
 
@@ -246,54 +259,58 @@ const ClientForm = forwardRef<FormikRef, ClientForm>((props, ref) => {
                     onFormSubmit?.(data, setSubmitting)
                 }}
             >
-                {({ values, touched, errors, isSubmitting }) => (
-                    <Form>
-                        <FormContainer>
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                                <div className="lg:col-span-2">
-                                    <ClientFields
-                                        touched={touched}
-                                        errors={errors}
-                                        values={values}
-                                    />
-                                </div>
-                            </div>
+                {({ values, touched, errors, isSubmitting }) => {
+                    console.log('errors', errors)
 
-                            <StickyFooter
-                                className="-mx-8 px-8 flex items-center justify-between py-4"
-                                stickyClass="border-t bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-                            >
-                                <div>
-                                    {type === 'edit' && (
-                                        <DeleteProductButton
-                                            onDelete={onDelete as OnDelete}
+                    return (
+                        <Form>
+                            <FormContainer>
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                    <div className="lg:col-span-2">
+                                        <ClientFields
+                                            touched={touched}
+                                            errors={errors}
+                                            values={values}
                                         />
-                                    )}
+                                    </div>
                                 </div>
 
-                                <div className="md:flex items-center">
-                                    <Button
-                                        size="sm"
-                                        className="ltr:mr-3 rtl:ml-3"
-                                        type="button"
-                                        onClick={() => onDiscard?.()}
-                                    >
-                                        الغاء
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant="solid"
-                                        loading={isSubmitting}
-                                        icon={<AiOutlineSave />}
-                                        type="submit"
-                                    >
-                                        اضافة
-                                    </Button>
-                                </div>
-                            </StickyFooter>
-                        </FormContainer>
-                    </Form>
-                )}
+                                <StickyFooter
+                                    className="-mx-8 px-8 flex items-center justify-between py-4"
+                                    stickyClass="border-t bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                                >
+                                    <div>
+                                        {type === 'edit' && (
+                                            <DeleteProductButton
+                                                onDelete={onDelete as OnDelete}
+                                            />
+                                        )}
+                                    </div>
+
+                                    <div className="md:flex items-center">
+                                        <Button
+                                            size="sm"
+                                            className="ltr:mr-3 rtl:ml-3"
+                                            type="button"
+                                            onClick={() => onDiscard?.()}
+                                        >
+                                            الغاء
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="solid"
+                                            loading={isSubmitting}
+                                            icon={<AiOutlineSave />}
+                                            type="submit"
+                                        >
+                                            اضافة
+                                        </Button>
+                                    </div>
+                                </StickyFooter>
+                            </FormContainer>
+                        </Form>
+                    )
+                }}
             </Formik>
         </>
     )

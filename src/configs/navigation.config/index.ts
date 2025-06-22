@@ -1,5 +1,4 @@
 import {
-    NAV_ITEM_TYPE_TITLE,
     NAV_ITEM_TYPE_ITEM,
     NAV_ITEM_TYPE_COLLAPSE,
 } from '@/constants/navigation.constant'
@@ -38,7 +37,7 @@ const navigationConfig: NavigationTree[] = [
             {
                 key: 'clientsMenu.otherClients',
                 path: '/clients?branch=اخرى',
-                title: 'عملاء فروع أخرى',
+                title: 'أخرى',
                 translateKey: 'nav.clientsMenu.otherClients',
                 icon: 'clients',
                 type: NAV_ITEM_TYPE_ITEM,
