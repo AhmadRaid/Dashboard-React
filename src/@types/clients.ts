@@ -20,6 +20,8 @@ export type Client = {
     orders?: Order[]
 }
 
+
+
 export type Guarantee = {
     // products: string[]
     typeGuarantee: string
@@ -60,6 +62,8 @@ export interface GetClientsResponse {
     data: ClientsResponse
     total: number
 }
+
+
 
 export type Order = {
     _id?: string

@@ -11,13 +11,24 @@ export const protectedRoutes = [
         component: lazy(() => import('@/views/clients/ClientsList')),
         authority: [],
     },
-
     {
         key: 'clientsMenu.createClient',
         path: '/clients/create-client',
         component: lazy(
             () => import('@/views/clients/CreateClient/CreateClient')
         ),
+        authority: [],
+    },
+    {
+        key: 'carsMenu.carsList',
+        path: '/cars',
+        component: lazy(() => import('@/views/cars/CarsList/components/CarsList')),
+        authority: [],
+    },
+    {
+        key: 'carsMenu.addCar',
+        path: '/cars/add',
+        component: lazy(() => import('@/views/cars/CreateCar/CreateCar')),
         authority: [],
     },
     {
@@ -29,9 +40,23 @@ export const protectedRoutes = [
         authority: [],
     },
     {
-        key: 'clientsMenu.createService',
-        path: '/clients/create-service',
-        component: lazy(() => import('@/views/clients/Service/CreateService')),
+        key: 'servicesMenu.servicesList',
+        path: '/services',
+        component: lazy(() => import('@/views/services/ServicesList')),
+        authority: [],
+    },
+    {
+        key: 'servicesMenu.createService',
+        path: '/services/create-service',
+        component: lazy(
+            () => import('@/views/services/CreateService/CreateService')
+        ),
+        authority: [],
+    },
+    {
+        key: 'clientsMenu.branchClients',
+        path: '/clients/:branchType',
+        component: lazy(() => import('@/views/clients/ClientsList')),
         authority: [],
     },
 ]

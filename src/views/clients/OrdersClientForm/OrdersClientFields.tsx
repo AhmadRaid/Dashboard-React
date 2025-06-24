@@ -155,7 +155,7 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
 
     return (
         <>
-            <AdaptableCard divider className="mb-4">
+<AdaptableCard divider className="mb-4 w-full">
                 <h5 className="mb-4">معلومات العميل الأساسية</h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     <div className="border rounded p-4">
@@ -184,7 +184,7 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                     </div>
                 </div>
 
-                <h5 className="mt-8 mb-4">الطلبات</h5>
+                <h5 className="mt-8 mb-4">الطلبات </h5>
                 <DataTable
                     columns={ordersColumns}
                     data={values.orders || []}

@@ -74,36 +74,29 @@ export const validationSchema = Yup.object().shape({
             ['عملاء فرع المدينة', 'عملاء فرع ابحر', 'اخرى'],
             'فرع العميل يجب أن يكون "عميل فرع ابحر" أو "عميل فرع المدينة" او "اخرى"'
         )
-        .required('نوع العميل مطلوب'),
+        .required('فرع العميل مطلوب'),
 
-    carManufacturer: Yup.string().required('الشركة المصنعة مطلوب'),
+    carManufacturer: Yup.string(),
     
     carPlateNumber: Yup.string()
-        .required('لوحة السيارة مطلوبة')
         .max(100, 'يجب ألا تتجاوز لوحة السيارة 100 رقم'),
 
 
     carSize: Yup.string()
-        .required('حجم السيارة مطلوب')
         .oneOf(['small', 'medium', 'large'], 'اختر حجمًا صالحًا للسيارة'),
 
     carType: Yup.string()
-        .required('نوع السيارة مطلوب')
         .max(50, 'يجب ألا يتجاوز موديل السيارة 50 حرفًا'),
 
     carModel: Yup.string()
-        .required('موديل السيارة مطلوب')
         .max(50, 'يجب ألا يتجاوز موديل السيارة 50 حرفًا'),
 
     carColor: Yup.string()
-        .required('لون السيارة مطلوب')
         .max(30, 'يجب ألا يتجاوز لون السيارة 30 حرفًا'),
 
     guarantee: Yup.object().shape({
-        typeGuarantee: Yup.string()
-            .required('مدة الضمان مطلوب'),
+        typeGuarantee: Yup.string(),
         startDate: Yup.string()
-            .required('تاريخ البدء مطلوب')
             .matches(
                 /^\d{4}-\d{2}-\d{2}$/,
                 'تاريخ البدء يجب أن يكون بتنسيق YYYY-MM-DD'
@@ -120,7 +113,6 @@ export const validationSchema = Yup.object().shape({
             ),
 
         endDate: Yup.string()
-            .required('تاريخ الانتهاء مطلوب')
             .matches(
                 /^\d{4}-\d{2}-\d{2}$/,
                 'يجب أن يكون تاريخ الانتهاء بصيغة YYYY-MM-DD'
@@ -136,7 +128,6 @@ export const validationSchema = Yup.object().shape({
             ),
 
         terms: Yup.string()
-            .required('الشروط مطلوبة')
             .max(200, 'يجب ألا تتجاوز الشروط 200 حرف'),
 
         Notes: Yup.string().max(
