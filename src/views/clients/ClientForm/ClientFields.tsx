@@ -286,6 +286,13 @@ const ClientFields = (props: ClientFieldsProps) => {
                     }
                     errorMessage={errors.carManufacturer}
                 >
+                          {/* <Field
+                        name="carManufacturer"
+                        type="text"
+                        size="sm"
+                        placeholder="ادخل الشركة المصنعة"
+                        component={Input}
+                    /> */}
                     <Field name="carManufacturer">
                         {({ field, form }: FieldProps) => (
                             <Select

@@ -73,16 +73,16 @@ function useAuth() {
 
             if (resp.data) {
                 const { accessToken } = resp.data.data
-                dispatch(signInSuccess(accessToken))
                 const user = resp.data.data.user
                 dispatch(
                     setUser({
-                        email: values.email,
-                        image: values.image || '',
-                        fullName: values.fullName,
-                        authority: [values.role as Roles],
+                        email: user.employeeId, // يمكن تعديله لاحقًا حسب اسم المستخدم
+                        fullName: user.fullName,
+                        image: user.image || '',
+                        authority: [user.role as Roles],
                     })
                 )
+
                 const redirectUrl = query.get(REDIRECT_URL_KEY)
                 navigate(
                     redirectUrl ? redirectUrl : appConfig.authenticatedEntryPath

@@ -77,26 +77,27 @@ export const validationSchema = Yup.object().shape({
         .required('فرع العميل مطلوب'),
 
     carManufacturer: Yup.string(),
-    
-    carPlateNumber: Yup.string()
-        .max(100, 'يجب ألا تتجاوز لوحة السيارة 100 رقم'),
 
+    carPlateNumber: Yup.string().max(
+        100,
+        'يجب ألا تتجاوز لوحة السيارة 100 رقم'
+    ),
 
-    carSize: Yup.string()
-        .oneOf(['small', 'medium', 'large'], 'اختر حجمًا صالحًا للسيارة'),
+    carSize: Yup.string().oneOf(
+        ['small', 'medium', 'large'],
+        'اختر حجمًا صالحًا للسيارة'
+    ),
 
-    carType: Yup.string()
-        .max(50, 'يجب ألا يتجاوز موديل السيارة 50 حرفًا'),
+    carType: Yup.string().max(50, 'يجب ألا يتجاوز موديل السيارة 50 حرفًا'),
 
-    carModel: Yup.string()
-        .max(50, 'يجب ألا يتجاوز موديل السيارة 50 حرفًا'),
+    carModel: Yup.string().max(50, 'يجب ألا يتجاوز موديل السيارة 50 حرفًا'),
 
-    carColor: Yup.string()
-        .max(30, 'يجب ألا يتجاوز لون السيارة 30 حرفًا'),
+    carColor: Yup.string().max(30, 'يجب ألا يتجاوز لون السيارة 30 حرفًا'),
 
     guarantee: Yup.object().shape({
         typeGuarantee: Yup.string(),
         startDate: Yup.string()
+
             .matches(
                 /^\d{4}-\d{2}-\d{2}$/,
                 'تاريخ البدء يجب أن يكون بتنسيق YYYY-MM-DD'
@@ -105,6 +106,7 @@ export const validationSchema = Yup.object().shape({
                 'is-future-or-today',
                 'تاريخ البدء يجب أن يكون اليوم أو في المستقبل',
                 function (value) {
+                    if (!value) return true // السماح بالقيم الفارغة
                     const today = new Date().setHours(0, 0, 0, 0)
                     const inputDate = new Date(value).setHours(0, 0, 0, 0)
 
@@ -121,14 +123,15 @@ export const validationSchema = Yup.object().shape({
                 'is-after-start-date',
                 'لا يمكن أن يكون تاريخ الانتهاء قبل تاريخ البدء',
                 function (value) {
+                    if (!value) return true // السماح بالقيم الفارغة
+
                     const { startDate } = this.parent
                     if (!startDate || !value) return true
                     return new Date(value) >= new Date(startDate)
                 }
             ),
 
-        terms: Yup.string()
-            .max(200, 'يجب ألا تتجاوز الشروط 200 حرف'),
+        terms: Yup.string().max(200, 'يجب ألا تتجاوز الشروط 200 حرف'),
 
         Notes: Yup.string().max(
             200,
@@ -225,8 +228,33 @@ const ClientForm = forwardRef<FormikRef, ClientForm>((props, ref) => {
         onFormSubmit,
         onDiscard,
         onDelete,
-        onE,
     } = props
+
+    function removeEmptyFields(obj: any): any {
+        if (Array.isArray(obj)) {
+            return obj
+                .map(removeEmptyFields)
+                .filter((item) => item !== undefined && item !== null)
+        } else if (typeof obj === 'object' && obj !== null) {
+            const cleaned: any = {}
+            for (const key in obj) {
+                const value = removeEmptyFields(obj[key])
+                if (
+                    value !== undefined &&
+                    value !== null &&
+                    value !== '' &&
+                    !(
+                        typeof value === 'object' &&
+                        Object.keys(value).length === 0
+                    )
+                ) {
+                    cleaned[key] = value
+                }
+            }
+            return cleaned
+        }
+        return obj
+    }
 
     return (
         <>
@@ -237,16 +265,32 @@ const ClientForm = forwardRef<FormikRef, ClientForm>((props, ref) => {
                 }}
                 validationSchema={validationSchema}
                 onSubmit={(values, { setSubmitting }) => {
-                    console.log('values')
-                    const data = cloneDeep(values)
-                    console.log(data)
+                    let data = cloneDeep(values)
 
-                    data.guarantee.startDate = new Date(
-                        data.guarantee.startDate
-                    ).toISOString()
-                    data.guarantee.endDate = new Date(
-                        data.guarantee.endDate
-                    ).toISOString()
+                    // تحويل تواريخ الضمان إن وُجدت
+                    if (data.guarantee?.startDate) {
+                        data.guarantee.startDate = new Date(
+                            data.guarantee.startDate
+                        ).toISOString()
+                    }
+                    if (data.guarantee?.endDate) {
+                        data.guarantee.endDate = new Date(
+                            data.guarantee.endDate
+                        ).toISOString()
+                    }
+
+                    // حذف الضمان إذا كان فارغًا
+                    if (
+                        !data.guarantee?.typeGuarantee &&
+                        !data.guarantee?.startDate &&
+                        !data.guarantee?.endDate
+                    ) {
+                        delete data.guarantee
+                    }
+
+                    // حذف كل الحقول الفارغة
+                    data = removeEmptyFields(data)
+
                     onFormSubmit?.(data, setSubmitting)
                 }}
             >

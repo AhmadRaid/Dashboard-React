@@ -7,13 +7,13 @@ import type {
     OnSortParam,
 } from '@/components/shared/DataTable'
 import cloneDeep from 'lodash/cloneDeep'
+import { Car } from '@/@types/cars'
 import {
     getCars,
     setTableData,
     useAppDispatch,
     useAppSelector,
 } from '../store'
-import { Car } from '@/@types/cars'
 
 const CarsTable = () => {
     const tableRef = useRef<DataTableResetHandle>(null)
@@ -37,20 +37,22 @@ const CarsTable = () => {
     )
 
     useEffect(() => {
-        dispatch(
-            getCars({
-                limit,
-                offset: (pageIndex - 1) * limit,
-            })
-        )
+        if (limit && pageIndex !== undefined) {
+            dispatch(
+                getCars({
+                    limit,
+                    offset: (pageIndex - 1) * limit,
+                })
+            )
+        }
     }, [pageIndex, limit, sort, query, dispatch])
 
     const columns: ColumnDef<Car>[] = useMemo(
         () => [
-            { 
-                header: 'اسم السيارة', 
-                accessorKey: 'name', 
-                sortable: false 
+            {
+                header: 'اسم السيارة',
+                accessorKey: 'name',
+                sortable: false,
             },
         ],
         []
@@ -78,6 +80,7 @@ const CarsTable = () => {
         dispatch(setTableData(newTableData))
     }
 
+    console.log('carList:', carList)
     return (
         <>
             <DataTable
@@ -86,9 +89,9 @@ const CarsTable = () => {
                 data={carList}
                 loading={loading}
                 pagingData={{
-                    total: tableData.total,
-                    pageIndex: tableData.pageIndex,
-                    pageSize: tableData.limit,
+                    total: total,
+                    pageIndex: pageIndex,
+                    pageSize: limit,
                 }}
                 onPaginationChange={onPaginationChange}
                 onSelectChange={onSelectChange}

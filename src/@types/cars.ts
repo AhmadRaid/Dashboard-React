@@ -3,8 +3,6 @@ export type Car = {
     name: string
 }
 
-
-
 export interface GetCarsParams {
     offset: number
     limit: number
@@ -16,16 +14,17 @@ export interface Pagination {
     offset: number
 }
 
-interface CarsResponse {
-    cars: Car[]
-    pagination: Pagination
-}
-
 
 export interface GetCarsResponse {
-    data: CarsResponse
-    total: number
+    data: {
+        carTypes: Car[]
+        pagination: {
+            totalCarTypes: number
+            limit: number
+        }
+    }
 }
+
 
 
 

@@ -1,8 +1,9 @@
 import { Roles } from '@/constants/roles.constant'
 
 export type SignInCredential = {
-    email: string
-    password: string
+  employeeId: string
+  branch: string
+  password: string
 }
 
 export type SignInResponse = {

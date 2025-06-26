@@ -5,7 +5,7 @@ const SignIn = () => {
         <>
             <div className="mb-8">
                 <h3 className="mb-1">مرحبًا بعودتك!</h3>
-                <p>يرجى إدخال بيانات الاعتماد الخاصة بك لتسجيل الدخول.</p>
+                <p>يرجى إدخال بياناتك الوظيفية لتسجيل الدخول.</p>
             </div>
             <SignInForm disableSubmit={false} />
         </>

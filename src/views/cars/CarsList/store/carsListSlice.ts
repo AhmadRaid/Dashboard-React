@@ -1,11 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { apiGetCars } from '@/services/CarsService'
-import {
-    Car,
-    GetCarsParams,
-    GetCarsResponse,
-    Pagination,
-} from '@/@types/cars'
+import { Car, GetCarsParams, GetCarsResponse } from '@/@types/cars'
 
 export const SLICE_NAME = 'carsListSlice'
 
@@ -41,13 +36,15 @@ const initialState: CarsListState = {
     },
 }
 
-export const getCars = createAsyncThunk<
-    GetCarsResponse,
-    GetCarsParams
->('cars/getCars', async (params) => {
-    const response = await apiGetCars(params)
-    return response.data
-})
+export const getCars = createAsyncThunk<GetCarsResponse, GetCarsParams>(
+    'cars/getCars',
+    async (params) => {
+        const response = await apiGetCars(params)
+        console.log('22222222222222222',response);
+        
+        return response.data
+    }
+)
 
 const carsListSlice = createSlice({
     name: 'cars',
@@ -63,11 +60,13 @@ const carsListSlice = createSlice({
                 state.loading = true
             })
             .addCase(getCars.fulfilled, (state, action) => {
-                state.carList = action.payload.data.cars
-                state.tableData.total = action.payload.data.pagination.totalCars
+                state.carList = action.payload.data.carTypes
+                state.tableData.total =
+                    action.payload.data.pagination.totalCarTypes
                 state.tableData.limit = action.payload.data.pagination.limit
                 state.loading = false
             })
+
             .addCase(getCars.rejected, (state) => {
                 state.loading = false
             })

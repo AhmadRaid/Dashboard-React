@@ -1,10 +1,11 @@
 import { injectReducer } from '@/store'
 import reducer from './store'
-import CarsList from './components/CarsList'
+import CarsTable from './components/CarsList'
 
 injectReducer('carsListSlice', reducer)
-const CarsListView = () => {
-    return <CarsList />
+
+const Cars = () => {
+    return <CarsTable />
 }
 
-export default CarsListView
+export default Cars

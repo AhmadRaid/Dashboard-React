@@ -8,13 +8,15 @@ import type {
     SignUpResponse,
 } from '@/@types/auth'
 
+
 export async function apiSignIn(data: SignInCredential) {
-    return ApiService.fetchData<SignInResponse>({
-        url: '/auth/login',
-        method: 'post',
-        data,
-    })
+  return ApiService.fetchData({
+    url: '/auth/login',
+    method: 'post',
+    data,
+  })
 }
+
 
 export async function apiSignUp(data: SignUpCredential) {
     return ApiService.fetchData<SignUpResponse>({

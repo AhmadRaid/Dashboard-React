@@ -8,6 +8,7 @@ import {
 import ApiService from './ApiService'
 import { GetCarsParams, GetCarsResponse } from '@/@types/cars'
 
+
 export async function apiGetCars(params: GetCarsParams) {
     return ApiService.fetchData<GetCarsResponse, GetCarsParams>({
         url: '/car-types',
