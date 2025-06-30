@@ -35,6 +35,8 @@ const carSizeOptions = [
     { label: 'صغير', value: 'small' },
     { label: 'متوسط', value: 'medium' },
     { label: 'كبير', value: 'large' },
+    { label: 'كبير جدا', value: 'X-large' },
+    { label: 'ضخم', value: 'huge' },
 ]
 
 const branchOptions = [
@@ -286,14 +288,14 @@ const ClientFields = (props: ClientFieldsProps) => {
                     }
                     errorMessage={errors.carManufacturer}
                 >
-                    {/* <Field
+                    <Field
                         name="carManufacturer"
                         type="text"
                         size="sm"
                         placeholder="ادخل الشركة المصنعة"
                         component={Input}
-                    /> */}
-                    <Field name="carManufacturer">
+                    />
+                    {/* <Field name="carManufacturer">
                         {({ field, form }: FieldProps) => (
                             <Select
                                 field={field}
@@ -322,7 +324,7 @@ const ClientFields = (props: ClientFieldsProps) => {
                                 placeholder="اختر الشركة المصنعة"
                             />
                         )}
-                    </Field>
+                    </Field> */}
                 </FormItem>
 
                 <FormItem
@@ -548,22 +550,6 @@ const ClientFields = (props: ClientFieldsProps) => {
                     </Field>
                 </FormItem>
 
-                {/* حقل تفاصيل الخدمة العام */}
-                <FormItem
-                    label="تفاصيل الخدمة"
-                    invalid={
-                        !!errors.serviceDetails && !!touched.serviceDetails
-                    }
-                    errorMessage={errors.serviceDetails as string}
-                >
-                    <Field
-                        name="serviceDetails"
-                        type="text"
-                        size="sm"
-                        placeholder="أدخل تفاصيل الخدمة"
-                        component={Input}
-                    />
-                </FormItem>
                 {/* حقول خاصة بخدمة الحماية */}
                 <>
                     {values.serviceType === 'protection' && (
@@ -897,18 +883,6 @@ const ClientFields = (props: ClientFieldsProps) => {
                                                 label: 'تلميع مائي',
                                                 value: 'water_polish',
                                             },
-                                            {
-                                                label: 'نانو سيراميك طبقة',
-                                                value: 'nano_ceramic_1',
-                                            },
-                                            {
-                                                label: 'نانو سيراميك طبقتين',
-                                                value: 'nano_ceramic_2',
-                                            },
-                                            {
-                                                label: 'نانو سيراميك ماستر',
-                                                value: 'nano_ceramic_master',
-                                            },
                                         ]}
                                         value={
                                             field.value
@@ -926,16 +900,7 @@ const ClientFields = (props: ClientFieldsProps) => {
                                                               : field.value ===
                                                                 'piece'
                                                               ? 'قطعة'
-                                                              : field.value ===
-                                                                'water_polish'
-                                                              ? 'تلميع مائي'
-                                                              : field.value ===
-                                                                'nano_ceramic_1'
-                                                              ? 'نانو سيراميك طبقة'
-                                                              : field.value ===
-                                                                'nano_ceramic_2'
-                                                              ? 'نانو سيراميك طبقتين'
-                                                              : 'نانو سيراميك ماستر',
+                                                              : 'تلميع مائي',
                                                       value: field.value,
                                                   }
                                                 : null
@@ -956,12 +921,10 @@ const ClientFields = (props: ClientFieldsProps) => {
                             </Field>
                         </FormItem>
 
-                        {/* حقول فرعية لأنواع التلميع */}
-                        {(values.polishType === 'external' ||
-                            values.polishType === 'internal' ||
-                            values.polishType === 'seats') && (
+                        {/* يظهر فقط عند اختيار خارجي */}
+                        {values.polishType === 'external' && (
                             <FormItem
-                                label="تفاصيل إضافية"
+                                label="مستوى التلميع"
                                 invalid={
                                     !!errors.polishSubType &&
                                     !!touched.polishSubType
@@ -976,29 +939,22 @@ const ClientFields = (props: ClientFieldsProps) => {
                                             form={form}
                                             options={[
                                                 {
-                                                    label: 'عادي',
-                                                    value: 'normal',
+                                                    label: 'مستوى 1',
+                                                    value: '1',
                                                 },
                                                 {
-                                                    label: 'ممتاز',
-                                                    value: 'premium',
+                                                    label: 'مستوى 2',
+                                                    value: '2',
                                                 },
                                                 {
-                                                    label: 'فاخر',
-                                                    value: 'luxury',
+                                                    label: 'مستوى 3',
+                                                    value: '3',
                                                 },
                                             ]}
                                             value={
                                                 field.value
                                                     ? {
-                                                          label:
-                                                              field.value ===
-                                                              'normal'
-                                                                  ? 'عادي'
-                                                                  : field.value ===
-                                                                    'premium'
-                                                                  ? 'ممتاز'
-                                                                  : 'فاخر',
+                                                          label: `مستوى ${field.value}`,
                                                           value: field.value,
                                                       }
                                                     : null
@@ -1162,6 +1118,19 @@ const ClientFields = (props: ClientFieldsProps) => {
                         )}
                     </>
                 )}
+                <FormItem
+                    label="تفاصيل الاتفاق"
+                    invalid={!!errors.dealDetails && !!touched.dealDetails}
+                    errorMessage={errors.dealDetails as string}
+                >
+                    <Field
+                        name="dealDetails"
+                        type="text"
+                        size="sm"
+                        placeholder="أدخل تفاصيل الاتفاق"
+                        component={Input}
+                    />
+                </FormItem>
             </div>
 
             <h5 className="mt-8">اضافة الضمان</h5>

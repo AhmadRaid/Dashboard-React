@@ -36,7 +36,7 @@ type InitialData = {
         Notes: string
     }
     serviceType?: string
-    serviceDetails?: string
+    dealDetails?: string
     // حقول خدمة الحماية
     protectionType?: string
     protectionFinish?: string
@@ -100,7 +100,7 @@ export const validationSchema = Yup.object().shape({
     ),
 
     carSize: Yup.string().oneOf(
-        ['small', 'medium', 'large'],
+        ['small', 'medium', 'large', 'X-large', 'huge'],
         'اختر حجمًا صالحًا للسيارة'
     ),
 
@@ -159,10 +159,7 @@ export const validationSchema = Yup.object().shape({
         ['polish', 'protection', 'insulator', 'additions'],
         'نوع الخدمة يجب أن يكون أحد الخيارات المتاحة'
     ),
-    serviceDetails: Yup.string().max(
-        500,
-        'يجب ألا تتجاوز تفاصيل الخدمة 500 حرف'
-    ),
+    dealDetails: Yup.string().max(500, 'يجب ألا تتجاوز تفاصيل الاتفاق 500 حرف'),
     servicePrice: Yup.number().min(0, 'لا يمكن أن يكون السعر أقل من 0'),
     serviceDate: Yup.string().matches(
         /^\d{4}-\d{2}-\d{2}$/,
@@ -198,29 +195,16 @@ export const validationSchema = Yup.object().shape({
         then: Yup.string()
             .required('نوع التلميع مطلوب')
             .oneOf(
-                [
-                    'external',
-                    'internal',
-                    'seats',
-                    'piece',
-                    'water_polish',
-                    'nano_ceramic_1',
-                    'nano_ceramic_2',
-                    'nano_ceramic_master',
-                ],
+                ['external', 'internal', 'seats', 'piece', 'water_polish'],
                 'نوع التلميع يجب أن يكون أحد الخيارات المتاحة'
             ),
     }),
     polishSubType: Yup.string().when(['serviceType', 'polishType'], {
-        is: (serviceType: string, polishType: string) =>
-            serviceType === 'polish' &&
-            ['external', 'internal', 'seats'].includes(polishType),
+        is: (serviceType, polishType) =>
+            serviceType === 'polish' && polishType === 'external',
         then: Yup.string()
             .required('مستوى التلميع مطلوب')
-            .oneOf(
-                ['normal', 'premium', 'luxury'],
-                'مستوى التلميع يجب أن يكون أحد الخيارات المتاحة'
-            ),
+            .oneOf(['1', '2', '3'], 'مستوى التلميع يجب أن يكون 1 أو 2 أو 3'),
     }),
 
     // قواعد الإضافات
@@ -251,37 +235,31 @@ export const validationSchema = Yup.object().shape({
                 'نطاق الغسيل يجب أن يكون أحد الخيارات المتاحة'
             ),
     }),
-    protectionFinish: Yup.string()
-        .when('serviceType', {
-            is: 'protection',
-            then: Yup.string()
-                .required('درجة اللمعان مطلوبة')
-                .oneOf(
-                    ['glossy', 'matte', 'colored'],
-                    'درجة اللمعان يجب أن تكون أحد الخيارات المتاحة'
-                ),
-        }),
-    protectionSize: Yup.string()
-        .when(['serviceType', 'protectionFinish'], {
-            is: (serviceType: string, protectionFinish: string) => 
-                serviceType === 'protection' && protectionFinish === 'glossy',
-            then: Yup.string()
-                .required('حجم الفيلم مطلوب')
-                .oneOf(
-                    ['10', '7.5'],
-                    'حجم الفيلم يجب أن يكون 10 مل أو 7.5 مل'
-                ),
-        }),
-    protectionCoverage: Yup.string()
-        .when('serviceType', {
-            is: 'protection',
-            then: Yup.string()
-                .required('نوع التغطية مطلوب')
-                .oneOf(
-                    ['full', 'half', 'quarter', 'edges', 'other'],
-                    'نوع التغطية يجب أن يكون أحد الخيارات المتاحة'
-                ),
-        }),
+    protectionFinish: Yup.string().when('serviceType', {
+        is: 'protection',
+        then: Yup.string()
+            .required('درجة اللمعان مطلوبة')
+            .oneOf(
+                ['glossy', 'matte', 'colored'],
+                'درجة اللمعان يجب أن تكون أحد الخيارات المتاحة'
+            ),
+    }),
+    protectionSize: Yup.string().when(['serviceType', 'protectionFinish'], {
+        is: (serviceType: string, protectionFinish: string) =>
+            serviceType === 'protection' && protectionFinish === 'glossy',
+        then: Yup.string()
+            .required('حجم الفيلم مطلوب')
+            .oneOf(['10', '7.5'], 'حجم الفيلم يجب أن يكون 10 مل أو 7.5 مل'),
+    }),
+    protectionCoverage: Yup.string().when('serviceType', {
+        is: 'protection',
+        then: Yup.string()
+            .required('نوع التغطية مطلوب')
+            .oneOf(
+                ['full', 'half', 'quarter', 'edges', 'other'],
+                'نوع التغطية يجب أن يكون أحد الخيارات المتاحة'
+            ),
+    }),
 })
 
 export type FormModel = Omit<InitialData, 'tags'> & {
