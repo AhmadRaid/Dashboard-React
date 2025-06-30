@@ -286,7 +286,7 @@ const ClientFields = (props: ClientFieldsProps) => {
                     }
                     errorMessage={errors.carManufacturer}
                 >
-                          {/* <Field
+                    {/* <Field
                         name="carManufacturer"
                         type="text"
                         size="sm"
@@ -488,6 +488,681 @@ const ClientFields = (props: ClientFieldsProps) => {
                         )}
                     </Field>
                 </FormItem> */}
+
+            <h5 className="mt-8">الخدمات والمبيعات</h5>
+            <p className="mb-6">قسم لإعداد معلومات الخدمات والمبيعات</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormItem
+                    label="نوع الخدمة"
+                    invalid={!!errors.serviceType && !!touched.serviceType}
+                    errorMessage={errors.serviceType as string}
+                >
+                    <Field name="serviceType">
+                        {({ field, form }: FieldProps) => (
+                            <Select
+                                field={field}
+                                size="sm"
+                                form={form}
+                                options={[
+                                    { label: 'تلميع', value: 'polish' },
+                                    { label: 'حماية', value: 'protection' },
+                                    { label: 'عازل حراري', value: 'insulator' },
+                                    { label: 'إضافات', value: 'additions' },
+                                ]}
+                                value={
+                                    field.value
+                                        ? {
+                                              label:
+                                                  field.value === 'polish'
+                                                      ? 'تلميع'
+                                                      : field.value ===
+                                                        'protection'
+                                                      ? 'حماية'
+                                                      : field.value ===
+                                                        'insulator'
+                                                      ? 'عازل حراري'
+                                                      : 'إضافات',
+                                              value: field.value,
+                                          }
+                                        : null
+                                }
+                                onChange={(option) => {
+                                    // مسح الحقول القديمة عند تغيير نوع الخدمة
+                                    form.setFieldValue('protectionType', '')
+                                    form.setFieldValue('protectionFinish', '')
+                                    form.setFieldValue('protectionSize', '')
+                                    form.setFieldValue('protectionCoverage', '')
+                                    form.setFieldValue('insulatorType', '')
+                                    form.setFieldValue('insulatorCoverage', '')
+                                    form.setFieldValue('polishType', '')
+                                    form.setFieldValue('polishSubType', '')
+                                    form.setFieldValue('additionType', '')
+                                    form.setFieldValue(
+                                        'serviceType',
+                                        option?.value || ''
+                                    )
+                                }}
+                                placeholder="اختر نوع الخدمة"
+                            />
+                        )}
+                    </Field>
+                </FormItem>
+
+                {/* حقل تفاصيل الخدمة العام */}
+                <FormItem
+                    label="تفاصيل الخدمة"
+                    invalid={
+                        !!errors.serviceDetails && !!touched.serviceDetails
+                    }
+                    errorMessage={errors.serviceDetails as string}
+                >
+                    <Field
+                        name="serviceDetails"
+                        type="text"
+                        size="sm"
+                        placeholder="أدخل تفاصيل الخدمة"
+                        component={Input}
+                    />
+                </FormItem>
+                {/* حقول خاصة بخدمة الحماية */}
+                <>
+                    {values.serviceType === 'protection' && (
+                        <>
+                            <FormItem
+                                label="اللمعان"
+                                invalid={
+                                    !!errors.protectionFinish &&
+                                    !!touched.protectionFinish
+                                }
+                                errorMessage={errors.protectionFinish as string}
+                            >
+                                <Field name="protectionFinish">
+                                    {({ field, form }: FieldProps) => (
+                                        <Select
+                                            field={field}
+                                            size="sm"
+                                            form={form}
+                                            options={[
+                                                {
+                                                    label: 'لامع',
+                                                    value: 'glossy',
+                                                },
+                                                {
+                                                    label: 'مطفى',
+                                                    value: 'matte',
+                                                },
+                                                {
+                                                    label: 'ملون',
+                                                    value: 'colored',
+                                                },
+                                            ]}
+                                            value={
+                                                field.value
+                                                    ? {
+                                                          label:
+                                                              field.value ===
+                                                              'glossy'
+                                                                  ? 'لامع'
+                                                                  : field.value ===
+                                                                    'matte'
+                                                                  ? 'مطفى'
+                                                                  : 'ملون',
+                                                          value: field.value,
+                                                      }
+                                                    : null
+                                            }
+                                            onChange={(option) => {
+                                                form.setFieldValue(
+                                                    'protectionSize',
+                                                    ''
+                                                )
+                                                form.setFieldValue(
+                                                    'protectionFinish',
+                                                    option?.value || ''
+                                                )
+                                            }}
+                                            placeholder="اختر درجة اللمعان"
+                                        />
+                                    )}
+                                </Field>
+                            </FormItem>
+
+                            {/* حقل الحجم - يظهر فقط للأفلام اللامعة */}
+                            {values.protectionFinish === 'glossy' && (
+                                <FormItem
+                                    label="الحجم"
+                                    invalid={
+                                        !!errors.protectionSize &&
+                                        !!touched.protectionSize
+                                    }
+                                    errorMessage={
+                                        errors.protectionSize as string
+                                    }
+                                >
+                                    <Field name="protectionSize">
+                                        {({ field, form }: FieldProps) => (
+                                            <Select
+                                                field={field}
+                                                size="sm"
+                                                form={form}
+                                                options={[
+                                                    {
+                                                        label: '10 مل',
+                                                        value: '10',
+                                                    },
+                                                    {
+                                                        label: '7.5 مل',
+                                                        value: '7.5',
+                                                    },
+                                                ]}
+                                                value={
+                                                    field.value
+                                                        ? {
+                                                              label: `${field.value} مل`,
+                                                              value: field.value,
+                                                          }
+                                                        : null
+                                                }
+                                                onChange={(option) => {
+                                                    form.setFieldValue(
+                                                        'protectionSize',
+                                                        option?.value || ''
+                                                    )
+                                                }}
+                                                placeholder="اختر حجم الفيلم"
+                                            />
+                                        )}
+                                    </Field>
+                                </FormItem>
+                            )}
+
+                            <FormItem
+                                label="التغطية"
+                                invalid={
+                                    !!errors.protectionCoverage &&
+                                    !!touched.protectionCoverage
+                                }
+                                errorMessage={
+                                    errors.protectionCoverage as string
+                                }
+                            >
+                                <Field name="protectionCoverage">
+                                    {({ field, form }: FieldProps) => (
+                                        <Select
+                                            field={field}
+                                            size="sm"
+                                            form={form}
+                                            options={[
+                                                {
+                                                    label: 'كامل',
+                                                    value: 'full',
+                                                },
+                                                { label: 'نص', value: 'half' },
+                                                {
+                                                    label: 'ربع',
+                                                    value: 'quarter',
+                                                },
+                                                {
+                                                    label: 'أطراف',
+                                                    value: 'edges',
+                                                },
+                                                {
+                                                    label: 'أخرى',
+                                                    value: 'other',
+                                                },
+                                            ]}
+                                            value={
+                                                field.value
+                                                    ? {
+                                                          label:
+                                                              field.value ===
+                                                              'full'
+                                                                  ? 'كامل'
+                                                                  : field.value ===
+                                                                    'half'
+                                                                  ? 'نص'
+                                                                  : field.value ===
+                                                                    'quarter'
+                                                                  ? 'ربع'
+                                                                  : field.value ===
+                                                                    'edges'
+                                                                  ? 'أطراف'
+                                                                  : 'أخرى',
+                                                          value: field.value,
+                                                      }
+                                                    : null
+                                            }
+                                            onChange={(option) => {
+                                                form.setFieldValue(
+                                                    'protectionCoverage',
+                                                    option?.value || ''
+                                                )
+                                            }}
+                                            placeholder="اختر نوع التغطية"
+                                        />
+                                    )}
+                                </Field>
+                            </FormItem>
+                        </>
+                    )}
+                </>
+
+                {/* حقول خاصة بخدمة العازل الحراري */}
+                {values.serviceType === 'insulator' && (
+                    <>
+                        <FormItem
+                            label="نوع العازل"
+                            invalid={
+                                !!errors.insulatorType &&
+                                !!touched.insulatorType
+                            }
+                            errorMessage={errors.insulatorType as string}
+                        >
+                            <Field name="insulatorType">
+                                {({ field, form }: FieldProps) => (
+                                    <Select
+                                        field={field}
+                                        size="sm"
+                                        form={form}
+                                        options={[
+                                            {
+                                                label: 'سيراميك',
+                                                value: 'ceramic',
+                                            },
+                                            {
+                                                label: 'كاربون',
+                                                value: 'carbon',
+                                            },
+                                            {
+                                                label: 'كرستال',
+                                                value: 'crystal',
+                                            },
+                                        ]}
+                                        value={
+                                            field.value
+                                                ? {
+                                                      label:
+                                                          field.value ===
+                                                          'ceramic'
+                                                              ? 'سيراميك'
+                                                              : field.value ===
+                                                                'carbon'
+                                                              ? 'كاربون'
+                                                              : 'كرستال',
+                                                      value: field.value,
+                                                  }
+                                                : null
+                                        }
+                                        onChange={(option) => {
+                                            form.setFieldValue(
+                                                'insulatorType',
+                                                option?.value || ''
+                                            )
+                                        }}
+                                        placeholder="اختر نوع العازل"
+                                    />
+                                )}
+                            </Field>
+                        </FormItem>
+
+                        <FormItem
+                            label="نطاق التغطية"
+                            invalid={
+                                !!errors.insulatorCoverage &&
+                                !!touched.insulatorCoverage
+                            }
+                            errorMessage={errors.insulatorCoverage as string}
+                        >
+                            <Field name="insulatorCoverage">
+                                {({ field, form }: FieldProps) => (
+                                    <Select
+                                        field={field}
+                                        size="sm"
+                                        form={form}
+                                        options={[
+                                            { label: 'كامل', value: 'full' },
+                                            { label: 'نص', value: 'half' },
+                                            { label: 'قطعة', value: 'piece' },
+                                            {
+                                                label: 'درع حماية',
+                                                value: 'shield',
+                                            },
+                                            {
+                                                label: 'خارجية',
+                                                value: 'external',
+                                            },
+                                        ]}
+                                        value={
+                                            field.value
+                                                ? {
+                                                      label:
+                                                          field.value === 'full'
+                                                              ? 'كامل'
+                                                              : field.value ===
+                                                                'half'
+                                                              ? 'نص'
+                                                              : field.value ===
+                                                                'piece'
+                                                              ? 'قطعة'
+                                                              : field.value ===
+                                                                'shield'
+                                                              ? 'درع حماية'
+                                                              : 'خارجية',
+                                                      value: field.value,
+                                                  }
+                                                : null
+                                        }
+                                        onChange={(option) => {
+                                            form.setFieldValue(
+                                                'insulatorCoverage',
+                                                option?.value || ''
+                                            )
+                                        }}
+                                        placeholder="اختر نطاق التغطية"
+                                    />
+                                )}
+                            </Field>
+                        </FormItem>
+                    </>
+                )}
+
+                {/* حقول خاصة بخدمة التلميع */}
+                {values.serviceType === 'polish' && (
+                    <>
+                        <FormItem
+                            label="نوع التلميع"
+                            invalid={
+                                !!errors.polishType && !!touched.polishType
+                            }
+                            errorMessage={errors.polishType as string}
+                        >
+                            <Field name="polishType">
+                                {({ field, form }: FieldProps) => (
+                                    <Select
+                                        field={field}
+                                        size="sm"
+                                        form={form}
+                                        options={[
+                                            {
+                                                label: 'خارجي',
+                                                value: 'external',
+                                            },
+                                            {
+                                                label: 'داخلي',
+                                                value: 'internal',
+                                            },
+                                            { label: 'كراسي', value: 'seats' },
+                                            { label: 'قطعة', value: 'piece' },
+                                            {
+                                                label: 'تلميع مائي',
+                                                value: 'water_polish',
+                                            },
+                                            {
+                                                label: 'نانو سيراميك طبقة',
+                                                value: 'nano_ceramic_1',
+                                            },
+                                            {
+                                                label: 'نانو سيراميك طبقتين',
+                                                value: 'nano_ceramic_2',
+                                            },
+                                            {
+                                                label: 'نانو سيراميك ماستر',
+                                                value: 'nano_ceramic_master',
+                                            },
+                                        ]}
+                                        value={
+                                            field.value
+                                                ? {
+                                                      label:
+                                                          field.value ===
+                                                          'external'
+                                                              ? 'خارجي'
+                                                              : field.value ===
+                                                                'internal'
+                                                              ? 'داخلي'
+                                                              : field.value ===
+                                                                'seats'
+                                                              ? 'كراسي'
+                                                              : field.value ===
+                                                                'piece'
+                                                              ? 'قطعة'
+                                                              : field.value ===
+                                                                'water_polish'
+                                                              ? 'تلميع مائي'
+                                                              : field.value ===
+                                                                'nano_ceramic_1'
+                                                              ? 'نانو سيراميك طبقة'
+                                                              : field.value ===
+                                                                'nano_ceramic_2'
+                                                              ? 'نانو سيراميك طبقتين'
+                                                              : 'نانو سيراميك ماستر',
+                                                      value: field.value,
+                                                  }
+                                                : null
+                                        }
+                                        onChange={(option) => {
+                                            form.setFieldValue(
+                                                'polishSubType',
+                                                ''
+                                            )
+                                            form.setFieldValue(
+                                                'polishType',
+                                                option?.value || ''
+                                            )
+                                        }}
+                                        placeholder="اختر نوع التلميع"
+                                    />
+                                )}
+                            </Field>
+                        </FormItem>
+
+                        {/* حقول فرعية لأنواع التلميع */}
+                        {(values.polishType === 'external' ||
+                            values.polishType === 'internal' ||
+                            values.polishType === 'seats') && (
+                            <FormItem
+                                label="تفاصيل إضافية"
+                                invalid={
+                                    !!errors.polishSubType &&
+                                    !!touched.polishSubType
+                                }
+                                errorMessage={errors.polishSubType as string}
+                            >
+                                <Field name="polishSubType">
+                                    {({ field, form }: FieldProps) => (
+                                        <Select
+                                            field={field}
+                                            size="sm"
+                                            form={form}
+                                            options={[
+                                                {
+                                                    label: 'عادي',
+                                                    value: 'normal',
+                                                },
+                                                {
+                                                    label: 'ممتاز',
+                                                    value: 'premium',
+                                                },
+                                                {
+                                                    label: 'فاخر',
+                                                    value: 'luxury',
+                                                },
+                                            ]}
+                                            value={
+                                                field.value
+                                                    ? {
+                                                          label:
+                                                              field.value ===
+                                                              'normal'
+                                                                  ? 'عادي'
+                                                                  : field.value ===
+                                                                    'premium'
+                                                                  ? 'ممتاز'
+                                                                  : 'فاخر',
+                                                          value: field.value,
+                                                      }
+                                                    : null
+                                            }
+                                            onChange={(option) => {
+                                                form.setFieldValue(
+                                                    'polishSubType',
+                                                    option?.value || ''
+                                                )
+                                            }}
+                                            placeholder="اختر مستوى التلميع"
+                                        />
+                                    )}
+                                </Field>
+                            </FormItem>
+                        )}
+                    </>
+                )}
+
+                {/* حقول خاصة بخدمة الإضافات */}
+                {values.serviceType === 'additions' && (
+                    <>
+                        <FormItem
+                            label="نوع الإضافة"
+                            invalid={
+                                !!errors.additionType && !!touched.additionType
+                            }
+                            errorMessage={errors.additionType as string}
+                        >
+                            <Field name="additionType">
+                                {({ field, form }: FieldProps) => (
+                                    <Select
+                                        field={field}
+                                        size="sm"
+                                        form={form}
+                                        options={[
+                                            {
+                                                label: 'غسيل تفصيلي',
+                                                value: 'detailed_wash',
+                                            },
+                                            {
+                                                label: 'غسيل تفصيلي خاص',
+                                                value: 'premium_wash',
+                                            },
+                                            {
+                                                label: 'دواسات جلد',
+                                                value: 'leather_pedals',
+                                            },
+                                            {
+                                                label: 'تكحيل',
+                                                value: 'blackout',
+                                            },
+                                            {
+                                                label: 'نانو داخلي ديكور',
+                                                value: 'nano_interior_decor',
+                                            },
+                                            {
+                                                label: 'نانو داخلي مقاعد',
+                                                value: 'nano_interior_seats',
+                                            },
+                                        ]}
+                                        value={
+                                            field.value
+                                                ? {
+                                                      label:
+                                                          field.value ===
+                                                          'detailed_wash'
+                                                              ? 'غسيل تفصيلي'
+                                                              : field.value ===
+                                                                'premium_wash'
+                                                              ? 'غسيل تفصيلي خاص'
+                                                              : field.value ===
+                                                                'leather_pedals'
+                                                              ? 'دواسات جلد'
+                                                              : field.value ===
+                                                                'blackout'
+                                                              ? 'تكحيل'
+                                                              : field.value ===
+                                                                'nano_interior_decor'
+                                                              ? 'نانو داخلي ديكور'
+                                                              : 'نانو داخلي مقاعد',
+                                                      value: field.value,
+                                                  }
+                                                : null
+                                        }
+                                        onChange={(option) => {
+                                            form.setFieldValue(
+                                                'additionType',
+                                                option?.value || ''
+                                            )
+                                        }}
+                                        placeholder="اختر نوع الإضافة"
+                                    />
+                                )}
+                            </Field>
+                        </FormItem>
+
+                        {/* حقول فرعية لأنواع الإضافات */}
+                        {(values.additionType === 'detailed_wash' ||
+                            values.additionType === 'premium_wash') && (
+                            <FormItem
+                                label="نطاق الغسيل"
+                                invalid={
+                                    !!errors.washScope && !!touched.washScope
+                                }
+                                errorMessage={errors.washScope as string}
+                            >
+                                <Field name="washScope">
+                                    {({ field, form }: FieldProps) => (
+                                        <Select
+                                            field={field}
+                                            size="sm"
+                                            form={form}
+                                            options={[
+                                                {
+                                                    label: 'كامل',
+                                                    value: 'full',
+                                                },
+                                                {
+                                                    label: 'خارجي فقط',
+                                                    value: 'external_only',
+                                                },
+                                                {
+                                                    label: 'داخلي فقط',
+                                                    value: 'internal_only',
+                                                },
+                                                {
+                                                    label: 'محرك',
+                                                    value: 'engine',
+                                                },
+                                            ]}
+                                            value={
+                                                field.value
+                                                    ? {
+                                                          label:
+                                                              field.value ===
+                                                              'full'
+                                                                  ? 'كامل'
+                                                                  : field.value ===
+                                                                    'external_only'
+                                                                  ? 'خارجي فقط'
+                                                                  : field.value ===
+                                                                    'internal_only'
+                                                                  ? 'داخلي فقط'
+                                                                  : 'محرك',
+                                                          value: field.value,
+                                                      }
+                                                    : null
+                                            }
+                                            onChange={(option) => {
+                                                form.setFieldValue(
+                                                    'washScope',
+                                                    option?.value || ''
+                                                )
+                                            }}
+                                            placeholder="اختر نطاق الغسيل"
+                                        />
+                                    )}
+                                </Field>
+                            </FormItem>
+                        )}
+                    </>
+                )}
+            </div>
 
             <h5 className="mt-8">اضافة الضمان</h5>
             <p className="mb-6">قسم لإعداد معلومات الضمان</p>
