@@ -2,6 +2,8 @@ export interface GetClientsParams {
     offset: number
     limit: number
     search?: string
+    branch?: string
+    last50Orders?: boolean
 }
 
 export type Client = {
@@ -19,8 +21,6 @@ export type Client = {
     }
     orders?: Order[]
 }
-
-
 
 export type Guarantee = {
     // products: string[]
@@ -62,8 +62,6 @@ export interface GetClientsResponse {
     data: ClientsResponse
     total: number
 }
-
-
 
 export type Order = {
     _id?: string

@@ -137,19 +137,43 @@ const ClientFields = (props: ClientFieldsProps) => {
                     />
                 </FormItem>
 
-                <FormItem
-                    label="رقم الهاتف"
-                    invalid={!!errors.phone && !!touched.phone}
-                    errorMessage={errors.phone}
-                >
-                    <Field
-                        name="phone"
-                        type="text"
-                        size="sm"
-                        placeholder="رقم الهاتف"
-                        component={Input}
-                    />
-                </FormItem>
+<FormItem
+    label="رقم الهاتف"
+    invalid={!!errors.phone && !!touched.phone}
+    errorMessage={errors.phone}
+>
+    <Field name="phone">
+        {({ field, form }: FieldProps) => (
+            <Input
+                {...field}
+                type="text"
+                size="sm"
+                placeholder="05xxxxxxxx"
+                onChange={(e) => {
+                    let value = e.target.value
+                    // إذا كان الحقل فارغاً أو المستخدم يحاول إدخال رقم يبدأ بـ 5
+                    if (value.length === 0 || (value.length === 1 && value === '5')) {
+                        value = '05' + value.substring(1)
+                    }
+                    // التأكد من أن القيمة تبدأ بـ 05
+                    if (!value.startsWith('05') && value.length > 0) {
+                        value = '05' + value
+                    }
+                    form.setFieldValue(field.name, value)
+                }}
+                onBlur={(e) => {
+                    let value = e.target.value
+                    // إذا كان الحقل يحتوي على أقل من 10 أرقام (بما في ذلك 05)
+                    if (value.length > 0 && value.length < 10) {
+                        form.setFieldTouched(field.name, true)
+                        form.setFieldError(field.name, 'يجب أن يتكون رقم الهاتف من 10 أرقام')
+                    }
+                    field.onBlur(e)
+                }}
+            />
+        )}
+    </Field>
+</FormItem>
 
                 <FormItem
                     label="نوع العميل"

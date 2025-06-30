@@ -21,9 +21,8 @@ const ClientsTable = () => {
     const dispatch = useAppDispatch()
     const navigate = useNavigate()
 
-    const { pageIndex, limit, sort, query, total } = useAppSelector(
-        (state) => state.clientsListSlice.data.tableData
-    )
+    const { pageIndex, limit, sort, query, total, branchFilter, last50Orders } =
+        useAppSelector((state) => state.clientsListSlice.data.tableData)
 
     const loading = useAppSelector(
         (state) => state.clientsListSlice.data.loading
@@ -33,25 +32,39 @@ const ClientsTable = () => {
     )
 
     const tableData = useMemo(
-        () => ({ pageIndex, limit, sort, query, total }),
-        [pageIndex, limit, sort, query, total]
+        () => ({ pageIndex, limit, sort, query, total, branchFilter, last50Orders }),
+        [pageIndex, limit, sort, query, total, branchFilter, last50Orders]
     )
 
     useEffect(() => {
-        dispatch(
-            getClients({
-                limit,
-                offset: (pageIndex - 1) * limit,
-                search: query || undefined
-            })
-        )
-    }, [pageIndex, limit, sort, query, dispatch])
+        const params: any = {
+            limit,
+            offset: (pageIndex - 1) * limit,
+            search: query || undefined,
+            branch: branchFilter || undefined,
+            last50Orders: last50Orders || undefined
+        }
+
+        dispatch(getClients(params))
+    }, [pageIndex, limit, sort, query, branchFilter, last50Orders, dispatch])
 
     const columns: ColumnDef<Client>[] = useMemo(
         () => [
-            { header: 'الاسم الاول', accessorKey: 'firstName', sortable: false },
-            { header: 'الاسم الثاني', accessorKey: 'middleName', sortable: false },
-            { header: 'الاسم العائلة', accessorKey: 'lastName', sortable: false },
+            {
+                header: 'الاسم الاول',
+                accessorKey: 'firstName',
+                sortable: false,
+            },
+            {
+                header: 'الاسم الثاني',
+                accessorKey: 'middleName',
+                sortable: false,
+            },
+            {
+                header: 'الاسم العائلة',
+                accessorKey: 'lastName',
+                sortable: false,
+            },
             { header: 'الايميل', accessorKey: 'email', sortable: false },
             {
                 header: 'نوع العميل',

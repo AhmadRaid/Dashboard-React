@@ -4,7 +4,6 @@ import {
     Client,
     GetClientsParams,
     GetClientsResponse,
-    Pagination,
 } from '@/@types/clients'
 
 export const SLICE_NAME = 'clientsListSlice'
@@ -15,9 +14,11 @@ interface TableData {
     total: number
     query: string
     sort: {
-        order: string
+        order: '' | 'asc' | 'desc'
         key: string
     }
+    branchFilter: string
+    last50Orders: boolean
 }
 
 export interface ClientsListState {
@@ -38,27 +39,28 @@ const initialState: ClientsListState = {
             order: '',
             key: '',
         },
+        branchFilter: '',
+        last50Orders: false
     },
 }
 
-export const getClients = createAsyncThunk<
-    GetClientsResponse,
-    GetClientsParams
->('clients/getClients', async (params) => {
-    console.log(params, params)
-
-    const response = await apiGetClients(params)
-    console.log(response.data)
-
-    return response.data
-})
+export const getClients = createAsyncThunk(
+    `${SLICE_NAME}/getClients`,
+    async (params: GetClientsParams) => {
+        const response = await apiGetClients(params)
+        return response.data
+    }
+)
 
 const clientsListSlice = createSlice({
-    name: 'clients',
+    name: SLICE_NAME,
     initialState,
     reducers: {
-        setTableData: (state, action: PayloadAction<TableData>) => {
-            state.tableData = action.payload
+        setTableData: (state, action: PayloadAction<Partial<TableData>>) => {
+            state.tableData = {
+                ...state.tableData,
+                ...action.payload
+            }
         },
     },
     extraReducers: (builder) => {
@@ -68,9 +70,7 @@ const clientsListSlice = createSlice({
             })
             .addCase(getClients.fulfilled, (state, action) => {
                 state.clientList = action.payload.data.clients
-                state.tableData.total =
-                    action.payload.data.pagination.totalClients
-                state.tableData.limit = action.payload.data.pagination.limit
+                state.tableData.total = action.payload.data.pagination.totalClients
                 state.loading = false
             })
             .addCase(getClients.rejected, (state) => {
