@@ -73,16 +73,6 @@ export const ClientsTableTools = () => {
                     className="min-w-[150px]"
                 />
                 
-                <div className="flex gap-2">
-                    <Button
-                        size="sm"
-                        variant="plain"
-                        onClick={handleResetAllFilters}
-                    >
-                        إعادة تعيين
-                    </Button>
-                </div>
-                
                 <Link to="/clients/create-client" className="w-full lg:w-auto">
                     <Button
                         block
