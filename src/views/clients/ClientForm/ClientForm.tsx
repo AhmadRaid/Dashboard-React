@@ -3,7 +3,7 @@ import { FormContainer, FormItem } from '@/components/ui/Form'
 import Button from '@/components/ui/Button'
 import StickyFooter from '@/components/shared/StickyFooter'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
-import { Field, Form, Formik, FormikProps } from 'formik'
+import { Field, Form, Formik, FormikProps, FieldProps } from 'formik'
 import { HiOutlineTrash, HiPlus } from 'react-icons/hi'
 import { AiOutlineSave } from 'react-icons/ai'
 import cloneDeep from 'lodash/cloneDeep'
@@ -331,7 +331,7 @@ const DeleteProductButton = ({ onDelete }: { onDelete: any }) => {
 }
 
 const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
-    const [serviceCounter, setServiceCounter] = useState(0)
+    const [serviceCounter, setServiceCounter] = useState(1) // بدءًا من 1 لضمان وجود خدمة واحدة افتراضياً
 
     const {
         type,
@@ -348,7 +348,21 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
             branch: '',
             carPlateNumber: '',
             carManufacturer: '',
-            services: [],
+            services: [
+                {
+                    id: 'service-0',
+                    serviceType: '',
+                    dealDetails: '',
+                    guarantee: {
+                        id: 'guarantee-0',
+                        typeGuarantee: '',
+                        startDate: '',
+                        endDate: '',
+                        terms: '',
+                        Notes: '',
+                    },
+                },
+            ],
         },
         onFormSubmit,
         onDiscard,
@@ -378,6 +392,10 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
     }
 
     const removeService = (form: FormikProps<any>, index: number) => {
+        if (form.values.services.length <= 1) {
+            // لا تسمح بحذف آخر خدمة
+            return
+        }
         const services = [...form.values.services]
         services.splice(index, 1)
         form.setFieldValue('services', services)
@@ -464,6 +482,9 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                 />
 
                                 {/* Services and Guarantees Sections */}
+                                <h5 className="mt-8 text-lg font-semibold">الخدمات والضمانات</h5>
+                                <p className="mb-6 text-sm text-gray-500">قسم لإعداد الخدمات والضمانات المقدمة للعميل</p>
+
                                 {values.services?.map((service, index) => (
                                     <div
                                         key={service.id}
@@ -473,17 +494,19 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                             <h4 className="text-lg font-semibold">
                                                 الخدمة {index + 1}
                                             </h4>
-                                            <Button
-                                                size="xs"
-                                                variant="plain"
-                                                type="button"
-                                                icon={<HiOutlineTrash />}
-                                                onClick={() =>
-                                                    removeService(form, index)
-                                                }
-                                            >
-                                                حذف الخدمة
-                                            </Button>
+                                            {values.services.length > 1 && (
+                                                <Button
+                                                    size="xs"
+                                                    variant="plain"
+                                                    type="button"
+                                                    icon={<HiOutlineTrash />}
+                                                    onClick={() =>
+                                                        removeService(form, index)
+                                                    }
+                                                >
+                                                    حذف الخدمة
+                                                </Button>
+                                            )}
                                         </div>
 
                                         {/* Service Fields */}
