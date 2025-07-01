@@ -53,7 +53,62 @@ type InitialData = {
     carPlateNumber: string
     carManufacturer: string
     carSize: string
-    services: Array<Service & { guarantee?: Guarantee }>
+    carType: string
+    services: Array<{
+        id: string
+        serviceType: string
+        dealDetails: string
+        protectionFinish?: string
+        protectionSize?: string
+        protectionCoverage?: string
+        insulatorType?: string
+        insulatorCoverage?: string
+        polishType?: string
+        polishSubType?: string
+        additionType?: string
+        washScope?: string
+        servicePrice?: number
+        serviceDate?: string
+        guarantee?: {
+            id: string
+            typeGuarantee: string
+            startDate: string
+            endDate: string
+            terms: string
+            Notes: string
+        }
+    }>
+}
+
+const initialData: InitialData = {
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    clientType: '',
+    carModel: '',
+    carColor: '',
+    branch: '',
+    carPlateNumber: '',
+    carManufacturer: '',
+    carSize: '',
+    carType: '',
+    services: [
+        {
+            id: 'service-0',
+            serviceType: '',
+            dealDetails: '',
+            guarantee: {
+                id: 'guarantee-0',
+                typeGuarantee: '',
+                startDate: '',
+                endDate: '',
+                terms: '',
+                Notes: '',
+            },
+        },
+    ],
 }
 
 export const validationSchema = Yup.object().shape({
@@ -89,10 +144,10 @@ export const validationSchema = Yup.object().shape({
 
     branch: Yup.string()
         .oneOf(
-            ['عملاء فرع المدينة', 'عملاء فرع ابحر', 'اخرى'],
-            'فرع العميل يجب أن يكون "عميل فرع ابحر" أو "عميل فرع المدينة" او "اخرى"'
+            ['عملاء فرع ابحر', 'عملاء فرع المدينة', 'اخرى'],
+            'اختر فرعًا صحيحًا'
         )
-        .required('فرع العميل مطلوب'),
+        .required('يجب اختيار الفرع'),
 
     carManufacturer: Yup.string(),
 
@@ -112,168 +167,184 @@ export const validationSchema = Yup.object().shape({
 
     carColor: Yup.string().max(30, 'يجب ألا يتجاوز لون السيارة 30 حرفًا'),
 
-    services: Yup.array().of(
-        Yup.object().shape({
-            serviceType: Yup.string().oneOf(
-                ['polish', 'protection', 'insulator', 'additions'],
-                'نوع الخدمة يجب أن يكون أحد الخيارات المتاحة'
-            ),
-            dealDetails: Yup.string().max(
-                500,
-                'يجب ألا تتجاوز تفاصيل الاتفاق 500 حرف'
-            ),
-            servicePrice: Yup.number().min(0, 'لا يمكن أن يكون السعر أقل من 0'),
-            serviceDate: Yup.string().matches(
-                /^\d{4}-\d{2}-\d{2}$/,
-                'تاريخ الخدمة يجب أن يكون بتنسيق YYYY-MM-DD'
-            ),
-            protectionFinish: Yup.string().when('serviceType', {
-                is: 'protection',
-                then: Yup.string()
-                    .required('درجة اللمعان مطلوبة')
-                    .oneOf(
-                        ['glossy', 'matte', 'colored'],
-                        'درجة اللمعان يجب أن تكون أحد الخيارات المتاحة'
-                    ),
-            }),
-            protectionSize: Yup.string().when(
-                ['serviceType', 'protectionFinish'],
-                {
-                    is: (serviceType: string, protectionFinish: string) =>
-                        serviceType === 'protection' &&
-                        protectionFinish === 'glossy',
-                    then: Yup.string()
-                        .required('حجم الفيلم مطلوب')
-                        .oneOf(
-                            ['10', '7.5'],
-                            'حجم الفيلم يجب أن يكون 10 مل أو 7.5 مل'
-                        ),
-                }
-            ),
-            protectionCoverage: Yup.string().when('serviceType', {
-                is: 'protection',
-                then: Yup.string()
-                    .required('نوع التغطية مطلوب')
-                    .oneOf(
-                        ['full', 'half', 'quarter', 'edges', 'other'],
-                        'نوع التغطية يجب أن يكون أحد الخيارات المتاحة'
-                    ),
-            }),
-            insulatorType: Yup.string().when('serviceType', {
-                is: 'insulator',
-                then: Yup.string()
-                    .required('نوع العازل مطلوب')
-                    .oneOf(
-                        ['ceramic', 'carbon', 'crystal'],
-                        'نوع العازل يجب أن يكون أحد الخيارات المتاحة'
-                    ),
-            }),
-            insulatorCoverage: Yup.string().when('serviceType', {
-                is: 'insulator',
-                then: Yup.string()
-                    .required('نطاق التغطية مطلوب')
-                    .oneOf(
-                        ['full', 'half', 'piece', 'shield', 'external'],
-                        'نطاق التغطية يجب أن يكون أحد الخيارات المتاحة'
-                    ),
-            }),
-            polishType: Yup.string().when('serviceType', {
-                is: 'polish',
-                then: Yup.string()
-                    .required('نوع التلميع مطلوب')
-                    .oneOf(
-                        [
-                            'external',
-                            'internal',
-                            'seats',
-                            'piece',
-                            'water_polish',
-                        ],
-                        'نوع التلميع يجب أن يكون أحد الخيارات المتاحة'
-                    ),
-            }),
-            polishSubType: Yup.string().when(['serviceType', 'polishType'], {
-                is: (serviceType, polishType) =>
-                    serviceType === 'polish' && polishType === 'external',
-                then: Yup.string()
-                    .required('مستوى التلميع مطلوب')
-                    .oneOf(
-                        ['1', '2', '3'],
-                        'مستوى التلميع يجب أن يكون 1 أو 2 أو 3'
-                    ),
-            }),
-            additionType: Yup.string().when('serviceType', {
-                is: 'additions',
-                then: Yup.string()
-                    .required('نوع الإضافة مطلوب')
-                    .oneOf(
-                        [
-                            'detailed_wash',
-                            'premium_wash',
-                            'leather_pedals',
-                            'blackout',
-                            'nano_interior_decor',
-                            'nano_interior_seats',
-                        ],
-                        'نوع الإضافة يجب أن يكون أحد الخيارات المتاحة'
-                    ),
-            }),
-            washScope: Yup.string().when(['serviceType', 'additionType'], {
-                is: (serviceType: string, additionType: string) =>
-                    serviceType === 'additions' &&
-                    ['detailed_wash', 'premium_wash'].includes(additionType),
-                then: Yup.string()
-                    .required('نطاق الغسيل مطلوب')
-                    .oneOf(
-                        ['full', 'external_only', 'internal_only', 'engine'],
-                        'نطاق الغسيل يجب أن يكون أحد الخيارات المتاحة'
-                    ),
-            }),
-            guarantee: Yup.object().shape({
-                typeGuarantee: Yup.string(),
-                startDate: Yup.string()
-                    .matches(
-                        /^\d{4}-\d{2}-\d{2}$/,
-                        'تاريخ البدء يجب أن يكون بتنسيق YYYY-MM-DD'
-                    )
-                    .test(
-                        'is-future-or-today',
-                        'تاريخ البدء يجب أن يكون اليوم أو في المستقبل',
-                        function (value) {
-                            if (!value) return true
-                            const today = new Date().setHours(0, 0, 0, 0)
-                            const inputDate = new Date(value).setHours(
-                                0,
-                                0,
-                                0,
-                                0
-                            )
-                            return inputDate >= today
-                        }
-                    ),
-                endDate: Yup.string()
-                    .matches(
-                        /^\d{4}-\d{2}-\d{2}$/,
-                        'يجب أن يكون تاريخ الانتهاء بصيغة YYYY-MM-DD'
-                    )
-                    .test(
-                        'is-after-start-date',
-                        'لا يمكن أن يكون تاريخ الانتهاء قبل تاريخ البدء',
-                        function (value) {
-                            if (!value) return true
-                            const { startDate } = this.parent
-                            if (!startDate || !value) return true
-                            return new Date(value) >= new Date(startDate)
-                        }
-                    ),
-                terms: Yup.string().max(200, 'يجب ألا تتجاوز الشروط 200 حرف'),
-                Notes: Yup.string().max(
-                    200,
-                    'يجب ألا تتجاوز الملاحظات 200 حرف'
-                ),
-            }),
-        })
-    ),
+    // services: Yup.array().of(
+    //     Yup.object().shape({
+    //         serviceType: Yup.string().oneOf(
+    //             ['polish', 'protection', 'insulator', 'additions'],
+    //             'نوع الخدمة يجب أن يكون أحد الخيارات المتاحة'
+    //         ),
+
+    //         // حقول عامة
+    //         dealDetails: Yup.string().max(
+    //             500,
+    //             'يجب ألا تتجاوز تفاصيل الاتفاق 500 حرف'
+    //         ),
+    //         servicePrice: Yup.number().min(0, 'لا يمكن أن يكون السعر أقل من 0'),
+    //         serviceDate: Yup.string().matches(
+    //             /^\d{4}-\d{2}-\d{2}$/,
+    //             'تاريخ الخدمة يجب أن يكون بتنسيق YYYY-MM-DD'
+    //         ),
+
+    //         // حقول خاصة بخدمة الحماية
+    //         protectionFinish: Yup.string().when('serviceType', {
+    //             is: (value: string) => value === 'protection',
+    //             then: Yup.string()
+    //                 .required('درجة اللمعان مطلوبة')
+    //                 .oneOf(
+    //                     ['glossy', 'matte', 'colored'],
+    //                     'درجة اللمعان يجب أن تكون أحد الخيارات المتاحة'
+    //                 ),
+    //         }),
+
+    //         protectionSize: Yup.string().when(
+    //             ['serviceType', 'protectionFinish'],
+    //             {
+    //                 is: (serviceType: string, protectionFinish: string) =>
+    //                     serviceType === 'protection' &&
+    //                     protectionFinish === 'glossy',
+    //                 then: Yup.string()
+    //                     .required('حجم الفيلم مطلوب')
+    //                     .oneOf(
+    //                         ['10', '7.5'],
+    //                         'حجم الفيلم يجب أن يكون 10 مل أو 7.5 مل'
+    //                     ),
+    //             }
+    //         ),
+
+    //         protectionCoverage: Yup.string().when('serviceType', {
+    //             is: (value: string) => value === 'protection',
+    //             then: Yup.string()
+    //                 .required('نوع التغطية مطلوب')
+    //                 .oneOf(
+    //                     ['full', 'half', 'quarter', 'edges', 'other'],
+    //                     'نوع التغطية يجب أن يكون أحد الخيارات المتاحة'
+    //                 ),
+    //         }),
+
+    //         // حقول خاصة بخدمة العازل الحراري
+    //         insulatorType: Yup.string().when('serviceType', {
+    //             is: (value: string) => value === 'insulator',
+    //             then: Yup.string()
+    //                 .required('نوع العازل مطلوب')
+    //                 .oneOf(
+    //                     ['ceramic', 'carbon', 'crystal'],
+    //                     'نوع العازل يجب أن يكون أحد الخيارات المتاحة'
+    //                 ),
+    //         }),
+
+    //         insulatorCoverage: Yup.string().when('serviceType', {
+    //             is: (value: string) => value === 'insulator',
+    //             then: Yup.string()
+    //                 .required('نطاق التغطية مطلوب')
+    //                 .oneOf(
+    //                     ['full', 'half', 'piece', 'shield', 'external'],
+    //                     'نطاق التغطية يجب أن يكون أحد الخيارات المتاحة'
+    //                 ),
+    //         }),
+
+    //         // حقول خاصة بخدمة التلميع
+    //         polishType: Yup.string().when('serviceType', {
+    //             is: (value: string) => value === 'polish',
+    //             then: Yup.string()
+    //                 .required('نوع التلميع مطلوب')
+    //                 .oneOf(
+    //                     [
+    //                         'external',
+    //                         'internal',
+    //                         'seats',
+    //                         'piece',
+    //                         'water_polish',
+    //                     ],
+    //                     'نوع التلميع يجب أن يكون أحد الخيارات المتاحة'
+    //                 ),
+    //         }),
+
+    //         polishSubType: Yup.string().when(['serviceType', 'polishType'], {
+    //             is: (serviceType: string, polishType: string) =>
+    //                 serviceType === 'polish' && polishType === 'external',
+    //             then: Yup.string()
+    //                 .required('مستوى التلميع مطلوب')
+    //                 .oneOf(
+    //                     ['1', '2', '3'],
+    //                     'مستوى التلميع يجب أن يكون 1 أو 2 أو 3'
+    //                 ),
+    //         }),
+
+    //         // حقول خاصة بخدمة الإضافات
+    //         additionType: Yup.string().when('serviceType', {
+    //             is: (value: string) => value === 'additions',
+    //             then: Yup.string()
+    //                 .required('نوع الإضافة مطلوب')
+    //                 .oneOf(
+    //                     [
+    //                         'detailed_wash',
+    //                         'premium_wash',
+    //                         'leather_pedals',
+    //                         'blackout',
+    //                         'nano_interior_decor',
+    //                         'nano_interior_seats',
+    //                     ],
+    //                     'نوع الإضافة يجب أن يكون أحد الخيارات المتاحة'
+    //                 ),
+    //         }),
+
+    //         washScope: Yup.string().when(['serviceType', 'additionType'], {
+    //             is: (serviceType: string, additionType: string) =>
+    //                 serviceType === 'additions' &&
+    //                 ['detailed_wash', 'premium_wash'].includes(additionType),
+    //             then: Yup.string()
+    //                 .required('نطاق الغسيل مطلوب')
+    //                 .oneOf(
+    //                     ['full', 'external_only', 'internal_only', 'engine'],
+    //                     'نطاق الغسيل يجب أن يكون أحد الخيارات المتاحة'
+    //                 ),
+    //         }),
+
+    //         guarantee: Yup.object().shape({
+    //             typeGuarantee: Yup.string(),
+    //             startDate: Yup.string()
+    //                 .matches(
+    //                     /^\d{4}-\d{2}-\d{2}$/,
+    //                     'تاريخ البدء يجب أن يكون بتنسيق YYYY-MM-DD'
+    //                 )
+    //                 .test(
+    //                     'is-future-or-today',
+    //                     'تاريخ البدء يجب أن يكون اليوم أو في المستقبل',
+    //                     function (value) {
+    //                         if (!value) return true
+    //                         const today = new Date().setHours(0, 0, 0, 0)
+    //                         const inputDate = new Date(value).setHours(
+    //                             0,
+    //                             0,
+    //                             0,
+    //                             0
+    //                         )
+    //                         return inputDate >= today
+    //                     }
+    //                 ),
+    //             endDate: Yup.string()
+    //                 .matches(
+    //                     /^\d{4}-\d{2}-\d{2}$/,
+    //                     'يجب أن يكون تاريخ الانتهاء بصيغة YYYY-MM-DD'
+    //                 )
+    //                 .test(
+    //                     'is-after-start-date',
+    //                     'لا يمكن أن يكون تاريخ الانتهاء قبل تاريخ البدء',
+    //                     function (value) {
+    //                         if (!value) return true
+    //                         const { startDate } = this.parent
+    //                         if (!startDate || !value) return true
+    //                         return new Date(value) >= new Date(startDate)
+    //                     }
+    //                 ),
+    //             terms: Yup.string().max(200, 'يجب ألا تتجاوز الشروط 200 حرف'),
+    //             Notes: Yup.string().max(
+    //                 200,
+    //                 'يجب ألا تتجاوز الملاحظات 200 حرف'
+    //             ),
+    //         }),
+    //     })
+    // ),
 })
 
 type ClientFormProps = {
@@ -437,6 +508,7 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                 validationSchema={validationSchema}
                 onSubmit={(values, { setSubmitting }) => {
                     let data = cloneDeep(values)
+                      console.log('Form values:', values);
 
                     // تحويل تواريخ الضمان
                     data.services = data.services?.map((service: any) => {
@@ -482,8 +554,12 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                 />
 
                                 {/* Services and Guarantees Sections */}
-                                <h5 className="mt-8 text-lg font-semibold">الخدمات والضمانات</h5>
-                                <p className="mb-6 text-sm text-gray-500">قسم لإعداد الخدمات والضمانات المقدمة للعميل</p>
+                                <h5 className="mt-8 text-lg font-semibold">
+                                    الخدمات والضمانات
+                                </h5>
+                                <p className="mb-6 text-sm text-gray-500">
+                                    قسم لإعداد الخدمات والضمانات المقدمة للعميل
+                                </p>
 
                                 {values.services?.map((service, index) => (
                                     <div
@@ -501,7 +577,10 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                     type="button"
                                                     icon={<HiOutlineTrash />}
                                                     onClick={() =>
-                                                        removeService(form, index)
+                                                        removeService(
+                                                            form,
+                                                            index
+                                                        )
                                                     }
                                                 >
                                                     حذف الخدمة

@@ -150,25 +150,14 @@ const ClientFields = (props: ClientFieldsProps) => {
                 size="sm"
                 placeholder="05xxxxxxxx"
                 onChange={(e) => {
-                    let value = e.target.value
-                    // إذا كان الحقل فارغاً أو المستخدم يحاول إدخال رقم يبدأ بـ 5
-                    if (value.length === 0 || (value.length === 1 && value === '5')) {
-                        value = '05' + value.substring(1)
+                    let value = e.target.value.replace(/\D/g, '') // Remove non-digits
+                    if (value.length > 0 && !value.startsWith('05')) {
+                        value = '05' + value.substring(2)
                     }
-                    // التأكد من أن القيمة تبدأ بـ 05
-                    if (!value.startsWith('05') && value.length > 0) {
-                        value = '05' + value
+                    if (value.length > 10) {
+                        value = value.substring(0, 10)
                     }
                     form.setFieldValue(field.name, value)
-                }}
-                onBlur={(e) => {
-                    let value = e.target.value
-                    // إذا كان الحقل يحتوي على أقل من 10 أرقام (بما في ذلك 05)
-                    if (value.length > 0 && value.length < 10) {
-                        form.setFieldTouched(field.name, true)
-                        form.setFieldError(field.name, 'يجب أن يتكون رقم الهاتف من 10 أرقام')
-                    }
-                    field.onBlur(e)
                 }}
             />
         )}

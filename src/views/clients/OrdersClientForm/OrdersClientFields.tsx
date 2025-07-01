@@ -62,95 +62,37 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
         { header: 'نوع السيارة', accessorKey: 'carType' },
         { header: 'موديل السيارة', accessorKey: 'carModel' },
         { header: 'لون السيارة', accessorKey: 'carColor' },
-        {
-            header: 'مدة الضمان',
-            accessorKey: 'guarantee.typeGuarantee',
-            cell: (props) => (
-                props.row.original.guarantee?.length > 0 ? 
-                    props.row.original.guarantee[0].typeGuarantee : 
-                    '-'
-            )
-        },
-        {
-            header: 'حالة الضمان',
-            accessorKey: 'guarantee.status',
-            cell: (props) => (
-                props.row.original.guarantee?.length > 0 ? (
-                    <Badge color={props.row.original.guarantee[0].status === 'active' ? 'emerald' : 'red'}>
-                        {props.row.original.guarantee[0].status === 'active' ? 'مفعل' : 'غير مفعل'}
-                    </Badge>
-                ) : (
-                    <span className="text-gray-400">لا يوجد</span>
-                )
-            )
-        },
-        {
-            header: 'تاريخ بدء الضمان',
-            accessorKey: 'guarantee.startDate',
-            cell: (props) => (
-                props.row.original.guarantee?.length > 0 ? 
-                    formatDate(props.row.original.guarantee[0].startDate) : 
-                    '-'
-            )
-        },
-        {
-            header: 'تاريخ انتهاء الضمان',
-            accessorKey: 'guarantee.endDate',
-            cell: (props) => (
-                props.row.original.guarantee?.length > 0 ? 
-                    formatDate(props.row.original.guarantee[0].endDate) : 
-                    '-'
-            )
-        },
-        {
-            header: 'الضمانات',
-            accessorKey: 'guarantee',
-            cell: (props) => (
-                <div className="flex gap-1">
-                    {props.row.original.guarantee?.length > 0 ? (
-                        <>
-                            <GuaranteePdfExport guarantees={props.row.original.guarantee} />
-                            <Badge>
-                                {props.row.original.guarantee.length} ضمان
-                            </Badge>
-                        </>
-                    ) : (
-                        <span className="text-gray-400">لا يوجد</span>
-                    )}
-                </div>
-            )
-        },
-        {
-            header: 'الإجراءات',
-            accessorKey: 'actions',
-            cell: (props) => (
-                <div className="flex gap-2">
-                    <Button
-                        size="xs"
-                        variant="solid"
-                        onClick={() => setAddGuaranteeDialogOpen(true)}
-                        icon={<HiPlusCircle />}
-                    >
-                        إضافة ضمان
-                    </Button>
-                    {props.row.original.guarantee?.length > 0 && (
-                        <Button
-                            size="xs"
-                            variant="twoTone"
-                            onClick={() => openChangeGuaranteeStatusDialog(
-                                props.row.original._id,
-                                props.row.original.guarantee[0]._id,
-                                props.row.original.guarantee[0].status
-                            )}
-                            color={props.row.original.guarantee[0].status === 'active' ? 'red-600' : 'green-600'}
-                            icon={props.row.original.guarantee[0].status === 'active' ? <HiXCircle /> : <HiCheckCircle />}
-                        >
-                            {props.row.original.guarantee[0].status === 'active' ? 'إلغاء التفعيل' : 'تفعيل'}
-                        </Button>
-                    )}
-                </div>
-            )
-        }
+        // {
+        //     header: 'الإجراءات',
+        //     accessorKey: 'actions',
+        //     cell: (props) => (
+        //         <div className="flex gap-2">
+        //             <Button
+        //                 size="xs"
+        //                 variant="solid"
+        //                 onClick={() => setAddGuaranteeDialogOpen(true)}
+        //                 icon={<HiPlusCircle />}
+        //             >
+        //                 إضافة ضمان
+        //             </Button>
+        //             {props.row.original.guarantee?.length > 0 && (
+        //                 <Button
+        //                     size="xs"
+        //                     variant="twoTone"
+        //                     onClick={() => openChangeGuaranteeStatusDialog(
+        //                         props.row.original._id,
+        //                         props.row.original.guarantee[0]._id,
+        //                         props.row.original.guarantee[0].status
+        //                     )}
+        //                     color={props.row.original.guarantee[0].status === 'active' ? 'red-600' : 'green-600'}
+        //                     icon={props.row.original.guarantee[0].status === 'active' ? <HiXCircle /> : <HiCheckCircle />}
+        //                 >
+        //                     {props.row.original.guarantee[0].status === 'active' ? 'إلغاء التفعيل' : 'تفعيل'}
+        //                 </Button>
+        //             )}
+        //         </div>
+        //     )
+        // }
     ]
 
     return (

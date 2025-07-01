@@ -24,7 +24,7 @@ const ClientsTableSearch = () => {
             ref={searchInput}
             className="max-w-md md:w-52 md:mb-0 mb-4"
             size="sm"
-            placeholder="ابحث باسم العميل أو رقم الهاتف"
+            placeholder="ابحث باسم العميل أو الهاتف"
             prefix={<HiOutlineSearch className="text-lg" />}
             onChange={onEdit}
         />
