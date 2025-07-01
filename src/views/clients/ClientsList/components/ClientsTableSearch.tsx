@@ -2,36 +2,20 @@ import { useRef } from 'react'
 import Input from '@/components/ui/Input'
 import { HiOutlineSearch } from 'react-icons/hi'
 import debounce from 'lodash/debounce'
-import cloneDeep from 'lodash/cloneDeep'
-import type { ChangeEvent } from 'react'
-import { useAppSelector, useAppDispatch, setTableData, getClients } from '../store'
+import { useAppDispatch, setTableData } from '../store'
 
 const ClientsTableSearch = () => {
     const dispatch = useAppDispatch()
     const searchInput = useRef(null)
 
-    const tableData = useAppSelector(
-        (state) => state.clientsListSlice.data.tableData
-    )
-
-    const debounceFn = debounce(handleDebounceFn, 500)
-
-    function handleDebounceFn(val: string) {
-        const newTableData = cloneDeep(tableData)
-        newTableData.query = val
-        newTableData.pageIndex = 1
-        
-        dispatch(setTableData(newTableData))
-        dispatch(getClients({
-            limit: newTableData.limit,
-            offset: (newTableData.pageIndex - 1) * newTableData.limit,
-            search: val || undefined,
-            branch: newTableData.branchFilter || undefined,
-            last50Orders: newTableData.last50Orders || undefined
+    const debounceFn = debounce((val: string) => {
+        dispatch(setTableData({ 
+            query: val,
+            pageIndex: 1
         }))
-    }
+    }, 500)
 
-    const onEdit = (e: ChangeEvent<HTMLInputElement>) => {
+    const onEdit = (e: React.ChangeEvent<HTMLInputElement>) => {
         debounceFn(e.target.value)
     }
 

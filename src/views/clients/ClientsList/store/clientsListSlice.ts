@@ -62,6 +62,14 @@ const clientsListSlice = createSlice({
                 ...action.payload
             }
         },
+        resetFilters: (state) => {
+            state.tableData = {
+                ...initialState.tableData,
+                pageIndex: 1,
+                limit: state.tableData.limit,
+                total: state.tableData.total
+            }
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -79,5 +87,5 @@ const clientsListSlice = createSlice({
     },
 })
 
-export const { setTableData } = clientsListSlice.actions
+export const { setTableData, resetFilters } = clientsListSlice.actions
 export default clientsListSlice.reducer

@@ -3,7 +3,7 @@ import { HiPlusCircle } from 'react-icons/hi'
 import ClientsTableSearch from './ClientsTableSearch'
 import { Link } from 'react-router-dom'
 import { Select } from '@/components/ui'
-import { useAppDispatch, setTableData } from '../store'
+import { useAppDispatch, setTableData, resetFilters } from '../store'
 
 export const ClientsTableTools = () => {
     const dispatch = useAppDispatch()
@@ -15,11 +15,26 @@ export const ClientsTableTools = () => {
         { label: 'أخرى', value: 'اخرى' },
     ]
 
+    const sortOptions = [
+        { label: 'الأحدث أولاً', value: 'desc' },
+        { label: 'الأقدم أولاً', value: 'asc' },
+    ]
+
     const handleBranchFilter = (branch: string) => {
         dispatch(setTableData({ 
             branchFilter: branch,
             pageIndex: 1,
-            last50Orders: false // إلغاء فلترة آخر 50 عند تغيير الفرع
+            last50Orders: false
+        }))
+    }
+
+    const handleSortChange = (sortValue: string) => {
+        dispatch(setTableData({
+            sort: {
+                order: sortValue as '' | 'asc' | 'desc',
+                key: 'createdAt'
+            },
+            pageIndex: 1
         }))
     }
 
@@ -27,42 +42,55 @@ export const ClientsTableTools = () => {
         dispatch(setTableData({ 
             last50Orders: true,
             pageIndex: 1,
-            branchFilter: '' // إلغاء فلترة الفرع عند عرض آخر 50
+            branchFilter: ''
         }))
     }
 
+    const handleResetAllFilters = () => {
+        dispatch(resetFilters())
+    }
+
     return (
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-5">
-            <h4 className="text-2xl text-bold mb-3 lg:mb-0">جدول المبيعات</h4>
-            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-5 gap-3">
+            <h4 className="text-2xl font-bold">جدول المبيعات</h4>
+            
+            <div className="flex flex-col lg:flex-row items-center gap-3 w-full lg:w-auto">
                 <ClientsTableSearch />
                 
                 <Select
                     size="sm"
-                    placeholder="تصفية حسب الفرع"
+                    placeholder="الفرع"
                     options={branchOptions}
                     onChange={(option) => handleBranchFilter(option?.value || '')}
+                    className="min-w-[120px]"
                 />
                 
-                <Button
+                <Select
                     size="sm"
-                    variant="twoTone"
-                    onClick={handleLast50Orders}
-                >
-                    عرض آخر 50 طلب
-                </Button>
-
-                <Link
-                    className="block lg:inline-block md:mb-0 mb-4"
-                    to="/clients/create-client"
-                >
+                    placeholder="ترتيب حسب"
+                    options={sortOptions}
+                    onChange={(option) => handleSortChange(option?.value || '')}
+                    className="min-w-[150px]"
+                />
+                
+                <div className="flex gap-2">
+                    <Button
+                        size="sm"
+                        variant="plain"
+                        onClick={handleResetAllFilters}
+                    >
+                        إعادة تعيين
+                    </Button>
+                </div>
+                
+                <Link to="/clients/create-client" className="w-full lg:w-auto">
                     <Button
                         block
                         variant="solid"
                         size="sm"
                         icon={<HiPlusCircle />}
                     >
-                        انشاء عميل
+                        عميل جديد
                     </Button>
                 </Link>
             </div>

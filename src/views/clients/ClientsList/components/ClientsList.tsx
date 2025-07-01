@@ -6,11 +6,9 @@ import type {
     ColumnDef,
     OnSortParam,
 } from '@/components/shared/DataTable'
-import cloneDeep from 'lodash/cloneDeep'
 import { Client } from '@/@types/clients'
 import {
     getClients,
-    setTableData,
     useAppDispatch,
     useAppSelector,
 } from '../store'
@@ -31,18 +29,14 @@ const ClientsTable = () => {
         (state) => state.clientsListSlice.data.clientList
     )
 
-    const tableData = useMemo(
-        () => ({ pageIndex, limit, sort, query, total, branchFilter, last50Orders }),
-        [pageIndex, limit, sort, query, total, branchFilter, last50Orders]
-    )
-
     useEffect(() => {
         const params: any = {
             limit,
             offset: (pageIndex - 1) * limit,
             search: query || undefined,
             branch: branchFilter || undefined,
-            last50Orders: last50Orders || undefined
+            last50Orders: last50Orders || undefined,
+            sort: sort.order ? `${sort.key}:${sort.order}` : undefined
         }
 
         dispatch(getClients(params))
@@ -77,7 +71,7 @@ const ClientsTable = () => {
                 accessorKey: 'createdAt',
                 cell: (props) =>
                     new Date(props.row.original.createdAt).toLocaleString(),
-                sortable: false,
+                sortable: true,
             },
             {
                 header: 'تاريخ التحديث',
@@ -90,28 +84,6 @@ const ClientsTable = () => {
         []
     )
 
-    const onPaginationChange = (page: number) => {
-        const newTableData = cloneDeep(tableData)
-        newTableData.pageIndex = page
-        dispatch(setTableData(newTableData))
-    }
-
-    const onSelectChange = (value: number) => {
-        const newTableData = cloneDeep(tableData)
-        newTableData.limit = Number(value)
-        newTableData.pageIndex = 1
-        dispatch(setTableData(newTableData))
-    }
-
-    const onSort = (sort: OnSortParam) => {
-        const newTableData = cloneDeep(tableData)
-        newTableData.sort = {
-            order: sort.order,
-            key: String(sort.key),
-        }
-        dispatch(setTableData(newTableData))
-    }
-
     return (
         <>
             <ClientsTableTools />
@@ -121,13 +93,27 @@ const ClientsTable = () => {
                 data={clientList}
                 loading={loading}
                 pagingData={{
-                    total: tableData.total,
-                    pageIndex: tableData.pageIndex,
-                    pageSize: tableData.limit,
+                    total: total,
+                    pageIndex: pageIndex,
+                    pageSize: limit,
                 }}
-                onPaginationChange={onPaginationChange}
-                onSelectChange={onSelectChange}
-                onSort={onSort}
+                onPaginationChange={(page) => 
+                    dispatch(setTableData({ pageIndex: page }))
+                }
+                onSelectChange={(value) => 
+                    dispatch(setTableData({ 
+                        limit: Number(value),
+                        pageIndex: 1 
+                    }))
+                }
+                onSort={(sort) => 
+                    dispatch(setTableData({ 
+                        sort: {
+                            order: sort.order,
+                            key: String(sort.key)
+                        }
+                    }))
+                }
                 onRowClick={(row) => navigate(`/clients/${row.original._id}`)}
             />
         </>
