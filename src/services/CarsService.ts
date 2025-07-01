@@ -42,7 +42,7 @@ interface GetCarTypesResponse {
 //     return axios.get('/car-types', { params })
 // }
 
-export async function apiGetCarTypes(params: {
+export async function apiGetCars(params: {
     limit: number
     offset: number
     search?: string
