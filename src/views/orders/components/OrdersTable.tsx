@@ -8,6 +8,7 @@ import type {
 import { getOrders, useAppDispatch, useAppSelector } from '../store'
 import OrdersTableTools from './OrdersTableTools'
 import { Order, Service } from '@/@types/order'
+import { setTableData } from '@/views/orders/store/ordersListSlice'
 
 const OrdersTable = () => {
     const tableRef = useRef<DataTableResetHandle>(null)
