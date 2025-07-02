@@ -7,11 +7,7 @@ import type {
     OnSortParam,
 } from '@/components/shared/DataTable'
 import { Client } from '@/@types/clients'
-import {
-    getClients,
-    useAppDispatch,
-    useAppSelector,
-} from '../store'
+import { getClients, useAppDispatch, useAppSelector } from '../store'
 import ClientsTableTools from './ClientsTableTools'
 
 const ClientsTable = () => {
@@ -19,7 +15,7 @@ const ClientsTable = () => {
     const dispatch = useAppDispatch()
     const navigate = useNavigate()
 
-    const { pageIndex, limit, sort, query, total, branchFilter, last50Orders } =
+    const { pageIndex, limit, sort, query, total, branchFilter } =
         useAppSelector((state) => state.clientsListSlice.data.tableData)
 
     const loading = useAppSelector(
@@ -35,12 +31,11 @@ const ClientsTable = () => {
             offset: (pageIndex - 1) * limit,
             search: query || undefined,
             branch: branchFilter || undefined,
-            last50Orders: last50Orders || undefined,
-            sort: sort.order ? `${sort.key}:${sort.order}` : undefined
+            sort: sort.order || undefined, // أرسل فقط القيمة (asc/desc) بدون مفتاح
         }
 
         dispatch(getClients(params))
-    }, [pageIndex, limit, sort, query, branchFilter, last50Orders, dispatch])
+    }, [pageIndex, limit, sort, query, branchFilter, dispatch])
 
     const columns: ColumnDef<Client>[] = useMemo(
         () => [
@@ -59,11 +54,21 @@ const ClientsTable = () => {
                 accessorKey: 'lastName',
                 sortable: false,
             },
-            { header: 'الايميل', accessorKey: 'email', sortable: false },
             {
                 header: 'نوع العميل',
                 accessorKey: 'clientType',
                 sortable: false,
+            },
+            {
+                header: 'نوع السيارة',
+                accessorKey: 'carType',
+                sortable: false,
+                cell: (props) => {
+                    const orders = props.row.original.orders
+                    return orders && orders.length > 0
+                        ? orders[0].carType
+                        : 'لا يوجد'
+                },
             },
             { header: 'الهاتف', accessorKey: 'phone', sortable: false },
             {
@@ -97,22 +102,26 @@ const ClientsTable = () => {
                     pageIndex: pageIndex,
                     pageSize: limit,
                 }}
-                onPaginationChange={(page) => 
+                onPaginationChange={(page) =>
                     dispatch(setTableData({ pageIndex: page }))
                 }
-                onSelectChange={(value) => 
-                    dispatch(setTableData({ 
-                        limit: Number(value),
-                        pageIndex: 1 
-                    }))
+                onSelectChange={(value) =>
+                    dispatch(
+                        setTableData({
+                            limit: Number(value),
+                            pageIndex: 1,
+                        })
+                    )
                 }
-                onSort={(sort) => 
-                    dispatch(setTableData({ 
-                        sort: {
-                            order: sort.order,
-                            key: String(sort.key)
-                        }
-                    }))
+                onSort={(sort) =>
+                    dispatch(
+                        setTableData({
+                            sort: {
+                                order: sort.order,
+                                key: '',
+                            },
+                        })
+                    )
                 }
                 onRowClick={(row) => navigate(`/clients/${row.original._id}`)}
             />

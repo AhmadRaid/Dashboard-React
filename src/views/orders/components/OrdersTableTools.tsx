@@ -1,18 +1,18 @@
 import Button from '@/components/ui/Button'
 import { HiPlusCircle } from 'react-icons/hi'
-import ClientsTableSearch from './ClientsTableSearch'
+import OrdersTableSearch from './OrdersTableSearch'
 import { Link } from 'react-router-dom'
 import { Select } from '@/components/ui'
 import { useAppDispatch, setTableData, resetFilters } from '../store'
 
-export const ClientsTableTools = () => {
+export const OrdersTableTools = () => {
     const dispatch = useAppDispatch()
 
-    const branchOptions = [
-        { label: 'جميع الفروع', value: '' },
-        { label: 'فرع المدينة', value: 'عملاء فرع المدينة' },
-        { label: 'فرع أبحر', value: 'عملاء فرع ابحر' },
-        { label: 'أخرى', value: 'اخرى' },
+    const statusOptions = [
+        { label: 'جميع الحالات', value: '' },
+        { label: 'نشط', value: 'active' },
+        { label: 'مكتمل', value: 'completed' },
+        { label: 'غير مكتمل', value: 'incomplete' },
     ]
 
     const sortOptions = [
@@ -20,9 +20,9 @@ export const ClientsTableTools = () => {
         { label: 'الأقدم أولاً', value: 'asc' },
     ]
 
-    const handleBranchFilter = (branch: string) => {
+    const handleStatusFilter = (status: string) => {
         dispatch(setTableData({ 
-            branchFilter: branch,
+            statusFilter: status,
             pageIndex: 1,
         }))
     }
@@ -31,12 +31,11 @@ export const ClientsTableTools = () => {
         dispatch(setTableData({
             sort: {
                 order: sortValue as '' | 'asc' | 'desc',
-                key: ''
+                key: 'createdAt'
             },
             pageIndex: 1
         }))
     }
-
 
     const handleResetAllFilters = () => {
         dispatch(resetFilters())
@@ -44,17 +43,17 @@ export const ClientsTableTools = () => {
 
     return (
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-5 gap-3">
-            <h4 className="text-2xl font-bold">جدول العملاء</h4>
+            <h4 className="text-2xl font-bold">جدول الطلبات</h4>
             
             <div className="flex flex-col lg:flex-row items-center gap-3 w-full lg:w-auto">
-                <ClientsTableSearch />
+                <OrdersTableSearch />
                 
                 <Select
                     size="sm"
-                    placeholder="الفرع"
-                    options={branchOptions}
-                    onChange={(option) => handleBranchFilter(option?.value || '')}
-                    className="min-w-[120px]"
+                    placeholder="حالة الطلب"
+                    options={statusOptions}
+                    onChange={(option) => handleStatusFilter(option?.value || '')}
+                    className="min-w-[150px]"
                 />
                 
                 <Select
@@ -65,14 +64,14 @@ export const ClientsTableTools = () => {
                     className="min-w-[150px]"
                 />
                 
-                <Link to="/clients/create-client" className="w-full lg:w-auto">
+                <Link to="/orders/create-order" className="w-full lg:w-auto">
                     <Button
                         block
                         variant="solid"
                         size="sm"
                         icon={<HiPlusCircle />}
                     >
-                        عميل جديد
+                        طلب جديد
                     </Button>
                 </Link>
             </div>
@@ -80,4 +79,4 @@ export const ClientsTableTools = () => {
     )
 }
 
-export default ClientsTableTools
+export default OrdersTableTools

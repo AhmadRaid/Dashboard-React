@@ -3,7 +3,7 @@ export interface GetClientsParams {
     limit: number
     search?: string
     branch?: string
-    last50Orders?: boolean
+    sort?:string
 }
 
 export type Client = {

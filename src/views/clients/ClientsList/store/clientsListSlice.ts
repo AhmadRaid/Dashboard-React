@@ -18,7 +18,6 @@ interface TableData {
         key: string
     }
     branchFilter: string
-    last50Orders: boolean
 }
 
 export interface ClientsListState {
@@ -40,7 +39,6 @@ const initialState: ClientsListState = {
             key: '',
         },
         branchFilter: '',
-        last50Orders: false
     },
 }
 
