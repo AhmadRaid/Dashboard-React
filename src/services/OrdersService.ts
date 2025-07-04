@@ -1,12 +1,16 @@
 import { GetOrdersParams, GetOrdersResponse, Order } from '@/@types/order'
 import axios from 'axios'
+import ApiService from './ApiService'
 
-export const apiGetOrders = async (params: GetOrdersParams) => {
-    const response = await axios.get<GetOrdersResponse>('/orders', { params })
-    return response
+export async function apiGetOrders() {
+    return ApiService.fetchData<GetOrdersResponse>({
+        url: '/orders',
+        method: 'get',
+    })
 }
-
-export const apiGetOrderDetails = async (id: string) => {
-    const response = await axios.get<{ data: Order }>(`/orders/${id}`)
-    return response
+export async function apiGetClientOrders() {
+    return ApiService.fetchData<GetOrdersResponse>({
+        url: '/client/:clientId',
+        method: 'get',
+    })
 }

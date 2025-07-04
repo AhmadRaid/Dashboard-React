@@ -34,6 +34,7 @@ interface CustomStore extends Store<RootState, AnyAction> {
     asyncReducers?: AsyncReducers
 }
 
+
 const store: CustomStore = configureStore({
     reducer: persistReducer(persistConfig, rootReducer() as Reducer),
     middleware: (getDefaultMiddleware) =>

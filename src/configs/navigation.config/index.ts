@@ -110,9 +110,9 @@ const navigationConfig: NavigationTree[] = [
         authority: [],
         subMenu: [
             {
-                key: 'servicesSales.createInvoice',
-                path: '/sales/create-invoice',
-                title: 'إنشاء فاتورة',
+                key: 'order.orderList',
+                path: '/orders',
+                title: 'قائمة الخدمات والمبيعات',
                 translateKey: 'nav.servicesSales.createInvoice',
                 icon: 'invoice',
                 type: NAV_ITEM_TYPE_ITEM,

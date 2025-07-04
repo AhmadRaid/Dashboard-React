@@ -97,31 +97,50 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
 
     return (
         <>
-<AdaptableCard divider className="mb-4 w-full">
+            <AdaptableCard divider className="mb-4 w-full">
                 <h5 className="mb-4">معلومات العميل الأساسية</h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     <div className="border rounded p-4">
-                        <h6 className="text-sm font-medium text-gray-500 mb-2">الاسم الكامل</h6>
-                        <p>{values.firstName} {values.middleName} {values.lastName}</p>
+                        <h6 className="text-sm font-medium text-gray-500 mb-2">
+                            الاسم الكامل
+                        </h6>
+                        <p>
+                            {values.firstName} {values.middleName}{' '}
+                            {values.lastName}
+                        </p>
                     </div>
                     <div className="border rounded p-4">
-                        <h6 className="text-sm font-medium text-gray-500 mb-2">البريد الإلكتروني</h6>
+                        <h6 className="text-sm font-medium text-gray-500 mb-2">
+                            البريد الإلكتروني
+                        </h6>
                         <p>{values.email || '-'}</p>
                     </div>
                     <div className="border rounded p-4">
-                        <h6 className="text-sm font-medium text-gray-500 mb-2">رقم الهاتف</h6>
+                        <h6 className="text-sm font-medium text-gray-500 mb-2">
+                            رقم الهاتف
+                        </h6>
                         <p>{values.phone || '-'}</p>
                     </div>
                     <div className="border rounded p-4">
-                        <h6 className="text-sm font-medium text-gray-500 mb-2">نوع العميل</h6>
-                        <p>{values.clientType === 'individual' ? 'فردي' : 'شركة'}</p>
+                        <h6 className="text-sm font-medium text-gray-500 mb-2">
+                            نوع العميل
+                        </h6>
+                        <p>
+                            {values.clientType === 'individual'
+                                ? 'فردي'
+                                : 'شركة'}
+                        </p>
                     </div>
                     <div className="border rounded p-4">
-                        <h6 className="text-sm font-medium text-gray-500 mb-2">تاريخ الإنشاء</h6>
+                        <h6 className="text-sm font-medium text-gray-500 mb-2">
+                            تاريخ الإنشاء
+                        </h6>
                         <p>{formatDate(values.createdAt)}</p>
                     </div>
                     <div className="border rounded p-4">
-                        <h6 className="text-sm font-medium text-gray-500 mb-2">إجمالي الطلبات</h6>
+                        <h6 className="text-sm font-medium text-gray-500 mb-2">
+                            إجمالي الطلبات
+                        </h6>
                         <p>{values.orderStats?.totalOrders || 0}</p>
                     </div>
                 </div>
@@ -134,7 +153,7 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                     disableSorting
                 />
             </AdaptableCard>
-
+            {/* 
             <CreateGurentee
                 dialogIsOpen={addGuaranteeDialogOpen}
                 setIsOpen={setAddGuaranteeDialogOpen}
@@ -146,7 +165,7 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                 gId={changeGuaranteeStatusDialog.guaranteeId}
                 dialogIsOpen={changeGuaranteeStatusDialog.open}
                 closeDialog={closeChangeGuaranteeStatusDialog}
-            />
+            /> */}
         </>
     )
 }

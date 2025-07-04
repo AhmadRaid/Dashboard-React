@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 
-import OrdersClientForm from '../OrdersClientForm'
+import OrdersClientForm from '../ClientProfile'
 import reducer, {
     getClientOrders,
     useAppDispatch,
@@ -10,7 +10,7 @@ import reducer, {
 import { injectReducer } from '@/store'
 import { Loading } from '@/components/shared'
 import ClientOrdersTools from './components/ClientOrdersTools'
-import CreateGurentee from '../OrdersClientForm/CreateGurentee'
+import CreateGurentee from '../ClientProfile/CreateGurentee'
 
 injectReducer('clientOrdersSlice', reducer)
 

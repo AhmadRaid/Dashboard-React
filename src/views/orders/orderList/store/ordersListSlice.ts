@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { apiGetOrders } from '@/services/OrdersService'
 import { GetOrdersParams, Order } from '@/@types/order'
+import { apiGetClientOrders } from '@/services/ClientsService'
 
 export const SLICE_NAME = 'ordersListSlice'
 
@@ -13,7 +14,6 @@ interface TableData {
         order: '' | 'asc' | 'desc'
         key: string
     }
-    statusFilter: string
 }
 
 export interface OrdersListState {
@@ -41,20 +41,24 @@ const initialState: OrdersListState = {
 }
 
 export const getOrders = createAsyncThunk(
-    `${SLICE_NAME}/getOrders`,
-    async (params: GetOrdersParams) => {
-        const response = await apiGetOrders(params)
-        return response.data
+    `${SLICE_NAME}/getOrdersList`,
+    async () => {
+        const response = await apiGetOrders()
+        return response?.data
     }
 )
 
-// export const getOrderDetails = createAsyncThunk(
-//     `${SLICE_NAME}/getOrderDetails`,
-//     async (id: string) => {
-//         const response = await apiGetOrderDetails(id)
-//         return response.data.data
-//     }
-// )
+export const getClientOrders = createAsyncThunk(
+    `${SLICE_NAME}/getClientOrders`,
+    async (clientId: string, { rejectWithValue }) => {
+        try {
+            const response = await apiGetClientOrders(clientId)
+            return response.data
+        } catch (error) {
+            return rejectWithValue(error)
+        }
+    }
+)
 
 const ordersListSlice = createSlice({
     name: SLICE_NAME,
@@ -63,7 +67,7 @@ const ordersListSlice = createSlice({
         setTableData: (state, action: PayloadAction<Partial<TableData>>) => {
             state.tableData = {
                 ...state.tableData,
-                ...action.payload
+                ...action.payload,
             }
         },
         resetFilters: (state) => {
@@ -71,7 +75,7 @@ const ordersListSlice = createSlice({
                 ...initialState.tableData,
                 pageIndex: 1,
                 limit: state.tableData.limit,
-                total: state.tableData.total
+                total: state.tableData.total,
             }
         },
         setSelectedOrder: (state, action: PayloadAction<Order | null>) => {
@@ -84,18 +88,36 @@ const ordersListSlice = createSlice({
                 state.loading = true
             })
             .addCase(getOrders.fulfilled, (state, action) => {
-                state.orderList = action.payload.data.orders
-                state.tableData.total = action.payload.data.pagination.totalOrders
+                console.log('action.payload', action.payload)
+
+                state.orderList = action.payload.data
                 state.loading = false
             })
             .addCase(getOrders.rejected, (state) => {
                 state.loading = false
             })
-            // .addCase(getOrderDetails.fulfilled, (state, action) => {
-            //     state.selectedOrder = action.payload
-            // })
+            .addCase(getClientOrders.pending, (state) => {
+                console.log('getClientOrderpppppppppppppppppp', action.payload)
+
+                state.loading = true
+            })
+            .addCase(getClientOrders.fulfilled, (state, action) => {
+                console.log('getClientOrdersssssssssssssssss', action.payload)
+
+                state.orderList = action.payload.data
+                state.loading = false
+            })
+            .addCase(getClientOrders.rejected, (state) => {
+                console.log(
+                    'getClientOrderrrrrrrrrrrrrrrrrrrrrrrrrrrrr',
+                    action.payload
+                )
+
+                state.loading = false
+            })
     },
 })
 
-export const { setTableData, resetFilters, setSelectedOrder } = ordersListSlice.actions
+export const { setTableData, resetFilters, setSelectedOrder } =
+    ordersListSlice.actions
 export default ordersListSlice.reducer

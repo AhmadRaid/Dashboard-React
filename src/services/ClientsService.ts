@@ -26,9 +26,9 @@ export async function apiCreateNewClient(data: CreateClient) {
     })
 }
 
-export async function apiGetClientOrders(orederId: string | undefined) {
+export async function apiGetClientOrders(clientId: string | undefined) {
     return ApiService.fetchData({
-        url: `/clients/${orederId}`,
+        url: `/clients/${clientId}`,
         method: 'get',
     })
 }

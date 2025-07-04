@@ -54,9 +54,6 @@ export interface GetOrdersParams {
 export interface GetOrdersResponse {
     data: {
         orders: Order[]
-        pagination: {
-            totalOrders: number
-        }
     }
     message: string
 }

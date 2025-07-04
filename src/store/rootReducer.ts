@@ -11,7 +11,6 @@ export type RootState = CombinedState<{
     base: CombinedState<BaseState>
     locale: LocaleState
     theme: ThemeState
-    ordersListSlice: OrdersListState
     /* eslint-disable @typescript-eslint/no-explicit-any */
     [RtkQueryService.reducerPath]: any
 }>
