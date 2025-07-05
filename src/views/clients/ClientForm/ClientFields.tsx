@@ -29,12 +29,12 @@ type ClientFieldsProps = {
 }
 
 const carSizeOptions = [
-    { label: 'صغير', value: 'small' },
-    { label: 'متوسط', value: 'medium' },
-    { label: 'كبير', value: 'large' },
-    { label: 'كبير جدا', value: 'X-large' },
-    { label: 'ضخم', value: 'huge' },
-]
+    { label: 'Small', value: 'small' },
+    { label: 'Medium', value: 'medium' },
+    { label: 'Large', value: 'large' },
+    { label: 'X-Large', value: 'X-large' },
+    { label: 'XX-Large', value: 'XX-Large' },
+];
 
 const branchOptions = [
     { label: 'عملاء فرع ابحر', value: 'عملاء فرع ابحر' },
@@ -258,19 +258,40 @@ const ClientFields = (props: ClientFieldsProps) => {
                     />
                 </FormItem>
 
-                <FormItem
-                    label="رقم لوحة السيارة"
-                    invalid={!!errors.carPlateNumber && !!touched.carPlateNumber}
-                    errorMessage={errors.carPlateNumber as string}
-                >
-                    <Field
-                        name="carPlateNumber"
+<FormItem
+    label="رقم لوحة السيارة"
+    invalid={!!errors.carPlateNumber && !!touched.carPlateNumber}
+    errorMessage={errors.carPlateNumber as string}
+>
+    <div className="flex gap-2">
+        {[...Array(8)].map((_, i) => (
+            <Field name={`carPlateNumber[${i}]`} key={i}>
+                {({ field }: FieldProps) => (
+                    <Input
+                        {...field}
                         type="text"
                         size="sm"
-                        placeholder="رقم لوحة السيارة"
-                        component={Input}
+                        maxLength={1}
+                        className="text-center w-10"
+                        onChange={(e) => {
+                            const value = e.target.value.toUpperCase()
+                            e.target.value = value
+                            field.onChange(e)
+                            
+                            // الانتقال للحقل التالي تلقائياً
+                            if (value && i < 7) {
+                                const nextInput = document.querySelector(
+                                    `input[name="carPlateNumber[${i + 1}]"]`
+                                ) as HTMLInputElement
+                                nextInput?.focus()
+                            }
+                        }}
                     />
-                </FormItem>
+                )}
+            </Field>
+        ))}
+    </div>
+</FormItem>
 
                 <FormItem
                     label="الشركة المصنعة"

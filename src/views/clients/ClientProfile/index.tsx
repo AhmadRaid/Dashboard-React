@@ -15,6 +15,7 @@ import {
 import * as Yup from 'yup'
 import OrdersClientFields from './OrdersClientFields'
 import { ClientWithOrdersData } from '@/@types/clients'
+import { useParams } from 'react-router-dom'
 
 export const validationSchema = Yup.object().shape({
     fullName: Yup.string().required('Full Name is required').min(2).max(100),
@@ -119,21 +120,30 @@ const OrdersClientForm = forwardRef<
         }
     )
 
+    const { clientId } = useParams<{ clientId: string }>()
     // وظائف التنقل للأزرار الجديدة
     const navigateToAddService = () => {
-        navigate(`/orders/add-service`)
+        if (!clientId) {
+            console.error('Client ID is missing')
+            return
+        }
+        navigate(`/orders/add-service/${clientId}`)
     }
 
-    const navigateToUpdateInquiry = () => {
-        navigate(`/clients/${initialValues._id}/update-inquiry`)
+    const navigateToUpdateProfile = () => {
+             if (!clientId) {
+            console.error('Client ID is missing')
+            return
+        }
+        navigate(`/clients/${clientId}/updateProfile`)
     }
 
     const navigateToFinancialReports = () => {
-        navigate(`/clients/${initialValues._id}/financial-reports`)
+        navigate(`/clients/${clientId}/financial-reports`)
     }
 
     const navigateToCustomerRating = () => {
-        navigate(`/clients/${initialValues._id}/customer-rating`)
+        navigate(`/clients/${clientId}/UpdateRating`)
     }
 
     return (
@@ -178,14 +188,13 @@ const OrdersClientForm = forwardRef<
                                         </span>
                                     </Button>
 
-                                    {/* زر تحديث/استفسار */}
                                     <Button
                                         type="button"
                                         variant="twoTone"
                                         icon={
                                             <AiOutlineSync className="text-lg" />
                                         }
-                                        onClick={navigateToUpdateInquiry}
+                                        onClick={navigateToUpdateProfile}
                                         className="text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-300 bg-blue-50 hover:bg-blue-100 shadow-sm hover:shadow-md transition-all duration-300"
                                         size="sm"
                                     >

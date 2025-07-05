@@ -15,8 +15,21 @@ export async function apiGetClients(params: GetClientsParams) {
     })
 }
 
-// ?search=
-// phone number or name
+export async function apiGetClientProfile(clientId: string) {
+    return ApiService.fetchData({
+        url: `/clients/${clientId}`, // Updated to use clientId directly
+        method: 'get',
+    })
+}
+
+export async function apiUpdateClient(clientId: string, data: any) {
+    return ApiService.fetchData({
+        url: `/clients/${clientId}`,
+        method: 'put',
+        data,
+    })
+}
+
 
 export async function apiCreateNewClient(data: CreateClient) {
     return ApiService.fetchData({

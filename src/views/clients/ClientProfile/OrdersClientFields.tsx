@@ -62,37 +62,25 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
         { header: 'نوع السيارة', accessorKey: 'carType' },
         { header: 'موديل السيارة', accessorKey: 'carModel' },
         { header: 'لون السيارة', accessorKey: 'carColor' },
-        // {
-        //     header: 'الإجراءات',
-        //     accessorKey: 'actions',
-        //     cell: (props) => (
-        //         <div className="flex gap-2">
-        //             <Button
-        //                 size="xs"
-        //                 variant="solid"
-        //                 onClick={() => setAddGuaranteeDialogOpen(true)}
-        //                 icon={<HiPlusCircle />}
-        //             >
-        //                 إضافة ضمان
-        //             </Button>
-        //             {props.row.original.guarantee?.length > 0 && (
-        //                 <Button
-        //                     size="xs"
-        //                     variant="twoTone"
-        //                     onClick={() => openChangeGuaranteeStatusDialog(
-        //                         props.row.original._id,
-        //                         props.row.original.guarantee[0]._id,
-        //                         props.row.original.guarantee[0].status
-        //                     )}
-        //                     color={props.row.original.guarantee[0].status === 'active' ? 'red-600' : 'green-600'}
-        //                     icon={props.row.original.guarantee[0].status === 'active' ? <HiXCircle /> : <HiCheckCircle />}
-        //                 >
-        //                     {props.row.original.guarantee[0].status === 'active' ? 'إلغاء التفعيل' : 'تفعيل'}
-        //                 </Button>
-        //             )}
-        //         </div>
-        //     )
-        // }
+        { 
+        header: 'الخدمات', 
+        accessorKey: 'services',
+        cell: (props) => {
+            const services = props.row.original.services;
+            return (
+                <div>
+                    {services.map((service: any, index: number) => (
+                        <div key={index}>
+                            {service.serviceType === 'protection' ? 'حماية' : 
+                             service.serviceType === 'polish' ? 'تلميع' : 
+                             service.serviceType}
+                        </div>
+                    ))}
+                </div>
+            )
+        }
+    },
+ 
     ]
 
     return (

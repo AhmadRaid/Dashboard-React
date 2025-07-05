@@ -8,9 +8,9 @@ export async function apiGetOrders() {
         method: 'get',
     })
 }
-export async function apiGetClientOrders() {
+export async function apiGetClientOrders(clientId:string) {
     return ApiService.fetchData<GetOrdersResponse>({
-        url: '/client/:clientId',
+        url: `/client/${clientId}`,
         method: 'get',
     })
 }

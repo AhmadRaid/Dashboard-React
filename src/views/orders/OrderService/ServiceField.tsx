@@ -1,11 +1,21 @@
 import AdaptableCard from '@/components/shared/AdaptableCard'
 import Input from '@/components/ui/Input'
 import { FormItem } from '@/components/ui/Form'
-import { Field, FormikErrors, FormikTouched, FieldProps } from 'formik'
+import {
+    Field,
+    FormikErrors,
+    FormikTouched,
+    FieldProps,
+    FormikProps,
+} from 'formik'
 import { Select } from '@/components/ui'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Button from '@/components/ui/Button'
 import { HiOutlineTrash, HiPlus } from 'react-icons/hi'
+import { getClientOrders } from '../orderList/store'
+import { useAppDispatch, useAppSelector } from '@/store'
+import { apiGetClientOrders } from '@/services/ClientsService'
+import { useParams } from 'react-router-dom'
 
 type Service = {
     id: string
@@ -46,6 +56,29 @@ type OrderServiceFieldsProps = {
 const OrderServiceFields = (props: OrderServiceFieldsProps) => {
     const { values, touched, errors, form } = props
     const [serviceCounter, setServiceCounter] = useState(1)
+    const [orders, setOrders] = useState<{ label: string; value: string }[]>([])
+    const [loadingOrders, setLoadingOrders] = useState<boolean>(false)
+    const { clientId } = useParams<{ clientId: string }>()
+
+    const getServices = async () => {
+        setLoadingOrders(true)
+        try {
+            const res = await apiGetClientOrders(clientId)
+
+            const allOrders = res.data.data.orders.map((service: any) => ({
+                label: service.carType,
+                value: service.carType,
+            }))
+            setOrders(allOrders)
+        } catch (error) {
+            setOrders([]) // empty on error
+        }
+        setLoadingOrders(false)
+    }
+
+    useEffect(() => {
+        getServices()
+    }, [])
 
     const addServiceWithGuarantee = () => {
         const newServiceId = `service-${serviceCounter}`
@@ -84,6 +117,45 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
             <p className="mb-6 text-sm text-gray-500">
                 قسم لإعداد الخدمات والضمانات المقدمة للعميل
             </p>
+
+            <FormItem
+                label="المبيعات السابقة"
+                invalid={!!errors.orders && !!touched.orders}
+                errorMessage={errors.orders}
+            >
+                <Field name="orders">
+                    {({ field, form }: FieldProps) => (
+                        <Select
+                            field={field}
+                            form={form}
+                            placeholder="اختر السيارة المراد اضافة الخدمة الجديدة لها"
+                            options={
+                                loadingOrders
+                                    ? [
+                                          {
+                                              label: 'جاري التحميل...',
+                                              value: '',
+                                          },
+                                      ]
+                                    : orders.length > 0
+                                    ? orders
+                                    : [
+                                          {
+                                              label: 'لا توجد طلبات متاحة',
+                                              value: '',
+                                          },
+                                      ]
+                            }
+                            value={orders.filter(
+                                (order) => order.value === values.order
+                            )}
+                            onChange={(option) => {
+                                form.setFieldValue(field.name, option?.value)
+                            }}
+                        />
+                    )}
+                </Field>
+            </FormItem>
 
             {values.services?.map((service, index) => (
                 <div key={service.id} className="mt-6 border-t pt-6">
@@ -556,7 +628,8 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 <FormItem
                                     label="نوع التلميع"
                                     invalid={
-                                        !!errors.services?.[index]?.polishType &&
+                                        !!errors.services?.[index]
+                                            ?.polishType &&
                                         !!touched.services?.[index]?.polishType
                                     }
                                     errorMessage={
@@ -697,8 +770,10 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 <FormItem
                                     label="نوع الإضافة"
                                     invalid={
-                                        !!errors.services?.[index]?.additionType &&
-                                        !!touched.services?.[index]?.additionType
+                                        !!errors.services?.[index]
+                                            ?.additionType &&
+                                        !!touched.services?.[index]
+                                            ?.additionType
                                     }
                                     errorMessage={
                                         errors.services?.[index]
@@ -777,7 +852,8 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
 
                                 {/* حقول فرعية لأنواع الإضافات */}
                                 {(service.additionType === 'detailed_wash' ||
-                                    service.additionType === 'premium_wash') && (
+                                    service.additionType ===
+                                        'premium_wash') && (
                                     <FormItem
                                         label="نطاق الغسيل"
                                         invalid={
@@ -1031,7 +1107,8 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                             ?.terms
                                     }
                                     errorMessage={
-                                        errors.services?.[index]?.guarantee?.terms
+                                        errors.services?.[index]?.guarantee
+                                            ?.terms
                                     }
                                 >
                                     <Field

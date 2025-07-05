@@ -5,6 +5,7 @@ import type { Routes } from '@/@types/routes'
 export const publicRoutes: Routes = [...authRoute]
 
 export const protectedRoutes = [
+    ///////////////////////////////////// Client Route /////////////////////////////////////
     {
         key: 'clientsMenu.clientsList',
         path: '/clients',
@@ -19,7 +20,7 @@ export const protectedRoutes = [
         ),
         authority: [],
     },
-        {
+    {
         key: 'clientsMenu.viewClient',
         path: '/clients/:clientId',
         component: lazy(
@@ -28,7 +29,21 @@ export const protectedRoutes = [
         authority: [],
     },
 
+    {
+        key: 'clientsMenu.updateProfile',
+        path: '/clients/:clientId/updateProfile',
+        component: lazy(() => import('@/views/clients/UpdateClient')),
+        authority: [],
+    },
 
+        {
+        key: 'clientsMenu.clientRating',
+        path: '/clients/:clientId/UpdateRating',
+        component: lazy(() => import('@/views/clients/ClientRating/ClientRatingForm')),
+        authority: [],
+    },
+
+    ///////////////////////////////////// Order Route /////////////////////////////////////
 
     {
         key: 'ordersMenu.ordersList',
@@ -39,12 +54,18 @@ export const protectedRoutes = [
         authority: [],
     },
 
-        {
+    {
         key: 'ordersMenu.AddService',
-        path: '/orders/add-service',
+        path: '/orders/add-service/:clientId',
         component: lazy(
             () => import('@/views/orders/OrderService/ServiceForm')
         ),
+        authority: [],
+    },
+    {
+        key: 'ordersMenu.AddService',
+        path: '/clients/updateProfile/:clientId',
+        component: lazy(() => import('@/views/clients/ClientProfile')),
         authority: [],
     },
 
