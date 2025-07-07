@@ -33,8 +33,8 @@ const carSizeOptions = [
     { label: 'Medium', value: 'medium' },
     { label: 'Large', value: 'large' },
     { label: 'X-Large', value: 'X-large' },
-    { label: 'XX-Large', value: 'XX-Large' },
-];
+    { label: 'XX-Large', value: 'XX-large' },
+]
 
 const branchOptions = [
     { label: 'عملاء فرع ابحر', value: 'عملاء فرع ابحر' },
@@ -43,7 +43,9 @@ const branchOptions = [
 ]
 
 const ClientFields = (props: ClientFieldsProps) => {
-    const [services, setServices] = useState<{ label: string; value: string }[]>([])
+    const [services, setServices] = useState<
+        { label: string; value: string }[]
+    >([])
     const [loadingServices, setLoadingServices] = useState<boolean>(false)
 
     const clientTypes = [
@@ -75,7 +77,9 @@ const ClientFields = (props: ClientFieldsProps) => {
     return (
         <AdaptableCard divider className="mb-4">
             <h5 className="text-lg font-semibold">معلومات العميل</h5>
-            <p className="mb-6 text-sm text-gray-500">قسم لإعداد معلومات العميل الأساسية</p>
+            <p className="mb-6 text-sm text-gray-500">
+                قسم لإعداد معلومات العميل الأساسية
+            </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormItem
@@ -137,32 +141,38 @@ const ClientFields = (props: ClientFieldsProps) => {
                     />
                 </FormItem>
 
-<FormItem
-    label="رقم الهاتف"
-    invalid={!!errors.phone && !!touched.phone}
-    errorMessage={errors.phone}
->
-    <Field name="phone">
-        {({ field, form }: FieldProps) => (
-            <Input
-                {...field}
-                type="text"
-                size="sm"
-                placeholder="05xxxxxxxx"
-                onChange={(e) => {
-                    let value = e.target.value.replace(/\D/g, '') // Remove non-digits
-                    if (value.length > 0 && !value.startsWith('05')) {
-                        value = '05' + value.substring(2)
-                    }
-                    if (value.length > 10) {
-                        value = value.substring(0, 10)
-                    }
-                    form.setFieldValue(field.name, value)
-                }}
-            />
-        )}
-    </Field>
-</FormItem>
+                <FormItem
+                    label="رقم الهاتف"
+                    invalid={!!errors.phone && !!touched.phone}
+                    errorMessage={errors.phone}
+                >
+                    <Field name="phone">
+                        {({ field, form }: FieldProps) => (
+                            <Input
+                                {...field}
+                                type="text"
+                                size="sm"
+                                placeholder="05xxxxxxxx"
+                                onChange={(e) => {
+                                    let value = e.target.value.replace(
+                                        /\D/g,
+                                        ''
+                                    ) // Remove non-digits
+                                    if (
+                                        value.length > 0 &&
+                                        !value.startsWith('05')
+                                    ) {
+                                        value = '05' + value.substring(2)
+                                    }
+                                    if (value.length > 10) {
+                                        value = value.substring(0, 10)
+                                    }
+                                    form.setFieldValue(field.name, value)
+                                }}
+                            />
+                        )}
+                    </Field>
+                </FormItem>
 
                 <FormItem
                     label="نوع العميل"
@@ -177,10 +187,14 @@ const ClientFields = (props: ClientFieldsProps) => {
                                 form={form}
                                 options={clientTypes}
                                 value={clientTypes.find(
-                                    (option) => option.value === values.clientType
+                                    (option) =>
+                                        option.value === values.clientType
                                 )}
                                 onChange={(option) => {
-                                    form.setFieldValue(field.name, option?.value)
+                                    form.setFieldValue(
+                                        field.name,
+                                        option?.value
+                                    )
                                 }}
                                 placeholder="نوع العميل"
                             />
@@ -204,7 +218,10 @@ const ClientFields = (props: ClientFieldsProps) => {
                                     (option) => option.value === values.branch
                                 )}
                                 onChange={(option) => {
-                                    form.setFieldValue(field.name, option?.value)
+                                    form.setFieldValue(
+                                        field.name,
+                                        option?.value
+                                    )
                                 }}
                                 placeholder="اختر الفرع"
                             />
@@ -214,7 +231,9 @@ const ClientFields = (props: ClientFieldsProps) => {
             </div>
 
             <h5 className="mt-8 text-lg font-semibold">معلومات السيارة</h5>
-            <p className="mb-6 text-sm text-gray-500">قسم لإعداد معلومات السيارة</p>
+            <p className="mb-6 text-sm text-gray-500">
+                قسم لإعداد معلومات السيارة
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormItem
                     label="نوع السيارة"
@@ -258,44 +277,52 @@ const ClientFields = (props: ClientFieldsProps) => {
                     />
                 </FormItem>
 
-<FormItem
+         <FormItem
     label="رقم لوحة السيارة"
     invalid={!!errors.carPlateNumber && !!touched.carPlateNumber}
     errorMessage={errors.carPlateNumber as string}
 >
-    <div className="flex gap-2">
-        {[...Array(8)].map((_, i) => (
-            <Field name={`carPlateNumber[${i}]`} key={i}>
-                {({ field }: FieldProps) => (
+    <Field name="carPlateNumber">
+        {({ field, form }: FieldProps) => (
+            <div className="flex gap-2">
+                {[...Array(8)].map((_, i) => (
                     <Input
-                        {...field}
+                        key={i}
                         type="text"
                         size="sm"
                         maxLength={1}
                         className="text-center w-10"
+                        value={field.value?.[i] || ''}
                         onChange={(e) => {
-                            const value = e.target.value.toUpperCase()
-                            e.target.value = value
-                            field.onChange(e)
+                            const value = e.target.value.toUpperCase();
+                            let newValue = field.value || '';
                             
-                            // الانتقال للحقل التالي تلقائياً
+                            // إنشاء نسخة من القيمة الحالية مع حرف واحد محدث
+                            newValue = newValue.padEnd(8, ' '); // تأكد من طول 8 أحرف
+                            newValue = newValue.substring(0, i) + value + newValue.substring(i + 1);
+                            
+                            form.setFieldValue(field.name, newValue.trim());
+                            
                             if (value && i < 7) {
                                 const nextInput = document.querySelector(
-                                    `input[name="carPlateNumber[${i + 1}]"]`
-                                ) as HTMLInputElement
-                                nextInput?.focus()
+                                    `input[name="${field.name}-${i + 1}"]`
+                                ) as HTMLInputElement;
+                                nextInput?.focus();
                             }
                         }}
+                        name={`${field.name}-${i}`}
                     />
-                )}
-            </Field>
-        ))}
-    </div>
+                ))}
+            </div>
+        )}
+    </Field>
 </FormItem>
 
                 <FormItem
                     label="الشركة المصنعة"
-                    invalid={!!errors.carManufacturer && !!touched.carManufacturer}
+                    invalid={
+                        !!errors.carManufacturer && !!touched.carManufacturer
+                    }
                     errorMessage={errors.carManufacturer}
                 >
                     <Field

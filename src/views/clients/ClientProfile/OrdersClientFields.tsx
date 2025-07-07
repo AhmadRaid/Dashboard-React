@@ -9,6 +9,7 @@ import DataTable from '@/components/shared/DataTable'
 import type { ColumnDef } from '@/components/shared/DataTable'
 import { Badge } from '@/components/ui'
 import { Button } from '@/components/ui'
+import { FiInfo } from 'react-icons/fi'
 
 const formatDate = (isoString?: string) => {
     if (!isoString) return ''
@@ -62,25 +63,37 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
         { header: 'نوع السيارة', accessorKey: 'carType' },
         { header: 'موديل السيارة', accessorKey: 'carModel' },
         { header: 'لون السيارة', accessorKey: 'carColor' },
-        { 
-        header: 'الخدمات', 
-        accessorKey: 'services',
-        cell: (props) => {
-            const services = props.row.original.services;
-            return (
-                <div>
-                    {services.map((service: any, index: number) => (
-                        <div key={index}>
-                            {service.serviceType === 'protection' ? 'حماية' : 
-                             service.serviceType === 'polish' ? 'تلميع' : 
-                             service.serviceType}
+        {
+            header: 'الخدمات',
+            accessorKey: 'services',
+            cell: (props) => {
+                const services = props.row.original.services
+                if (!services || services.length === 0) {
+                    return (
+                        <div className="text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-default py-1">
+                            لا توجد خدمات لعرضها
                         </div>
-                    ))}
-                </div>
-            )
-        }
-    },
- 
+                    )
+                }
+                return (
+                    <div>
+                        {services.map((service: any, index: number) => (
+                            <div key={index}>
+                                {service.serviceType === 'protection'
+                                    ? 'حماية'
+                                    : service.serviceType === 'polish'
+                                    ? 'تلميع'
+                                    : service.serviceType === 'insulator'
+                                    ? 'عازل حراري'
+                                    : service.serviceType === 'additions'
+                                    ? 'اضافات'
+                                    : service.serviceType}
+                            </div>
+                        ))}
+                    </div>
+                )
+            },
+        },
     ]
 
     return (

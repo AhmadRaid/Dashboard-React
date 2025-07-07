@@ -29,8 +29,8 @@ type Service = {
     washScope?: string
     servicePrice?: number
     serviceDate?: string
-    originalCarColor?: string  
-    protectionColor?: string    
+    originalCarColor?: string
+    protectionColor?: string
 }
 
 type Guarantee = {
@@ -52,7 +52,7 @@ type InitialData = {
     carModel: string
     carColor: string
     branch: string
-    carPlateNumber: string[]
+    carPlateNumber: string
     carManufacturer: string
     carSize: string
     carType: string
@@ -63,8 +63,8 @@ type InitialData = {
         protectionFinish?: string
         protectionSize?: string
         protectionCoverage?: string
-        originalCarColor?: string  
-        protectionColor?: string 
+        originalCarColor?: string
+        protectionColor?: string
         insulatorType?: string
         insulatorCoverage?: string
         polishType?: string
@@ -94,7 +94,7 @@ const initialData: InitialData = {
     carModel: '',
     carColor: '',
     branch: '',
-    carPlateNumber: ['', '', '', '', '', '', '', ''],
+    carPlateNumber: '',
     carManufacturer: '',
     carSize: '',
     carType: '',
@@ -153,22 +153,208 @@ export const validationSchema = Yup.object().shape({
         )
         .required('يجب اختيار الفرع'),
 
-    carManufacturer: Yup.string(),
+    carType: Yup.string()
+        .max(50, 'يجب ألا يتجاوز نوع السيارة 50 حرفًا')
+        .test(
+            'require-if-car-fields-exist',
+            'نوع السيارة مطلوب عند إدخال أي بيانات للسيارة',
+            function (value) {
+                const {
+                    carModel,
+                    carColor,
+                    carManufacturer,
+                    carPlateNumber,
+                    carSize,
+                    services,
+                } = this.parent
+                const anyCarFieldFilled =
+                    !!carModel ||
+                    !!carColor ||
+                    !!carManufacturer ||
+                    !!carPlateNumber ||
+                    !!carSize 
+                // إذا كان هناك أي حقل آخر مملوء، فإن carType مطلوب
+                return anyCarFieldFilled ? !!value : true
+            }
+        ),
 
-    carPlateNumber: Yup.array()
-        .of(Yup.string().matches(/^[أ-ي0-9]$/, 'يجب أن يكون حرف عربي أو رقم'))
-        .length(8, 'يجب أن يتكون رقم اللوحة من 8 أحرف/أرقام'),
+    carModel: Yup.string()
+        .max(50, 'يجب ألا يتجاوز موديل السيارة 50 حرفًا')
+        .test(
+            'require-if-car-fields-exist',
+            'موديل السيارة مطلوب عند إدخال أي بيانات للسيارة',
+            function (value) {
+                const {
+                    carType,
+                    carColor,
+                    carManufacturer,
+                    carPlateNumber,
+                    carSize,
+                    services,
+                } = this.parent
+                const anyCarFieldFilled =
+                    !!carType ||
+                    !!carColor ||
+                    !!carManufacturer ||
+                    !!carPlateNumber ||
+                    !!carSize 
+          
 
-    carSize: Yup.string().oneOf(
-        ['small', 'medium', 'large', 'X-large', 'huge'],
-        'اختر حجمًا صالحًا للسيارة'
+                return anyCarFieldFilled ? !!value : true
+            }
+        ),
+
+    carColor: Yup.string()
+        .max(30, 'يجب ألا يتجاوز لون السيارة 30 حرفًا')
+        .test(
+            'require-if-car-fields-exist',
+            'لون السيارة مطلوب عند إدخال أي بيانات للسيارة',
+            function (value) {
+                const {
+                    carType,
+                    carModel,
+                    carManufacturer,
+                    carPlateNumber,
+                    carSize,
+                    services,
+                } = this.parent
+                const anyCarFieldFilled =
+                    !!carType ||
+                    !!carModel ||
+                    !!carManufacturer ||
+                    !!carPlateNumber ||
+                    !!carSize
+                return anyCarFieldFilled ? !!value : true
+            }
+        ),
+
+    carManufacturer: Yup.string().test(
+        'require-if-car-fields-exist',
+        'الشركة المصنعة للسيارة مطلوبة عند إدخال أي بيانات للسيارة',
+        function (value) {
+            const {
+                carType,
+                carModel,
+                carColor,
+                carPlateNumber,
+                carSize,
+                services,
+            } = this.parent
+            const anyCarFieldFilled =
+                !!carType ||
+                !!carModel ||
+                !!carColor ||
+                !!carPlateNumber ||
+                !!carSize 
+            return anyCarFieldFilled ? !!value : true
+        }
     ),
 
-    carType: Yup.string().max(50, 'يجب ألا يتجاوز موديل السيارة 50 حرفًا'),
+    // carPlateNumber: Yup.string()
+    //     .matches(
+    //         /^[أ-ي0-9]{8}$/,
+    //         'يجب أن يتكون رقم اللوحة من 7 أحرف عربية أو أرقام'
+    //     )
+    //     .test(
+    //         'require-if-car-fields-exist',
+    //         'رقم لوحة السيارة مطلوب عند إدخال أي بيانات للسيارة',
+    //         function (value) {
+    //             const {
+    //                 carType,
+    //                 carModel,
+    //                 carColor,
+    //                 carManufacturer,
+    //                 carSize,
+    //                 services,
+    //             } = this.parent
+    //             const anyCarFieldFilled =
+    //                 !!carType ||
+    //                 !!carModel ||
+    //                 !!carColor ||
+    //                 !!carManufacturer ||
+    //                 !!carSize 
+    //             return anyCarFieldFilled ? !!value : true
+    //         }
+    //     ),
 
-    carModel: Yup.string().max(50, 'يجب ألا يتجاوز موديل السيارة 50 حرفًا'),
+    carSize: Yup.string()
+        .oneOf(
+            ['small', 'medium', 'large', 'X-large', 'XX-large'],
+            'اختر حجمًا صالحًا للسيارة'
+        )
+        .test(
+            'require-if-car-fields-exist',
+            'حجم السيارة مطلوب عند إدخال أي بيانات للسيارة',
+            function (value) {
+                const {
+                    carType,
+                    carModel,
+                    carColor,
+                    carManufacturer,
+                    carPlateNumber,
+                    services,
+                } = this.parent
+                const anyCarFieldFilled =
+                    !!carType ||
+                    !!carModel ||
+                    !!carColor ||
+                    !!carManufacturer ||
+                    !!carPlateNumber 
+                return anyCarFieldFilled ? !!value : true
+            }
+        ),
 
-    carColor: Yup.string().max(30, 'يجب ألا يتجاوز لون السيارة 30 حرفًا'),
+    // services: Yup.array()
+    //     .of(
+    //         Yup.object().shape({
+    //             serviceType: Yup.string(),
+    //             dealDetails: Yup.string(),
+    //             guarantee: Yup.object().shape({
+    //                 typeGuarantee: Yup.string(),
+    //                 startDate: Yup.string(),
+    //                 terms: Yup.string(),
+    //             }),
+    //         })
+    //     )
+    //     .test(
+    //         'require-if-car-fields-exist',
+    //         'يجب إضافة خدمة واحدة على الأقل عند إدخال أي بيانات للسيارة',
+    //         function (value) {
+    //             const {
+    //                 carType,
+    //                 carModel,
+    //                 carColor,
+    //                 carManufacturer,
+    //                 carPlateNumber,
+    //                 carSize,
+    //             } = this.parent
+    //             const anyCarFieldFilled =
+    //                 !!carType ||
+    //                 !!carModel ||
+    //                 !!carColor ||
+    //                 !!carManufacturer ||
+    //                 !!carPlateNumber ||
+    //                 !!carSize
+
+    //             // إذا لم يكن هناك أي حقل سيارة مملوء، تجاهل services
+    //             if (!anyCarFieldFilled) return true
+
+    //             // إذا كان services فارغًا أو يحتوي على كائنات فارغة، اعتبره غير صالح
+    //             // if (
+    //             //     !value ||
+    //             //     value.every(
+    //             //         (service) =>
+    //             //             !service.serviceType &&
+    //             //             !service.dealDetails &&
+    //             //             !service.guarantee
+    //             //     )
+    //             // ) {
+    //             //     return false // يظهر خطأ "يجب إضافة خدمة واحدة على الأقل"
+    //             // }
+
+    //             return true
+    //         }
+    //     ),
 })
 
 const calculateEndDate = (
@@ -336,15 +522,26 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
 
         // حالة المصفوفات
         if (Array.isArray(obj)) {
-            return obj
+            const cleanedArray = obj
                 .map((item) => removeEmptyFields(item)) // تطبيق الدالة على كل عنصر
                 .filter((item) => {
                     // تصفية العناصر الفارغة
                     if (typeof item === 'object' && item !== null) {
-                        return Object.keys(item).length > 0
+                        // بالنسبة لمصفوفة الخدمات، تأكد من وجود حقول مطلوبة
+                        if (
+                            item.serviceType ||
+                            item.dealDetails ||
+                            item.guarantee?.typeGuarantee
+                        ) {
+                            return true
+                        }
+                        return false
                     }
                     return item !== undefined && item !== null && item !== ''
                 })
+
+            // إذا كانت المصفوفة فارغة بعد التنظيف، نعيد undefined
+            return cleanedArray.length > 0 ? cleanedArray : undefined
         }
 
         // حالة الكائنات
@@ -367,7 +564,7 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
             }
         }
 
-        return cleaned
+        return Object.keys(cleaned).length > 0 ? cleaned : undefined
     }
 
     return (
@@ -380,7 +577,11 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                 validationSchema={validationSchema}
                 onSubmit={(values, { setSubmitting }) => {
                     let data = cloneDeep(values)
-                    console.log('Form values:', values)
+                    console.log('Data values:', values)
+
+                    if (Array.isArray(data.carPlateNumber)) {
+                        data.carPlateNumber = data.carPlateNumber.join('')
+                    }
 
                     // تحويل تواريخ الضمان
                     data.services = data.services?.map((service: any) => {
@@ -410,6 +611,10 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
 
                     // حذف كل الحقول الفارغة
                     data = removeEmptyFields(data)
+
+                    if (data.services && data.services.length === 0) {
+                        delete data.services
+                    }
 
                     onFormSubmit?.(data, setSubmitting)
                 }}
@@ -577,44 +782,62 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                             {service.serviceType ===
                                                 'protection' && (
                                                 <>
-                                                <FormItem
-            label="لون السيارة الأصلي"
-            invalid={
-                !!errors.services?.[index]?.originalCarColor &&
-                !!touched.services?.[index]?.originalCarColor
-            }
-            errorMessage={
-                errors.services?.[index]?.originalCarColor as string
-            }
-        >
-            <Field
-                name={`services[${index}].originalCarColor`}
-                type="text"
-                size="sm"
-                placeholder="أدخل لون السيارة الأصلي"
-                component={Input}
-            />
-        </FormItem>
+                                                    <FormItem
+                                                        label="لون السيارة الأصلي"
+                                                        invalid={
+                                                            !!errors.services?.[
+                                                                index
+                                                            ]
+                                                                ?.originalCarColor &&
+                                                            !!touched
+                                                                .services?.[
+                                                                index
+                                                            ]?.originalCarColor
+                                                        }
+                                                        errorMessage={
+                                                            errors.services?.[
+                                                                index
+                                                            ]
+                                                                ?.originalCarColor as string
+                                                        }
+                                                    >
+                                                        <Field
+                                                            name={`services[${index}].originalCarColor`}
+                                                            type="text"
+                                                            size="sm"
+                                                            placeholder="أدخل لون السيارة الأصلي"
+                                                            component={Input}
+                                                        />
+                                                    </FormItem>
 
-        {/* حقل لون الحماية */}
-        <FormItem
-            label="لون الحماية"
-            invalid={
-                !!errors.services?.[index]?.protectionColor &&
-                !!touched.services?.[index]?.protectionColor
-            }
-            errorMessage={
-                errors.services?.[index]?.protectionColor as string
-            }
-        >
-            <Field
-                name={`services[${index}].protectionColor`}
-                type="text"
-                size="sm"
-                placeholder="أدخل لون الحماية"
-                component={Input}
-            />
-        </FormItem>
+                                                    {/* حقل لون الحماية */}
+                                                    <FormItem
+                                                        label="لون الحماية"
+                                                        invalid={
+                                                            !!errors.services?.[
+                                                                index
+                                                            ]
+                                                                ?.protectionColor &&
+                                                            !!touched
+                                                                .services?.[
+                                                                index
+                                                            ]?.protectionColor
+                                                        }
+                                                        errorMessage={
+                                                            errors.services?.[
+                                                                index
+                                                            ]
+                                                                ?.protectionColor as string
+                                                        }
+                                                    >
+                                                        <Field
+                                                            name={`services[${index}].protectionColor`}
+                                                            type="text"
+                                                            size="sm"
+                                                            placeholder="أدخل لون الحماية"
+                                                            component={Input}
+                                                        />
+                                                    </FormItem>
                                                     <FormItem
                                                         label="اللمعان"
                                                         invalid={
