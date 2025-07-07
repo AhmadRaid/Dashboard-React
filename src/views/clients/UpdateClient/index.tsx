@@ -3,7 +3,7 @@ import { Input, Select } from '@/components/ui'
 import { FormContainer, FormItem } from '@/components/ui/Form'
 import { Button } from '@/components/ui'
 import { useParams, useNavigate } from 'react-router-dom'
-import { apiGetClientProfile } from '@/services/ClientsService'
+import { apiGetClientProfile, apiUpdateClient } from '@/services/ClientsService'
 import { useEffect, useState } from 'react'
 import { toast, Notification } from '@/components/ui'
 import * as Yup from 'yup'
@@ -14,9 +14,9 @@ const clientTypes = [
 ]
 
 const branchOptions = [
-    { label: 'فرع ابحر', value: 'abhor' },
-    { label: 'فرع المدينة', value: 'almadina' },
-    { label: 'أخرى', value: 'other' },
+    { label: 'عملاء فرع ابحر', value: 'عملاء فرع ابحر' },
+    { label: 'عملاء فرع المدينة', value: 'عملاء فرع المدينة' },
+    { label: 'أخرى', value: 'أخرى' },
 ]
 
 const UpdateDataClient = () => {
@@ -30,8 +30,7 @@ const UpdateDataClient = () => {
         middleName: Yup.string(),
         lastName: Yup.string().required('اسم العائلة مطلوب'),
         email: Yup.string()
-            .email('بريد إلكتروني غير صالح')
-            .required('البريد الإلكتروني مطلوب'),
+            .email('بريد إلكتروني غير صالح'),
         phone: Yup.string()
             .required('رقم الهاتف مطلوب')
             .matches(
@@ -88,8 +87,27 @@ const UpdateDataClient = () => {
     }, [clientId, navigate])
 
     const handleSubmit = async (values, { setSubmitting }) => {
+        console.log('2222222222222',values);
+
+           const payload = Object.fromEntries(
+            Object.entries(values).filter(([_, value]) => 
+                value !== '' && value !== null && value !== undefined
+            )
+        );
+        
         try {
-            // await apiUpdateClient(clientId, values)
+            if (!clientId) {
+                toast.push(
+                    <Notification type="danger">
+                        معرف العميل غير صالح
+                    </Notification>
+                )
+                navigate('/clients')
+                return
+            }
+
+
+            await apiUpdateClient(clientId, payload)
             toast.push(
                 <Notification title="تم التحديث" type="success">
                     تم تحديث بيانات العميل بنجاح

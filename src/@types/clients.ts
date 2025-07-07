@@ -91,6 +91,8 @@ export type ClientWithOrdersData = {
     lastName: string
     email: string
     phone: string
+    rating?: number; 
+    notes?: string;
     orderStats: {
         totalOrders: number
         activeGuarantees: number

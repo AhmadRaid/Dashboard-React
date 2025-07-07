@@ -44,6 +44,7 @@ type Service = {
 
 type FormFieldsName = {
     services: Service[]
+    orderId: string // أضفنا هذا الحقل
 }
 
 type OrderServiceFieldsProps = {
@@ -59,16 +60,49 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
     const [orders, setOrders] = useState<{ label: string; value: string }[]>([])
     const [loadingOrders, setLoadingOrders] = useState<boolean>(false)
     const { clientId } = useParams<{ clientId: string }>()
+    const calculateEndDate = (
+        startDate: string,
+        guaranteePeriod: string
+    ): string => {
+        if (!startDate || !guaranteePeriod) return ''
+
+        const date = new Date(startDate)
+        const years = parseInt(guaranteePeriod)
+
+        if (isNaN(years)) return ''
+
+        date.setFullYear(date.getFullYear() + years)
+        date.setDate(date.getDate() - 1) // ناقص يوم واحد
+
+        return date.toISOString().split('T')[0]
+    }
+
+    const toHijriDate = (gregorianDate: string): string => {
+        if (!gregorianDate) return ''
+
+        // يمكنك استخدام مكتبة مثل ummalqura أو كتابة الدالة الخاصة بك
+        // هذا مثال مبسط:
+        const date = new Date(gregorianDate)
+        const hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+        }).format(date)
+
+        return hijri
+    }
 
     const getServices = async () => {
         setLoadingOrders(true)
         try {
             const res = await apiGetClientOrders(clientId)
 
-            const allOrders = res.data.data.orders.map((service: any) => ({
-                label: service.carType,
-                value: service.carType,
+            const allOrders = res.data.data.orders.map((order: any) => ({
+                label: `${order.carType} - ${order.carModel}`, // يمكنك تعديل التنسيق حسب احتياجك
+                value: order._id, // هنا نستخدم الـ _id كقيمة
+                orderData: order, // نحتفظ ببيانات الطلب الكاملة للاستخدام لاحقاً
             }))
+
             setOrders(allOrders)
         } catch (error) {
             setOrders([]) // empty on error
@@ -120,10 +154,10 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
 
             <FormItem
                 label="المبيعات السابقة"
-                invalid={!!errors.orders && !!touched.orders}
-                errorMessage={errors.orders}
+                invalid={!!errors.orderId && !!touched.orderId}
+                errorMessage={errors.orderId as string}
             >
-                <Field name="orders">
+                <Field name="orderId">
                     {({ field, form }: FieldProps) => (
                         <Select
                             field={field}
@@ -146,11 +180,15 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                           },
                                       ]
                             }
-                            value={orders.filter(
-                                (order) => order.value === values.order
+                            value={orders.find(
+                                (order) => order.value === field.value
                             )}
                             onChange={(option) => {
-                                form.setFieldValue(field.name, option?.value)
+                                // عند تغيير الاختيار
+                                form.setFieldValue(
+                                    field.name,
+                                    option?.value || ''
+                                )
                             }}
                         />
                     )}
@@ -944,44 +982,6 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 component={Input}
                             />
                         </FormItem>
-
-                        <FormItem
-                            label="سعر الخدمة"
-                            invalid={
-                                !!errors.services?.[index]?.servicePrice &&
-                                !!touched.services?.[index]?.servicePrice
-                            }
-                            errorMessage={
-                                errors.services?.[index]?.servicePrice as string
-                            }
-                        >
-                            <Field
-                                name={`services[${index}].servicePrice`}
-                                type="number"
-                                size="sm"
-                                placeholder="أدخل سعر الخدمة"
-                                component={Input}
-                            />
-                        </FormItem>
-
-                        <FormItem
-                            label="تاريخ الخدمة"
-                            invalid={
-                                !!errors.services?.[index]?.serviceDate &&
-                                !!touched.services?.[index]?.serviceDate
-                            }
-                            errorMessage={
-                                errors.services?.[index]?.serviceDate as string
-                            }
-                        >
-                            <Field
-                                name={`services[${index}].serviceDate`}
-                                type="date"
-                                size="sm"
-                                component={Input}
-                                placeholder="تاريخ الخدمة"
-                            />
-                        </FormItem>
                     </div>
 
                     {/* Guarantee Fields */}
@@ -1069,33 +1069,86 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 >
                                     <Field
                                         name={`services[${index}].guarantee.startDate`}
-                                        type="date"
-                                        size="sm"
-                                        component={Input}
-                                        placeholder="تاريخ البدء"
-                                    />
-                                </FormItem>
+                                    >
+                                        {({ field, form }: FieldProps) => (
+                                            <div>
+                                                <Input
+                                                    type="date"
+                                                    size="sm"
+                                                    {...field}
+                                                    onChange={(e) => {
+                                                        field.onChange(e)
 
-                                <FormItem
-                                    label="تاريخ الانتهاء"
-                                    invalid={
-                                        !!errors.services?.[index]?.guarantee
-                                            ?.endDate &&
-                                        !!touched.services?.[index]?.guarantee
-                                            ?.endDate
-                                    }
-                                    errorMessage={
-                                        errors.services?.[index]?.guarantee
-                                            ?.endDate
-                                    }
-                                >
-                                    <Field
-                                        name={`services[${index}].guarantee.endDate`}
-                                        size="sm"
-                                        type="date"
-                                        component={Input}
-                                        placeholder="تاريخ الانتهاء"
-                                    />
+                                                        // حساب تاريخ الانتهاء تلقائياً
+                                                        const guaranteePeriod =
+                                                            form.values
+                                                                .services[index]
+                                                                .guarantee
+                                                                .typeGuarantee
+                                                        if (
+                                                            e.target.value &&
+                                                            guaranteePeriod
+                                                        ) {
+                                                            const endDate =
+                                                                calculateEndDate(
+                                                                    e.target
+                                                                        .value,
+                                                                    guaranteePeriod
+                                                                )
+                                                            form.setFieldValue(
+                                                                `services[${index}].guarantee.endDate`,
+                                                                endDate
+                                                            )
+                                                        }
+                                                    }}
+                                                    placeholder="تاريخ البدء"
+                                                />
+                                                {field.value && (
+                                                    <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-md">
+                                                        <span className="text-base font-medium text-blue-700">
+                                                            التاريخ الهجري:
+                                                        </span>
+                                                        <span className="text-base font-semibold text-blue-800">
+                                                            {toHijriDate(
+                                                                field.value
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </Field>
+                                </FormItem>
+                                <FormItem label="تاريخ الانتهاء">
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <Input
+                                                type="text"
+                                                size="sm"
+                                                value={
+                                                    values.services[index]
+                                                        .guarantee?.endDate ||
+                                                    ''
+                                                }
+                                                readOnly
+                                                className="bg-gray-50" // إضافة خلفية رمادية فاتحة
+                                            />
+                                        </div>
+                                        {values.services[index].guarantee
+                                            ?.endDate && (
+                                            <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-md">
+                                                <span className="text-base font-medium text-blue-700">
+                                                    التاريخ الهجري:
+                                                </span>
+                                                <span className="text-base font-semibold text-blue-800">
+                                                    {toHijriDate(
+                                                        values.services[index]
+                                                            .guarantee.endDate
+                                                    )}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </FormItem>
 
                                 <FormItem

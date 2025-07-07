@@ -7,7 +7,7 @@ import { FormContainer, FormItem } from '@/components/ui/Form'
 import { Input } from '@/components/ui'
 import { HiArrowLeft, HiSave, HiStar } from 'react-icons/hi'
 import { toast, Notification } from '@/components/ui'
-import { apiSubmitClientRating } from '@/services/ClientsService'
+import {  apiUpdateClient } from '@/services/ClientsService'
 import { Rate } from 'antd'
 
 const ratingSchema = Yup.object().shape({
@@ -15,9 +15,8 @@ const ratingSchema = Yup.object().shape({
     .min(1, 'يجب أن يكون التقييم بين 1 و 5')
     .max(5, 'يجب أن يكون التقييم بين 1 و 5')
     .required('حقل التقييم مطلوب'),
-  comments: Yup.string()
+  notes: Yup.string()
     .max(500, 'يجب ألا يتجاوز التعليق 500 حرف')
-    .required('حقل الملاحظات مطلوب'),
 })
 
 const ratingLabels: Record<number, { text: string; color: string }> = {
@@ -33,7 +32,7 @@ const ClientRatingForm = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (values: { rating: number; comments: string }) => {
+  const handleSubmit = async (values: { rating: number; notes: string }) => {
     if (!clientId) {
       toast.push(
         <Notification title="خطأ" type="danger">
@@ -45,11 +44,10 @@ const ClientRatingForm = () => {
     
     setLoading(true)
     try {
-    //   await apiSubmitClientRating(clientId, {
-    //     rating: values.rating,
-    //     comments: values.comments,
-    //     date: new Date().toISOString()
-    //   })
+      await apiUpdateClient(clientId, {
+        rating: values.rating,
+        notes: values.notes,
+      })
       
       toast.push(
         <Notification title="تم بنجاح" type="success">
@@ -93,7 +91,7 @@ const ClientRatingForm = () => {
         {/* Main Form Content */}
         <main className="p-6">
           <Formik
-            initialValues={{ rating: 0, comments: '' }}
+            initialValues={{ rating: 0, notes: '' }}
             validationSchema={ratingSchema}
             onSubmit={handleSubmit}
           >
@@ -129,24 +127,23 @@ const ClientRatingForm = () => {
                       </FormItem>
                     </div>
 
-                    {/* Comments Section */}
                     <div className="bg-gray-50 rounded-lg p-4">
                       <FormItem
                         label="ملاحظاتك"
                         labelClass="text-base font-medium text-gray-700 mb-2"
-                        invalid={!!errors.comments && !!touched.comments}
-                        errorMessage={errors.comments}
+                        invalid={!!errors.notes && !!touched.notes}
+                        errorMessage={errors.notes}
                       >
                         <Field
-                          name="comments"
+                          name="notes"
                           as="textarea"
                           rows={6}
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
                           placeholder="أدخل ملاحظاتك هنا..."
                         />
                         <div className="flex justify-between mt-1 text-xs text-gray-500">
-                          <span>{values.comments.length}/500 حرف</span>
-                          {values.comments.length > 450 && (
+                          <span>{values.notes.length}/500 حرف</span>
+                          {values.notes.length > 450 && (
                             <span className="text-amber-600">اقتربت من الحد الأقصى</span>
                           )}
                         </div>

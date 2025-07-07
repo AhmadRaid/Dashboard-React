@@ -24,7 +24,13 @@ export const validationSchema = Yup.object().shape({
         .required('Phone is required')
         .matches(/^\+?[0-9]{7,15}$/, 'Phone must be a valid number'),
     clientType: Yup.string().oneOf(['individual', 'company']).required(),
-    isDeleted: Yup.boolean(),
+    rating: Yup.number()
+        .min(1, 'التقييم يجب أن يكون بين 1 و 5')
+        .max(5, 'التقييم يجب أن يكون بين 1 و 5')
+        .optional(),
+    notes: Yup.array()
+        .of(Yup.string().max(500, 'الملاحظة يجب أن تكون أقل من 500 حرف'))
+        .optional(),
     orders: Yup.array().of(
         Yup.object().shape({
             carModel: Yup.string().required().max(50),
@@ -94,6 +100,8 @@ const OrdersClientForm = forwardRef<
             fullName: '',
             email: '',
             phone: '',
+            rating: 0,
+        notes: [],
             clientType: 'individual',
             isDeleted: false,
             orderStats: {
@@ -131,7 +139,7 @@ const OrdersClientForm = forwardRef<
     }
 
     const navigateToUpdateProfile = () => {
-             if (!clientId) {
+        if (!clientId) {
             console.error('Client ID is missing')
             return
         }

@@ -8,7 +8,7 @@ import ClientForm, { SetSubmitting } from '../ClientForm/ClientForm'
 const CreateClient = () => {
     const navigate = useNavigate()
 
-    const addProject = async (data: any) => {
+    const addClient = async (data: any) => {
         const response = await apiCreateNewClient(data)
         return response.data
     }
@@ -19,7 +19,7 @@ const CreateClient = () => {
     ) => {
         setSubmitting(true)
         try {
-            const success = await addProject(values)
+            const success = await addClient(values)
             setSubmitting(false)
             if (success) {
                 toast.push(

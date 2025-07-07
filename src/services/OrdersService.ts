@@ -14,3 +14,11 @@ export async function apiGetClientOrders(clientId:string) {
         method: 'get',
     })
 }
+
+export async function apiSendServiceForOrder(data:any) {
+    return ApiService.fetchData<GetOrdersResponse>({
+        url: `/orders/add-service`,
+        method: 'post',
+        data,
+    })
+}

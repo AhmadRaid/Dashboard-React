@@ -1655,20 +1655,6 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                     component={Input}
                                                 />
                                             </FormItem>
-
-                                            {/* <FormItem
-                                                label="سعر الخدمة"
-                                                invalid={!!errors.services?.[index]?.servicePrice && !!touched.services?.[index]?.servicePrice}
-                                                errorMessage={errors.services?.[index]?.servicePrice as string}
-                                            >
-                                                <Field
-                                                    name={`services[${index}].servicePrice`}
-                                                    type="number"
-                                                    size="sm"
-                                                    placeholder="أدخل سعر الخدمة"
-                                                    component={Input}
-                                                />
-                                            </FormItem> */}
                                         </div>
 
                                         {/* Guarantee Fields */}

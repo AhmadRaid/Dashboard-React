@@ -10,6 +10,7 @@ import type { ColumnDef } from '@/components/shared/DataTable'
 import { Badge } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { FiInfo } from 'react-icons/fi'
+import RatingAndNotesSection from '../ClientRating/RatingComponent'
 
 const formatDate = (isoString?: string) => {
     if (!isoString) return ''
@@ -144,6 +145,7 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                         </h6>
                         <p>{values.orderStats?.totalOrders || 0}</p>
                     </div>
+                    <RatingAndNotesSection values={values} readOnly={readOnly} />
                 </div>
 
                 <h5 className="mt-8 mb-4">الطلبات </h5>
