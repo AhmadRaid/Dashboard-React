@@ -25,13 +25,11 @@ const ClientOrders = () => {
     const loading = useAppSelector(
         (state) => state?.clientOrdersSlice?.data?.loading
     )
-    console.log('loading', loading)
 
     useEffect(() => {
         dispatch(getClientOrders(clientId))
     }, [clientId, dispatch])
 
-    console.log('ordersData', ordersData)
 
     return (
         <>

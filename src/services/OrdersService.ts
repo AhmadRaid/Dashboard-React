@@ -15,6 +15,13 @@ export async function apiGetClientOrders(clientId:string) {
     })
 }
 
+export async function apiGetOrdersDetails(orderId:string) {
+    return ApiService.fetchData<GetOrdersResponse>({
+        url: `/orders/${orderId}`,
+        method: 'get',
+    })
+}
+
 export async function apiSendServiceForOrder(data:any) {
     return ApiService.fetchData<GetOrdersResponse>({
         url: `/orders/add-service`,

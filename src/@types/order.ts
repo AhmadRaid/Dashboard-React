@@ -21,26 +21,52 @@ export interface Service {
     dealDetails?: string
     guarantee: Guarantee
 }
-
 export interface Order {
     _id: string
-    clientId: string
-    carType: string
+    orderNumber: string
+    client: {
+        _id: string
+        firstName: string
+        middleName: string
+        lastName: string
+        email: string
+        phone: string
+        clientType: string
+    }
     carModel: string
     carColor: string
     carPlateNumber: string
     carManufacturer: string
     carSize: string
-    services: Service[]
-    isDeleted: boolean
+    carType: string
+    branch: string
+    services: Array<{
+        serviceType: string
+        dealDetails: string
+        protectionFinish?: string
+        protectionSize?: string
+        protectionCoverage?: string
+        originalCarColor?: string
+        protectionColor?: string
+        insulatorType?: string
+        insulatorCoverage?: string
+        polishType?: string
+        polishSubType?: string
+        additionType?: string
+        washScope?: string
+        servicePrice?: number
+        serviceDate?: string
+        guarantee?: {
+            typeGuarantee: string
+            startDate: string
+            endDate: string
+            terms: string
+            Notes: string
+        }
+    }>
+    status: string
     createdAt: string
     updatedAt: string
-    __v: number
-    client?: {
-        firstName: string
-        lastName: string
-        phone: string
-    }
 }
 
 export interface GetOrdersParams {

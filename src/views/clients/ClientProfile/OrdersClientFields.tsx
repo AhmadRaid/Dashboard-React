@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { FiInfo } from 'react-icons/fi'
 import RatingAndNotesSection from '../ClientRating/RatingComponent'
+import { useNavigate } from 'react-router-dom'
 
 const formatDate = (isoString?: string) => {
     if (!isoString) return ''
@@ -58,6 +59,12 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
     }
 
     const { values, readOnly } = props
+    const navigate = useNavigate()
+
+    const handleRowClick = (row: any) => {
+        console.log('row data', row);
+        navigate(`/orders/${row.original._id}`);
+    }
 
     // Merged Orders and Guarantees columns
     const ordersColumns: ColumnDef<any>[] = [
@@ -145,30 +152,21 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                         </h6>
                         <p>{values.orderStats?.totalOrders || 0}</p>
                     </div>
-                    <RatingAndNotesSection values={values} readOnly={readOnly} />
+                    <RatingAndNotesSection
+                        values={values}
+                        readOnly={readOnly}
+                    />
                 </div>
 
                 <h5 className="mt-8 mb-4">الطلبات </h5>
                 <DataTable
                     columns={ordersColumns}
                     data={values.orders || []}
+                    onRowClick={handleRowClick}
                     disablePagination
                     disableSorting
                 />
             </AdaptableCard>
-            {/* 
-            <CreateGurentee
-                dialogIsOpen={addGuaranteeDialogOpen}
-                setIsOpen={setAddGuaranteeDialogOpen}
-                orderId={values.orders?.[0]?._id}
-            />
-            <ChangeGuranteeStatusConfirmation
-                status={changeGuaranteeStatusDialog.status}
-                orderId={changeGuaranteeStatusDialog.orderId}
-                gId={changeGuaranteeStatusDialog.guaranteeId}
-                dialogIsOpen={changeGuaranteeStatusDialog.open}
-                closeDialog={closeChangeGuaranteeStatusDialog}
-            /> */}
         </>
     )
 }

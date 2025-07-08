@@ -69,6 +69,13 @@ export const protectedRoutes = [
         authority: [],
     },
 
+        {
+        key: 'ordersMenu.OrderDetails',
+        path: '/orders/:orderId',
+        component: lazy(() => import('@/views/orders/OrderDetails')),
+        authority: [],
+    },
+
     // {
     //     key: 'clientsMenu.addService',
     //     path: '/clients/:clientId/add-service',
