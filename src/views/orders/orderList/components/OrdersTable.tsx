@@ -38,6 +38,11 @@ const OrdersTable = () => {
 
     const columns: ColumnDef<any>[] = useMemo(
         () => [
+                 {
+                header: 'رقم الطلب',
+                accessorKey: 'orderNumber',
+                cell: (props) => props.getValue() || 'غير محدد',
+            },
             {
                 header: 'نوع السيارة',
                 accessorKey: 'carType',
