@@ -84,14 +84,14 @@ export const protectedRoutes = [
     //     ),
     //     authority: [],
     // },
-    {
-        key: 'servicesMenu.createService',
-        path: '/services/create-service',
-        component: lazy(
-            () => import('@/views/services/CreateService/CreateService')
-        ),
-        authority: [],
-    },
+    // {
+    //     key: 'servicesMenu.createService',
+    //     path: '/services/create-service',
+    //     component: lazy(
+    //         () => import('@/views/services/CreateService/CreateService')
+    //     ),
+    //     authority: [],
+    // },
     //     {
     //     key: 'order.ordersList',
     //     path: '/orders',
