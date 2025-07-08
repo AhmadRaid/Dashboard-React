@@ -22,7 +22,6 @@ export const OrdersTableTools = () => {
 
     const handleStatusFilter = (status: string) => {
         dispatch(setTableData({ 
-            statusFilter: status,
             pageIndex: 1,
         }))
     }
@@ -43,7 +42,7 @@ export const OrdersTableTools = () => {
 
     return (
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-5 gap-3">
-            <h4 className="text-2xl font-bold">جدول الخدمات والمبيعات</h4>
+            <h4 className="text-2xl font-bold">جدول المبيعات</h4>
             
             <div className="flex flex-col lg:flex-row items-center gap-3 w-full lg:w-auto">
                 <OrdersTableSearch />

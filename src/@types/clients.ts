@@ -3,7 +3,7 @@ export interface GetClientsParams {
     limit: number
     search?: string
     branch?: string
-    sort?:string
+    sort?: string
 }
 
 export type Client = {
@@ -86,13 +86,14 @@ export type OrdersGuarantee = {
 }
 export type ClientWithOrdersData = {
     _id?: string
+    clientNumber: string // تأكد من وجود هذا الحقل
     firstName: string
     middleName: string
     lastName: string
     email: string
     phone: string
-    rating?: number; 
-    notes?: string;
+    rating?: number
+    notes?: string
     orderStats: {
         totalOrders: number
         activeGuarantees: number

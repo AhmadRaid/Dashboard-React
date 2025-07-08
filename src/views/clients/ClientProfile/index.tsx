@@ -16,6 +16,7 @@ import * as Yup from 'yup'
 import OrdersClientFields from './OrdersClientFields'
 import { ClientWithOrdersData } from '@/@types/clients'
 import { useParams } from 'react-router-dom'
+import { ClientOrdersTools } from '../ClientOrders/components/ClientOrdersTools'
 
 export const validationSchema = Yup.object().shape({
     fullName: Yup.string().required('Full Name is required').min(2).max(100),
@@ -97,11 +98,12 @@ const OrdersClientForm = forwardRef<
     const initialValues = cloneDeep(
         initialData ?? {
             _id: '',
+            clientNumber: '',
             fullName: '',
             email: '',
             phone: '',
             rating: 0,
-        notes: [],
+            notes: [],
             clientType: 'individual',
             isDeleted: false,
             orderStats: {
@@ -129,7 +131,7 @@ const OrdersClientForm = forwardRef<
     )
 
     const { clientId } = useParams<{ clientId: string }>()
-    // وظائف التنقل للأزرار الجديدة
+
     const navigateToAddService = () => {
         if (!clientId) {
             console.error('Client ID is missing')
@@ -175,9 +177,12 @@ const OrdersClientForm = forwardRef<
                 <Form>
                     <FormContainer>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                            <div className="lg:col-span-2">
+                            <div className="md:col-span-2">
+                                <ClientOrdersTools
+                                    clientNumber={values.clientNumber}
+                                />
+
                                 <div className="mb-6 flex flex-wrap justify-end gap-3">
-                                    {/* زر إضافة خدمة */}
                                     <Button
                                         type="button"
                                         variant="solid"
@@ -209,7 +214,6 @@ const OrdersClientForm = forwardRef<
                                         تحديث/استفسار
                                     </Button>
 
-                                    {/* زر التقارير المالية */}
                                     <Button
                                         type="button"
                                         variant="twoTone"
@@ -225,7 +229,6 @@ const OrdersClientForm = forwardRef<
                                         </span>
                                     </Button>
 
-                                    {/* زر تقييم العميل */}
                                     <Button
                                         type="button"
                                         variant="solid"

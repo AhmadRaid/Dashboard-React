@@ -12,6 +12,7 @@ import { Button } from '@/components/ui'
 import { FiInfo } from 'react-icons/fi'
 import RatingAndNotesSection from '../ClientRating/RatingComponent'
 import { useNavigate } from 'react-router-dom'
+import React from 'react'
 
 const formatDate = (isoString?: string) => {
     if (!isoString) return ''
@@ -62,8 +63,8 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
     const navigate = useNavigate()
 
     const handleRowClick = (row: any) => {
-        console.log('row data', row);
-        navigate(`/orders/${row.original._id}`);
+        console.log('row data', row)
+        navigate(`/orders/${row.original._id}`)
     }
 
     // Merged Orders and Guarantees columns
@@ -84,19 +85,28 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                     )
                 }
                 return (
-                    <div>
+                    <div className="space-y-2">
                         {services.map((service: any, index: number) => (
-                            <div key={index}>
-                                {service.serviceType === 'protection'
-                                    ? 'حماية'
-                                    : service.serviceType === 'polish'
-                                    ? 'تلميع'
-                                    : service.serviceType === 'insulator'
-                                    ? 'عازل حراري'
-                                    : service.serviceType === 'additions'
-                                    ? 'اضافات'
-                                    : service.serviceType}
-                            </div>
+                            <React.Fragment key={index}>
+                                <div className="flex items-center">
+                                    <span className="font-medium">
+                                        {service.serviceType === 'protection'
+                                            ? 'حماية'
+                                            : service.serviceType === 'polish'
+                                            ? 'تلميع'
+                                            : service.serviceType ===
+                                              'insulator'
+                                            ? 'عازل حراري'
+                                            : service.serviceType ===
+                                              'additions'
+                                            ? 'إضافات'
+                                            : service.serviceType}
+                                    </span>
+                                </div>
+                                {index < services.length - 1 && (
+                                    <div className="border-t border-dashed border-gray-300 dark:border-gray-600 my-1"></div>
+                                )}
+                            </React.Fragment>
                         ))}
                     </div>
                 )
@@ -163,8 +173,6 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                     columns={ordersColumns}
                     data={values.orders || []}
                     onRowClick={handleRowClick}
-                    disablePagination
-                    disableSorting
                 />
             </AdaptableCard>
         </>

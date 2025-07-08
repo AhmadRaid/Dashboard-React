@@ -33,7 +33,6 @@ const ClientOrders = () => {
 
     return (
         <>
-            <ClientOrdersTools />
             {loading ? (
                 <Loading loading={loading} />
             ) : (

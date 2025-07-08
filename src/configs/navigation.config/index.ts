@@ -18,7 +18,7 @@ const navigationConfig: NavigationTree[] = [
             {
                 key: 'clientsMenu.clientsList',
                 path: '/clients',
-                title: 'عرض العملاء',
+                title: 'قائمة العملاء',
                 translateKey: 'nav.clientsMenu.updateClient',
                 icon: 'userEdit',
                 type: NAV_ITEM_TYPE_ITEM,

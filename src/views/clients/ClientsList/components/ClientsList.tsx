@@ -59,17 +59,6 @@ const ClientsTable = () => {
                 accessorKey: 'clientType',
                 sortable: false,
             },
-            {
-                header: 'نوع السيارة',
-                accessorKey: 'carType',
-                sortable: false,
-                cell: (props) => {
-                    const orders = props.row.original.orders
-                    return orders && orders.length > 0
-                        ? orders[0].carType
-                        : 'لا يوجد'
-                },
-            },
             { header: 'الهاتف', accessorKey: 'phone', sortable: false },
             {
                 header: 'تاريخ الانشاء',
@@ -77,13 +66,6 @@ const ClientsTable = () => {
                 cell: (props) =>
                     new Date(props.row.original.createdAt).toLocaleString(),
                 sortable: true,
-            },
-            {
-                header: 'تاريخ التحديث',
-                accessorKey: 'updatedAt',
-                cell: (props) =>
-                    new Date(props.row.original.updatedAt).toLocaleString(),
-                sortable: false,
             },
         ],
         []
