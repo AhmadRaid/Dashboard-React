@@ -1,18 +1,19 @@
 import AdaptableCard from '@/components/shared/AdaptableCard'
 import { ClientWithOrdersData } from '@/@types/clients'
-import { HiCheckCircle, HiPlusCircle, HiXCircle } from 'react-icons/hi'
-import CreateGurentee from './CreateGurentee'
 import { useState } from 'react'
-import ChangeGuranteeStatusConfirmation from './ChangeGuranteeStatusConfirmation'
-import GuaranteePdfExport from './GuaranteePdfExport'
 import DataTable from '@/components/shared/DataTable'
 import type { ColumnDef } from '@/components/shared/DataTable'
-import { Badge } from '@/components/ui'
+import { Notification, toast } from '@/components/ui'
 import { Button } from '@/components/ui'
-import { FiInfo } from 'react-icons/fi'
+import { FiDownload, FiInfo } from 'react-icons/fi'
 import RatingAndNotesSection from '../ClientRating/RatingComponent'
 import { useNavigate } from 'react-router-dom'
 import React from 'react'
+import { useAppSelector } from '@/store'
+import { apiGetInvoiceByOrderId } from '@/services/invoiceService'
+import InvoicePDF from '@/views/invoices/PDF/InvoicePDF'
+import { PDFDownloadLink, BlobProvider } from '@react-pdf/renderer'
+import { createRoot } from 'react-dom/client'
 
 const formatDate = (isoString?: string) => {
     if (!isoString) return ''
@@ -61,10 +62,70 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
 
     const { values, readOnly } = props
     const navigate = useNavigate()
+    const user = useAppSelector((state) => state.auth.user)
 
     const handleRowClick = (row: any) => {
         console.log('row data', row)
         navigate(`/orders/${row.original._id}`)
+    }
+
+    const handleDownloadGuarantee = (orderId: string) => {
+        console.log('Download guarantee for order:', orderId)
+        // هنا يمكنك استدعاء API لتحميل ضمان PDF
+    }
+
+    // عدل دالة handleDownloadInvoice كما يلي:
+    const handleDownloadInvoice = async (orderId: string) => {
+        try {
+            const response = await apiGetInvoiceByOrderId(orderId)
+
+            if (response.data.data) {
+                const invoiceData = response.data.data
+
+                // Create a temporary container
+                const container = document.createElement('div')
+                document.body.appendChild(container)
+
+                // Create root and render the BlobProvider
+                const root = createRoot(container)
+
+                root.render(
+                    <BlobProvider
+                        document={<InvoicePDF invoice={invoiceData} />}
+                    >
+                        {({ blob, url, loading, error }) => {
+                            if (blob && !loading) {
+                                // Create download link
+                                const downloadLink = document.createElement('a')
+                                downloadLink.href = url || ''
+                                downloadLink.download = `فاتورة_${invoiceData.invoiceNumber}.pdf`
+                                document.body.appendChild(downloadLink)
+                                downloadLink.click()
+
+                                // Clean up
+                                setTimeout(() => {
+                                    document.body.removeChild(downloadLink)
+                                    root.unmount()
+                                    document.body.removeChild(container)
+                                }, 100)
+                            }
+                            return null
+                        }}
+                    </BlobProvider>
+                )
+            }
+        } catch (error) {
+            console.error('Error downloading invoice:', error)
+            toast.push(
+                <Notification title="خطأ" type="danger">
+                    فشل في تحميل الفاتورة
+                </Notification>
+            )
+        }
+    }
+    const handleDownloadReceipt = (orderId: string) => {
+        console.log('Download receipt for order:', orderId)
+        // هنا يمكنك استدعاء API لتحميل استلام السيارة PDF
     }
 
     // Merged Orders and Guarantees columns
@@ -108,6 +169,52 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                                 )}
                             </React.Fragment>
                         ))}
+                    </div>
+                )
+            },
+        },
+        {
+            header: 'العمليات',
+            accessorKey: 'actions',
+            cell: (props) => {
+                const order = props.row.original
+                return (
+                    <div className="flex justify-center space-x-2 rtl:space-x-reverse">
+                        <Button
+                            type="button" // Add this
+                            size="xs"
+                            variant="solid"
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                handleDownloadInvoice(order._id)
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            icon={<FiDownload />}
+                        >
+                            تصدير فاتورة
+                        </Button>
+                        <Button
+                            size="xs"
+                            variant="solid"
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                handleDownloadGuarantee(order._id)
+                            }}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                            تصدير ضمان
+                        </Button>
+                        <Button
+                            size="xs"
+                            variant="solid"
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                handleDownloadReceipt(order._id)
+                            }}
+                            className="bg-purple-600 hover:bg-purple-700 text-white"
+                        >
+                            استلام سيارة
+                        </Button>
                     </div>
                 )
             },

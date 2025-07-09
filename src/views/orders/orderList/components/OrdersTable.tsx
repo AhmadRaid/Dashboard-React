@@ -43,24 +43,26 @@ const OrdersTable = () => {
     // Normalize the data to ensure it's always an array with the correct structure
     const normalizedData = useMemo(() => {
         if (!orderData) return []
-        
+
         // If data is an array, transform each item
         if (Array.isArray(orderData)) {
-            return orderData.map(item => ({
+            return orderData.map((item) => ({
                 ...item,
-                clientName: item.client 
+                clientName: item.client
                     ? `${item.client.firstName} ${item.client.middleName} ${item.client.lastName}`
-                    : 'غير محدد'
+                    : 'غير محدد',
             }))
         }
-        
+
         // If data is a single object, wrap it in an array
-        return [{
-            ...orderData,
-            clientName: orderData.client 
-                ? `${orderData.client.firstName} ${orderData.client.middleName} ${orderData.client.lastName}`
-                : 'غير محدد'
-        }]
+        return [
+            {
+                ...orderData,
+                clientName: orderData.client
+                    ? `${orderData.client.firstName} ${orderData.client.middleName} ${orderData.client.lastName}`
+                    : 'غير محدد',
+            },
+        ]
     }, [orderData])
 
     const columns: ColumnDef<any>[] = useMemo(
@@ -108,13 +110,17 @@ const OrdersTable = () => {
                                 <React.Fragment key={index}>
                                     <div className="flex items-center">
                                         <span className="font-medium">
-                                            {service.serviceType === 'protection'
+                                            {service.serviceType ===
+                                            'protection'
                                                 ? 'حماية'
-                                                : service.serviceType === 'polish'
+                                                : service.serviceType ===
+                                                  'polish'
                                                 ? 'تلميع'
-                                                : service.serviceType === 'insulator'
+                                                : service.serviceType ===
+                                                  'insulator'
                                                 ? 'عازل حراري'
-                                                : service.serviceType === 'additions'
+                                                : service.serviceType ===
+                                                  'additions'
                                                 ? 'إضافات'
                                                 : service.serviceType}
                                         </span>
@@ -131,7 +137,9 @@ const OrdersTable = () => {
             {
                 header: 'تاريخ الإنشاء',
                 cell: (props) =>
-                    new Date(props.row.original.createdAt).toLocaleDateString('ar-SA'),
+                    new Date(props.row.original.createdAt).toLocaleDateString(
+                        'ar-SA'
+                    ),
             },
         ],
         []
@@ -156,12 +164,12 @@ const OrdersTable = () => {
                     onPaginationChange={(page) =>
                         dispatch(setTableData({ pageIndex: page }))
                     }
-                    onRowClick={(row) => navigate(`/orders/${row.original._id}`)}
+                    onRowClick={(row) =>
+                        navigate(`/orders/${row.original._id}`)
+                    }
                 />
             ) : (
-                <div className="text-center py-8">
-                    لا توجد بيانات متاحة
-                </div>
+                <div className="text-center py-8">لا توجد بيانات متاحة</div>
             )}
         </div>
     )

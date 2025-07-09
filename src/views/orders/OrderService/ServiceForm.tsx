@@ -307,17 +307,10 @@ const OrderServiceForm = forwardRef<FormikRef, OrderServiceFormProps>(
                         } catch (error) {
                             console.error('Failed to update services:', error)
                             toast.push(
-                                toast.danger(
-                                    'للاسف تم رفض الطلب! الرجاء المحاولة مرة اخرى',
-                                    {
-                                        title: 'خطأ',
-                                        duration: 2500,
-                                        placement: 'top-center',
-                                    }
-                                )
+                                <Notification title="خطأ" type="danger">
+                                    فشل في تحميل الفاتورة
+                                </Notification>
                             )
-                        } finally {
-                            setSubmitting(false)
                         }
                     }}
                 >

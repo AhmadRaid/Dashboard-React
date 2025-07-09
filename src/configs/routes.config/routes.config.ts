@@ -36,10 +36,12 @@ export const protectedRoutes = [
         authority: [],
     },
 
-        {
+    {
         key: 'clientsMenu.clientRating',
         path: '/clients/:clientId/UpdateRating',
-        component: lazy(() => import('@/views/clients/ClientRating/ClientRatingForm')),
+        component: lazy(
+            () => import('@/views/clients/ClientRating/ClientRatingForm')
+        ),
         authority: [],
     },
 
@@ -69,78 +71,24 @@ export const protectedRoutes = [
         authority: [],
     },
 
-        {
+    {
         key: 'ordersMenu.OrderDetails',
         path: '/orders/:orderId',
         component: lazy(() => import('@/views/orders/OrderDetails')),
         authority: [],
     },
-
-    // {
-    //     key: 'clientsMenu.addService',
-    //     path: '/clients/:clientId/add-service',
-    //     component: lazy(
-    //         () => import('@/views/clients/AddService/AddServicePage')
-    //     ),
-    //     authority: [],
-    // },
-    // {
-    //     key: 'servicesMenu.createService',
-    //     path: '/services/create-service',
-    //     component: lazy(
-    //         () => import('@/views/services/CreateService/CreateService')
-    //     ),
-    //     authority: [],
-    // },
-    //     {
-    //     key: 'order.ordersList',
-    //     path: '/orders',
-    //     component: lazy(
-    //         () => import('@/views/orders/orderList/components/OrdersTable')
-    //     ),
-    //     authority: [],
-    // },
     {
         key: 'clientsMenu.branchClients',
         path: '/clients/:branchType',
         component: lazy(() => import('@/views/clients/ClientsList')),
         authority: [],
     },
-    // Commented routes remain unchanged
-    // {
-    //     key: 'ordersMenu.createOrder',
-    //     path: '/orders/create-order',
-    //     component: lazy(() => import('@/views/orders/CreateOrder/CreateOrder')),
-    //     authority: [],
-    // },
-    // {
-    //     key: 'ordersMenu.viewOrder',
-    //     path: '/orders/:orderId',
-    //     component: lazy(() => import('@/views/orders/OrderDetails/OrderDetails')),
-    //     authority: [],
-    // },
-    // {
-    //     key: 'ordersMenu.clientOrders',
-    //     path: '/clients/:clientId/orders',
-    //     component: lazy(() => import('@/views/orders/ClientOrders/ClientOrders')),
-    //     authority: [],
-    // },
-    // {
-    //     key: 'carsMenu.carsList',
-    //     path: '/cars',
-    //     component: lazy(() => import('@/views/cars/CarsList/components/CarsList')),
-    //     authority: [],
-    // },
-    // {
-    //     key: 'carsMenu.addCar',
-    //     path: '/cars/add',
-    //     component: lazy(() => import('@/views/cars/CreateCar/CreateCar')),
-    //     authority: [],
-    // },
-    // {
-    //     key: 'servicesMenu.servicesList',
-    //     path: '/services',
-    //     component: lazy(() => import('@/views/services/ServicesList')),
-    //     authority: [],
-    // },
+    ///////////////////////////////////// Invoice Route /////////////////////////////////////
+
+    {
+        key: 'invoicesMenu.invoicesList',
+        path: '/invoices',
+        component: lazy(() => import('@/views/invoices/InvoiceList/components/InvoicesList')),
+        authority: [],
+    },
 ]

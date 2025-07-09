@@ -18,11 +18,15 @@ import { useAppSelector } from '@/store'
 const sideNavStyle = {
     width: SIDE_NAV_WIDTH,
     minWidth: SIDE_NAV_WIDTH,
+    height: 'calc(100vh - 60px)', // اضبط الارتفاع حسب الحاجة
+    overflow: 'hidden',
 }
 
 const sideNavCollapseStyle = {
     width: SIDE_NAV_COLLAPSED_WIDTH,
     minWidth: SIDE_NAV_COLLAPSED_WIDTH,
+    height: 'calc(100vh - 60px)', // اضبط الارتفاع حسب الحاجة
+    overflow: 'hidden',
 }
 
 const SideNav = () => {
@@ -100,8 +104,15 @@ const SideNav = () => {
                     {sideNavCollapse ? (
                         menuContent
                     ) : (
-                        <div className="side-nav-content">
-                            <ScrollBar autoHide direction={direction}>
+                        <div
+                            className="side-nav-content"
+                            style={{ height: '100%' }}
+                        >
+                            <ScrollBar
+                                autoHide
+                                direction={direction}
+                                style={{ height: '100%' }}
+                            >
                                 {menuContent}
                             </ScrollBar>
                         </div>

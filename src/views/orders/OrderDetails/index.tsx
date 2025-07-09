@@ -69,11 +69,11 @@ const OrderDetails = () => {
     return (
         <div className="container mx-auto p-4">
             <div className="flex justify-between items-center mb-6">
-                 <h3 className="text-2xl font-bold mb-1">
+                <h3 className="text-2xl font-bold mb-1">
                     تفاصيل طلب
                     {order.orderNumber && (
                         <span className="mr-2 text-indigo-600 dark:text-indigo-400 text-xl">
-                        #{order.orderNumber}
+                            #{order.orderNumber}
                         </span>
                     )}
                 </h3>
