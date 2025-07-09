@@ -13,7 +13,7 @@ export default defineConfig({
     }
   }),
   dynamicImport()],
-  assetsInclude: ['**/*.md'],
+  assetsInclude: ['**/*.md', '**/*.ttf', '**/*.otf'], // <--- التغيير هنا
   resolve: {
     alias: {
       '@': path.join(__dirname, 'src'),
