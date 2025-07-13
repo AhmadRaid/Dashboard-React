@@ -9,9 +9,11 @@ import { AiOutlineSave } from 'react-icons/ai'
 import cloneDeep from 'lodash/cloneDeep'
 import * as Yup from 'yup'
 import Input from '@/components/ui/Input'
-import { Select, toast } from '@/components/ui'
+import { Select } from '@/components/ui'
 import { useNavigate, useParams } from 'react-router-dom'
 import { apiAddOrder } from '@/services/OrdersService'
+import { toast, Notification } from '@/components/ui'
+
 
 type FormikRef = FormikProps<any>
 
@@ -218,8 +220,6 @@ const DeleteProductButton = ({ onDelete }: { onDelete: any }) => {
     )
 }
 
-
-
 const OrderForm = forwardRef<FormikRef, FullOrderFormProps>((props, ref) => {
     const [serviceCounter, setServiceCounter] = useState(1)
     const { clientId } = useParams<{ clientId: string }>()
@@ -285,58 +285,29 @@ const OrderForm = forwardRef<FormikRef, FullOrderFormProps>((props, ref) => {
         form.setFieldValue('services', services)
     }
 
-     function removeEmptyFields(obj: any): any {
-        // حالة القيم الأساسية (ليست كائن أو مصفوفة)
-        if (typeof obj !== 'object' || obj === null) {
-            return obj
-        }
+   function removeEmptyFields(obj: any): any {
+  if (obj === null || typeof obj !== 'object') {
+    return obj;
+  }
 
-        // حالة المصفوفات
-        if (Array.isArray(obj)) {
-            const cleanedArray = obj
-                .map((item) => removeEmptyFields(item)) // تطبيق الدالة على كل عنصر
-                .filter((item) => {
-                    // تصفية العناصر الفارغة
-                    if (typeof item === 'object' && item !== null) {
-                        // بالنسبة لمصفوفة الخدمات، تأكد من وجود حقول مطلوبة
-                        if (
-                            item.serviceType ||
-                            item.dealDetails ||
-                            item.guarantee?.typeGuarantee
-                        ) {
-                            return true
-                        }
-                        return false
-                    }
-                    return item !== undefined && item !== null && item !== ''
-                })
+  if (Array.isArray(obj)) {
+    const cleanedArray = obj
+      .map(item => removeEmptyFields(item))
+      .filter(item => item !== undefined && item !== null && item !== '');
 
-            // إذا كانت المصفوفة فارغة بعد التنظيف، نعيد undefined
-            return cleanedArray.length > 0 ? cleanedArray : undefined
-        }
+    return cleanedArray.length > 0 ? cleanedArray : undefined;
+  }
 
-        // حالة الكائنات
-        const cleaned: Record<string, any> = {}
-        for (const [key, value] of Object.entries(obj)) {
-            const cleanedValue = removeEmptyFields(value) // تطبيق الدالة بشكل متكرر
-
-            // الاحتفاظ بالقيمة فقط إذا لم تكن فارغة
-            if (
-                cleanedValue !== undefined &&
-                cleanedValue !== null &&
-                cleanedValue !== '' &&
-                !(
-                    typeof cleanedValue === 'object' &&
-                    Object.keys(cleanedValue).length === 0
-                ) &&
-                !(Array.isArray(cleanedValue) && cleanedValue.length === 0)
-            ) {
-                cleaned[key] = cleanedValue
-            }
-        }
-
-        return Object.keys(cleaned).length > 0 ? cleaned : undefined
+  const cleaned: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const cleanedValue = removeEmptyFields(value);
+    if (cleanedValue !== undefined && cleanedValue !== null && cleanedValue !== '') {
+      cleaned[key] = cleanedValue;
     }
+  }
+
+  return Object.keys(cleaned).length > 0 ? cleaned : undefined;
+}
 
     const carSizeOptions = [
         { label: 'Small', value: 'small' },
@@ -346,69 +317,70 @@ const OrderForm = forwardRef<FormikRef, FullOrderFormProps>((props, ref) => {
         { label: 'XX-Large', value: 'XX-large' },
     ]
 
-    const handleSubmit = async (values, { setSubmitting }) => {
-        try {
-            // تنظيف البيانات قبل الإرسال
-            const cleanedData = removeEmptyFields(cloneDeep(values))
+   const handleSubmit = async (values, { setSubmitting }) => {
+  try {
+    // إنشاء نسخة عميقة من البيانات
+    const dataToSend = cloneDeep(values);
 
-            // معالجة لوحة السيارة إذا كانت مصفوفة
-            if (Array.isArray(cleanedData.carPlateNumber)) {
-                cleanedData.carPlateNumber = cleanedData.carPlateNumber.join('')
-            }
-
-            // تحويل تواريخ الضمان إلى ISOString
-            if (cleanedData.services) {
-                cleanedData.services = cleanedData.services.map((service) => {
-                    if (service.guarantee?.startDate) {
-                        service.guarantee.startDate = new Date(
-                            service.guarantee.startDate
-                        ).toISOString()
-                    }
-                    if (service.guarantee?.endDate) {
-                        service.guarantee.endDate = new Date(
-                            service.guarantee.endDate
-                        ).toISOString()
-                    }
-                    return service
-                })
-            }
-
-            console.log('Data being sent:', cleanedData)
-
-            if (!clientId) {
-                toast.push(
-                    <Notification type="danger">
-                        معرف العميل غير صالح
-                    </Notification>
-                )
-                navigate('/clients')
-                return
-            }
-
-            // إرسال البيانات المنظفة
-            const response = await apiAddOrder(clientId, cleanedData)
-
-            if (response.success) {
-                toast.push(
-                    <Notification title="تم اضافة الطلب" type="success">
-                        تم اضافة الطلب بنجاح
-                    </Notification>
-                )
-                navigate(`/clients/${clientId}`)
-            } else {
-                throw new Error(response.message || 'فشل في إضافة الطلب')
-            }
-        } catch (error) {
-            console.error('Error submitting order:', error)
-            toast.push(
-                <Notification title="خطأ" type="danger">
-                    {error.message || 'حدث خطأ أثناء إضافة الطلب'}
-                </Notification>
-            )
-        } finally {
-            setSubmitting(false)
-        }
+    // معالجة لوحة السيارة إذا كانت مصفوفة
+    if (Array.isArray(dataToSend.carPlateNumber)) {
+      dataToSend.carPlateNumber = dataToSend.carPlateNumber.join('');
     }
+
+    // تحويل تواريخ الضمان إلى ISOString
+    if (dataToSend.services) {
+      dataToSend.services = dataToSend.services.map(service => {
+        if (service.guarantee?.startDate) {
+          service.guarantee.startDate = new Date(service.guarantee.startDate).toISOString();
+        }
+        if (service.guarantee?.endDate) {
+          service.guarantee.endDate = new Date(service.guarantee.endDate).toISOString();
+        }
+        return service;
+      });
+    }
+
+    // تنظيف البيانات بعد كل التحويلات
+    const cleanedData = removeEmptyFields(dataToSend);
+
+    console.log('Data being sent:', cleanedData);
+
+    if (!clientId) {
+      toast.push(
+        <Notification type="danger">
+          معرف العميل غير صالح
+        </Notification>
+      );
+      navigate('/clients');
+      return;
+    }
+
+    console.log('Stringified data:', JSON.stringify(cleanedData, null, 2));
+
+    // إرسال البيانات
+    const response = await apiAddOrder(clientId, cleanedData);
+
+    if (response.success) {
+      toast.push(
+        <Notification title="تم اضافة الطلب" type="success">
+          تم اضافة الطلب بنجاح
+        </Notification>
+      );
+      navigate(`/clients/${clientId}`);
+    } else {
+      throw new Error(response.message || 'فشل في إضافة الطلب');
+    }
+  } catch (error) {
+    console.error('Error submitting order:', error);
+    toast.push(
+      <Notification title="خطأ" type="danger">
+        {error.message || 'حدث خطأ أثناء إضافة الطلب'}
+      </Notification>
+    );
+  } finally {
+    setSubmitting(false);
+  }
+};
 
     return (
         <>

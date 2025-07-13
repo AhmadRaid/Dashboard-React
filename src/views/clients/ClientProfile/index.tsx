@@ -192,7 +192,7 @@ const OrdersClientForm = forwardRef<
                                 />
 
                                 <div className="mb-6 flex flex-wrap justify-end gap-3">
-                                    <Button
+                                    {/* <Button
                                         type="button"
                                         variant="solid"
                                         icon={
@@ -208,7 +208,7 @@ const OrdersClientForm = forwardRef<
                                                 جديد
                                             </span>
                                         </span>
-                                    </Button>
+                                    </Button> */}
                                     <Button
                                         type="button"
                                         variant="solid"
