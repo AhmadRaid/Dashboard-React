@@ -11,6 +11,7 @@ import {
     AiOutlineSync,
     AiOutlineFileText,
     AiOutlineStar,
+    AiOutlineShoppingCart,
 } from 'react-icons/ai'
 import * as Yup from 'yup'
 import OrdersClientFields from './OrdersClientFields'
@@ -156,6 +157,14 @@ const OrdersClientForm = forwardRef<
         navigate(`/clients/${clientId}/UpdateRating`)
     }
 
+    const navigateToAddFullOrder = () => {
+        if (!clientId) {
+            console.error('Client ID is missing')
+            return
+        }
+        navigate(`/orders/add-order/${clientId}`)
+    }
+
     return (
         <Formik
             innerRef={ref}
@@ -183,6 +192,23 @@ const OrdersClientForm = forwardRef<
                                 />
 
                                 <div className="mb-6 flex flex-wrap justify-end gap-3">
+                                    <Button
+                                        type="button"
+                                        variant="solid"
+                                        icon={
+                                            <AiOutlineShoppingCart className="text-lg" />
+                                        }
+                                        onClick={navigateToAddFullOrder}
+                                        className="bg-purple-600 hover:bg-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                                        size="sm"
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            إضافة طلب
+                                            <span className="bg-white/20 rounded-full px-2 py-1 text-xs">
+                                                جديد
+                                            </span>
+                                        </span>
+                                    </Button>
                                     <Button
                                         type="button"
                                         variant="solid"

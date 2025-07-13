@@ -55,6 +55,12 @@ export const protectedRoutes = [
         ),
         authority: [],
     },
+    {
+        key: 'ordersMenu.AddOrder',
+        path: '/orders/add-order/:clientId',
+        component: lazy(() => import('@/views/orders/OrderForm/OrderFields')),
+        authority: [],
+    },
 
     {
         key: 'ordersMenu.AddService',
@@ -88,7 +94,9 @@ export const protectedRoutes = [
     {
         key: 'invoicesMenu.invoicesList',
         path: '/invoices',
-        component: lazy(() => import('@/views/invoices/InvoiceList/components/InvoicesList')),
+        component: lazy(
+            () => import('@/views/invoices/InvoiceList/components/InvoicesList')
+        ),
         authority: [],
     },
 ]

@@ -87,7 +87,6 @@ const UpdateDataClient = () => {
     }, [clientId, navigate])
 
     const handleSubmit = async (values, { setSubmitting }) => {
-        console.log('2222222222222',values);
 
            const payload = Object.fromEntries(
             Object.entries(values).filter(([_, value]) => 

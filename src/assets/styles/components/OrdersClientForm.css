@@ -1,0 +1,58 @@
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes underline {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+@keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.animate-pulse {
+    animation: pulse 2s infinite;
+}
+
+.animate-underline {
+    animation: underline 0.3s ease-out forwards;
+}
+
+.animate-gradient-shift {
+    animation: gradient-shift 8s ease infinite;
+    background-size: 200% 200%;
+}
+
+.animate-spin-on-hover:hover {
+    animation: spin 1s linear infinite;
+}
+
+.animate-pulse-on-hover:hover {
+    animation: pulse 1s infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.group:hover .group-hover\:rotate-[-10deg] {
+    transform: rotate(-10deg);
+}
+
+.group:hover .group-hover\:rotate-90 {
+    transform: rotate(90deg);
+}
+
+.group:hover .group-hover\:animate-bounce {
+    animation: bounce 0.5s;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
