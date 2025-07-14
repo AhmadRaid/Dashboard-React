@@ -7,11 +7,11 @@ import { Form, Formik, FormikProps, FieldProps } from 'formik'
 import { AiOutlineSave } from 'react-icons/ai'
 import cloneDeep from 'lodash/cloneDeep'
 import * as Yup from 'yup'
-import OrderServiceFields from './ServiceField'
 import { HiOutlineTrash } from 'react-icons/hi'
 import { apiSendServiceForOrder } from '@/services/OrdersService'
 import { toast, Notification } from '@/components/ui'
 import { useNavigate, useParams } from 'react-router-dom'
+import OrderServiceFields from './OrderField'
 
 type FormikRef = FormikProps<any>
 
