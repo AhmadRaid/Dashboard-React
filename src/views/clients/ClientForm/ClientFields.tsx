@@ -154,20 +154,47 @@ const ClientFields = (props: ClientFieldsProps) => {
                                 size="sm"
                                 placeholder="05xxxxxxxx"
                                 onChange={(e) => {
-                                    let value = e.target.value.replace(
+                                    let rawValue = e.target.value.replace(
                                         /\D/g,
                                         ''
-                                    ) // Remove non-digits
-                                    if (
-                                        value.length > 0 &&
-                                        !value.startsWith('05')
-                                    ) {
-                                        value = '05' + value.substring(2)
+                                    ) // إزالة الأحرف غير الرقمية
+
+                                    let formattedValue = ''
+
+                                    if (rawValue.length > 0) {
+                                        // دائماً نبدأ بـ '05'
+                                        formattedValue = '05'
+
+                                        // نضيف بقية الأرقام من rawValue، بدءًا من ما بعد أول '05' إذا كانت موجودة
+                                        // أو نضيفها من البداية إذا كانت الأرقام لا تبدأ بـ '05'
+                                        let remainingDigits = rawValue
+                                        if (rawValue.startsWith('05')) {
+                                            remainingDigits =
+                                                rawValue.substring(2)
+                                        } else if (
+                                            rawValue.startsWith('0') &&
+                                            rawValue.length > 1 &&
+                                            rawValue[1] !== '5'
+                                        ) {
+                                            remainingDigits =
+                                                rawValue.substring(1)
+                                        } else if (
+                                            rawValue.startsWith('5') &&
+                                            rawValue.length > 0
+                                        ) {
+                                            remainingDigits =
+                                                rawValue.substring(1) // لو بدأ ب 5
+                                        } else {
+                                            remainingDigits = rawValue
+                                        }
+                                        formattedValue +=
+                                            remainingDigits.substring(0, 8) // نضيف 8 أرقام كحد أقصى بعد 05
                                     }
-                                    if (value.length > 10) {
-                                        value = value.substring(0, 10)
-                                    }
-                                    form.setFieldValue(field.name, value)
+
+                                    form.setFieldValue(
+                                        field.name,
+                                        formattedValue
+                                    )
                                 }}
                             />
                         )}
@@ -277,46 +304,58 @@ const ClientFields = (props: ClientFieldsProps) => {
                     />
                 </FormItem>
 
-         <FormItem
-    label="رقم لوحة السيارة"
-    invalid={!!errors.carPlateNumber && !!touched.carPlateNumber}
-    errorMessage={errors.carPlateNumber as string}
->
-    <Field name="carPlateNumber">
-        {({ field, form }: FieldProps) => (
-            <div className="flex gap-2">
-                {[...Array(8)].map((_, i) => (
-                    <Input
-                        key={i}
-                        type="text"
-                        size="sm"
-                        maxLength={1}
-                        className="text-center w-10"
-                        value={field.value?.[i] || ''}
-                        onChange={(e) => {
-                            const value = e.target.value.toUpperCase();
-                            let newValue = field.value || '';
-                            
-                            // إنشاء نسخة من القيمة الحالية مع حرف واحد محدث
-                            newValue = newValue.padEnd(8, ' '); // تأكد من طول 8 أحرف
-                            newValue = newValue.substring(0, i) + value + newValue.substring(i + 1);
-                            
-                            form.setFieldValue(field.name, newValue.trim());
-                            
-                            if (value && i < 7) {
-                                const nextInput = document.querySelector(
-                                    `input[name="${field.name}-${i + 1}"]`
-                                ) as HTMLInputElement;
-                                nextInput?.focus();
-                            }
-                        }}
-                        name={`${field.name}-${i}`}
-                    />
-                ))}
-            </div>
-        )}
-    </Field>
-</FormItem>
+                <FormItem
+                    label="رقم لوحة السيارة"
+                    invalid={
+                        !!errors.carPlateNumber && !!touched.carPlateNumber
+                    }
+                    errorMessage={errors.carPlateNumber as string}
+                >
+                    <Field name="carPlateNumber">
+                        {({ field, form }: FieldProps) => (
+                            <div className="flex gap-2">
+                                {[...Array(8)].map((_, i) => (
+                                    <Input
+                                        key={i}
+                                        type="text"
+                                        size="sm"
+                                        maxLength={1}
+                                        className="text-center w-10"
+                                        value={field.value?.[i] || ''}
+                                        onChange={(e) => {
+                                            const value =
+                                                e.target.value.toUpperCase()
+                                            let newValue = field.value || ''
+
+                                            // إنشاء نسخة من القيمة الحالية مع حرف واحد محدث
+                                            newValue = newValue.padEnd(8, ' ') // تأكد من طول 8 أحرف
+                                            newValue =
+                                                newValue.substring(0, i) +
+                                                value +
+                                                newValue.substring(i + 1)
+
+                                            form.setFieldValue(
+                                                field.name,
+                                                newValue.trim()
+                                            )
+
+                                            if (value && i < 7) {
+                                                const nextInput =
+                                                    document.querySelector(
+                                                        `input[name="${
+                                                            field.name
+                                                        }-${i + 1}"]`
+                                                    ) as HTMLInputElement
+                                                nextInput?.focus()
+                                            }
+                                        }}
+                                        name={`${field.name}-${i}`}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </Field>
+                </FormItem>
 
                 <FormItem
                     label="الشركة المصنعة"
@@ -362,10 +401,13 @@ const ClientFields = (props: ClientFieldsProps) => {
                                     <span className="block font-medium">
                                         {option.label}
                                     </span>
+                                    {/* هنا تم تعديل عرض النص ليكون أكثر وضوحًا */}
                                     <span className="block text-xs text-gray-500 dark:text-gray-400">
                                         {option.value === 'small'}
                                         {option.value === 'medium'}
                                         {option.value === 'large'}
+                                        {option.value === 'X-large'}
+                                        {option.value === 'XX-large'}
                                     </span>
                                 </div>
                             </label>

@@ -54,9 +54,19 @@ const ClientsTable = () => {
                 accessorKey: 'lastName',
                 sortable: false,
             },
-            {
+          {
                 header: 'نوع العميل',
                 accessorKey: 'clientType',
+                cell: (props) => {
+                    const clientType = props.row.original.clientType
+                    return (
+                        <span>
+                            {clientType === 'individual' ? 'فردي' :
+                             clientType === 'company' ? 'شركة' :
+                             clientType}
+                        </span>
+                    )
+                },
                 sortable: false,
             },
             { header: 'الهاتف', accessorKey: 'phone', sortable: false },

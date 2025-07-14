@@ -250,32 +250,31 @@ export const validationSchema = Yup.object().shape({
         }
     ),
 
-    // carPlateNumber: Yup.string()
-    //     .matches(
-    //         /^[أ-ي0-9]{8}$/,
-    //         'يجب أن يتكون رقم اللوحة من 7 أحرف عربية أو أرقام'
-    //     )
-    //     .test(
-    //         'require-if-car-fields-exist',
-    //         'رقم لوحة السيارة مطلوب عند إدخال أي بيانات للسيارة',
-    //         function (value) {
-    //             const {
-    //                 carType,
-    //                 carModel,
-    //                 carColor,
-    //                 carManufacturer,
-    //                 carSize,
-    //                 services,
-    //             } = this.parent
-    //             const anyCarFieldFilled =
-    //                 !!carType ||
-    //                 !!carModel ||
-    //                 !!carColor ||
-    //                 !!carManufacturer ||
-    //                 !!carSize 
-    //             return anyCarFieldFilled ? !!value : true
-    //         }
-    //     ),
+   carPlateNumber: Yup.string()
+        .matches(
+            /^[أ-يa-zA-Z0-9]{7,8}$/, // تم تعديل التعبير النمطي هنا
+            'يجب أن يتكون رقم اللوحة من 7 أو 8 أحرف عربية/إنجليزية أو أرقام' // رسالة خطأ محدثة
+        )
+        .test(
+            'require-if-car-fields-exist',
+            'رقم لوحة السيارة مطلوب عند إدخال أي بيانات للسيارة',
+            function (value) {
+                const {
+                    carType,
+                    carModel,
+                    carColor,
+                    carManufacturer,
+                    carSize,
+                } = this.parent
+                const anyCarFieldFilled =
+                    !!carType ||
+                    !!carModel ||
+                    !!carColor ||
+                    !!carManufacturer ||
+                    !!carSize
+                return anyCarFieldFilled ? !!value : true
+            }
+        ),
 
     carSize: Yup.string()
         .oneOf(

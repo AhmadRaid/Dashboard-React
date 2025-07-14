@@ -1,5 +1,5 @@
 import { forwardRef } from 'react'
-import { FormContainer } from '@/components/ui/Form'
+// import { FormContainer } from '@/components/ui/Form' // سنقوم بإزالة هذا الاستيراد إذا لم نعد نستخدمه
 import Button from '@/components/ui/Button'
 import StickyFooter from '@/components/shared/StickyFooter'
 import { Form, Formik, FormikProps } from 'formik'
@@ -18,6 +18,7 @@ import OrdersClientFields from './OrdersClientFields'
 import { ClientWithOrdersData } from '@/@types/clients'
 import { useParams } from 'react-router-dom'
 import { ClientOrdersTools } from '../ClientOrders/components/ClientOrdersTools'
+// import Container from '@/components/shared/Container' // سنقوم بإزالة هذا الاستيراد إذا لم نعد نستخدمه
 
 export const validationSchema = Yup.object().shape({
     fullName: Yup.string().required('Full Name is required').min(2).max(100),
@@ -150,10 +151,18 @@ const OrdersClientForm = forwardRef<
     }
 
     const navigateToFinancialReports = () => {
-        navigate(`/clients/${clientId}/financial-reports`)
+        if (!clientId) {
+            console.error('Client ID is missing for financial reports')
+            return
+        }
+        navigate(`/invoices/financial-reports/${clientId}`)
     }
 
     const navigateToCustomerRating = () => {
+        if (!clientId) {
+            console.error('Client ID is missing for customer rating')
+            return
+        }
         navigate(`/clients/${clientId}/UpdateRating`)
     }
 
@@ -175,6 +184,7 @@ const OrdersClientForm = forwardRef<
                 const data = cloneDeep(values)
                 data.orders.forEach((order) => {
                     order.guarantee.forEach((g) => {
+                        // Ensure dates are saved in ISO format
                         g.startDate = new Date(g.startDate).toISOString()
                         g.endDate = new Date(g.endDate).toISOString()
                     })
@@ -184,131 +194,113 @@ const OrdersClientForm = forwardRef<
         >
             {({ values, touched, errors, isSubmitting }) => (
                 <Form>
-                    <FormContainer>
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                            <div className="md:col-span-2">
-                                <ClientOrdersTools
-                                    clientNumber={values.clientNumber}
-                                />
+                    {/* تمت إزالة Container و FormContainer و Grid Layout */}
+                    {/* والآن يتم عرض المحتوى مباشرة داخل الـ Form */}
+                    <ClientOrdersTools
+                        clientNumber={values.clientNumber}
+                    />
 
-                                <div className="mb-6 flex flex-wrap justify-end gap-3">
-                                    {/* <Button
-                                        type="button"
-                                        variant="solid"
-                                        icon={
-                                            <AiOutlineShoppingCart className="text-lg" />
-                                        }
-                                        onClick={navigateToAddFullOrder}
-                                        className="bg-purple-600 hover:bg-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-                                        size="sm"
-                                    >
-                                        <span className="flex items-center gap-2">
-                                            إضافة طلب
-                                            <span className="bg-white/20 rounded-full px-2 py-1 text-xs">
-                                                جديد
-                                            </span>
-                                        </span>
-                                    </Button> */}
-                                    <Button
-                                        type="button"
-                                        variant="solid"
-                                        icon={
-                                            <AiOutlinePlus className="text-lg" />
-                                        }
-                                        onClick={navigateToAddService}
-                                        className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-                                        size="sm"
-                                    >
-                                        <span className="flex items-center gap-2">
-                                            إضافة خدمة
-                                            <span className="bg-white/20 rounded-full px-2 py-1 text-xs">
-                                                جديد
-                                            </span>
-                                        </span>
-                                    </Button>
+                    <div className="mb-6 flex flex-wrap gap-3 justify-end md:justify-start">
+                        {/* "Add New Order" button */}
+                        <Button
+                            type="button"
+                            variant="solid"
+                            icon={<AiOutlineShoppingCart className="text-lg" />}
+                            onClick={navigateToAddFullOrder}
+                            className="bg-purple-600 hover:bg-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                            size="sm"
+                        >
+                            <span className="flex items-center gap-2">
+                                إضافة طلب <span className="bg-white/20 rounded-full px-2 py-1 text-xs">جديد</span>
+                            </span>
+                        </Button>
 
-                                    <Button
-                                        type="button"
-                                        variant="twoTone"
-                                        icon={
-                                            <AiOutlineSync className="text-lg" />
-                                        }
-                                        onClick={navigateToUpdateProfile}
-                                        className="text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-300 bg-blue-50 hover:bg-blue-100 shadow-sm hover:shadow-md transition-all duration-300"
-                                        size="sm"
-                                    >
-                                        تحديث/استفسار
-                                    </Button>
+                        {/* "Add New Service" button */}
+                        <Button
+                            type="button"
+                            variant="solid"
+                            icon={<AiOutlinePlus className="text-lg" />}
+                            onClick={navigateToAddService}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                            size="sm"
+                        >
+                            <span className="flex items-center gap-2">
+                                إضافة خدمة <span className="bg-white/20 rounded-full px-2 py-1 text-xs">جديدة</span>
+                            </span>
+                        </Button>
 
-                                    <Button
-                                        type="button"
-                                        variant="twoTone"
-                                        icon={
-                                            <AiOutlineFileText className="text-lg" />
-                                        }
-                                        onClick={navigateToFinancialReports}
-                                        className="text-green-600 hover:text-green-700 border-green-200 hover:border-green-300 bg-green-50 hover:bg-green-100 shadow-sm hover:shadow-md transition-all duration-300"
-                                        size="sm"
-                                    >
-                                        <span className="relative">
-                                            التقارير المالية
-                                        </span>
-                                    </Button>
+                        {/* "Update/Inquire" button */}
+                        <Button
+                            type="button"
+                            variant="twoTone"
+                            icon={<AiOutlineSync className="text-lg" />}
+                            onClick={navigateToUpdateProfile}
+                            className="text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-300 bg-blue-50 hover:bg-blue-100 shadow-sm hover:shadow-md transition-all duration-300"
+                            size="sm"
+                        >
+                            تحديث/استفسار
+                        </Button>
 
-                                    <Button
-                                        type="button"
-                                        variant="solid"
-                                        icon={
-                                            <AiOutlineStar className="text-lg" />
-                                        }
-                                        onClick={navigateToCustomerRating}
-                                        className="bg-amber-500 hover:bg-amber-600 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-                                        size="sm"
-                                    >
-                                        <span className="flex items-center gap-1">
-                                            تقييم العميل
-                                            <span className="text-yellow-200">
-                                                ★★★★★
-                                            </span>
-                                        </span>
-                                    </Button>
-                                </div>
+                        {/* "Financial Reports" button */}
+                        <Button
+                            type="button"
+                            variant="twoTone"
+                            icon={<AiOutlineFileText className="text-lg" />}
+                            onClick={navigateToFinancialReports}
+                            className="text-green-600 hover:text-green-700 border-green-200 hover:border-green-300 bg-green-50 hover:bg-green-100 shadow-sm hover:shadow-md transition-all duration-300"
+                            size="sm"
+                        >
+                            التقارير المالية
+                        </Button>
 
-                                <OrdersClientFields
-                                    touched={touched}
-                                    errors={errors}
-                                    values={values}
-                                    readOnly={readOnly}
-                                />
+                        {/* "Customer Rating" button */}
+                        <Button
+                            type="button"
+                            variant="solid"
+                            icon={<AiOutlineStar className="text-lg" />}
+                            onClick={navigateToCustomerRating}
+                            className="bg-amber-500 hover:bg-amber-600 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                            size="sm"
+                        >
+                            <span className="flex items-center gap-1">
+                                تقييم العميل <span className="text-yellow-200">★★★★★</span>
+                            </span>
+                        </Button>
+                    </div>
+
+                    <OrdersClientFields
+                        touched={touched}
+                        errors={errors}
+                        values={values}
+                        readOnly={readOnly}
+                    />
+
+                    {!readOnly && (
+                        <StickyFooter
+                            className="-mx-8 px-8 flex items-center justify-between py-4"
+                            stickyClass="border-t bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                        >
+                            <div className="md:flex items-center">
+                                <Button
+                                    size="sm"
+                                    className="ltr:mr-3 rtl:ml-3"
+                                    type="button"
+                                    onClick={() => onDiscard?.()}
+                                >
+                                    إلغاء
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="solid"
+                                    loading={isSubmitting}
+                                    icon={<AiOutlineSave />}
+                                    type="submit"
+                                >
+                                    حفظ التغييرات
+                                </Button>
                             </div>
-                        </div>
-                        {!readOnly && (
-                            <StickyFooter
-                                className="-mx-8 px-8 flex items-center justify-between py-4"
-                                stickyClass="border-t bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-                            >
-                                <div className="md:flex items-center">
-                                    <Button
-                                        size="sm"
-                                        className="ltr:mr-3 rtl:ml-3"
-                                        type="button"
-                                        onClick={() => onDiscard?.()}
-                                    >
-                                        الغاء
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant="solid"
-                                        loading={isSubmitting}
-                                        icon={<AiOutlineSave />}
-                                        type="submit"
-                                    >
-                                        اضافة
-                                    </Button>
-                                </div>
-                            </StickyFooter>
-                        )}
-                    </FormContainer>
+                        </StickyFooter>
+                    )}
                 </Form>
             )}
         </Formik>

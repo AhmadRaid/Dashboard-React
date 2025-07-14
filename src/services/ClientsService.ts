@@ -22,6 +22,8 @@ export async function apiGetClientProfile(clientId: string) {
     })
 }
 
+
+
 export async function apiUpdateClient(clientId: string, data: any) {
     return ApiService.fetchData({
         url: `/clients/${clientId}`,

@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import AdaptableCard from '@/components/shared/AdaptableCard'
 import OrderFields from '../OrderForm/OrderFields'
 import { FiAlertCircle, FiLoader, FiRefreshCw } from 'react-icons/fi'
+import AddOrder from '../AddOrder'
 
 const OrderDetails = () => {
     const { orderId } = useParams()
@@ -80,7 +81,7 @@ const OrderDetails = () => {
             </div>
 
             <AdaptableCard>
-                <OrderFields
+                <AddOrder
                     values={{
                         carModel: order.carModel,
                         carColor: order.carColor,

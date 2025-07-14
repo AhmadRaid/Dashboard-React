@@ -1,11 +1,11 @@
 import AdaptableCard from '@/components/shared/AdaptableCard'
 import { ClientWithOrdersData } from '@/@types/clients'
-import { useState } from 'react'
+import { useState, useMemo } from 'react' // Import useMemo
 import DataTable from '@/components/shared/DataTable'
 import type { ColumnDef } from '@/components/shared/DataTable'
 import { Notification, toast } from '@/components/ui'
 import { Button } from '@/components/ui'
-import { FiDownload, FiInfo } from 'react-icons/fi'
+import { FiDownload } from 'react-icons/fi'
 import RatingAndNotesSection from '../ClientRating/RatingComponent'
 import { useNavigate } from 'react-router-dom'
 import React from 'react'
@@ -14,6 +14,7 @@ import { apiGetInvoiceByOrderId } from '@/services/invoiceService'
 import InvoicePDF from '@/views/invoices/PDF/InvoicePDF'
 import { PDFDownloadLink, BlobProvider } from '@react-pdf/renderer'
 import { createRoot } from 'react-dom/client'
+import type { FormikErrors, FormikTouched } from 'formik'
 
 const formatDate = (isoString?: string) => {
     if (!isoString) return ''
@@ -27,6 +28,8 @@ const formatDate = (isoString?: string) => {
 
 type OrdersClientFieldsProps = {
     values: ClientWithOrdersData
+    touched: FormikTouched<ClientWithOrdersData>
+    errors: FormikErrors<ClientWithOrdersData>
     readOnly?: boolean
 }
 
@@ -39,6 +42,10 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
             guaranteeId?: string
             status?: string
         }>({ open: false })
+
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1)
+    const [pageSize, setPageSize] = useState(10) // Set default page size
 
     const openChangeGuaranteeStatusDialog = (
         orderId?: string,
@@ -71,10 +78,9 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
 
     const handleDownloadGuarantee = (orderId: string) => {
         console.log('Download guarantee for order:', orderId)
-        // هنا يمكنك استدعاء API لتحميل ضمان PDF
+        // You can call an API here to download the PDF guarantee
     }
 
-    // عدل دالة handleDownloadInvoice كما يلي:
     const handleDownloadInvoice = async (orderId: string) => {
         try {
             const response = await apiGetInvoiceByOrderId(orderId)
@@ -125,7 +131,7 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
     }
     const handleDownloadReceipt = (orderId: string) => {
         console.log('Download receipt for order:', orderId)
-        // هنا يمكنك استدعاء API لتحميل استلام السيارة PDF
+        // You can call an API here to download the car receipt PDF
     }
 
     // Merged Orders and Guarantees columns
@@ -181,7 +187,7 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                 return (
                     <div className="flex justify-center space-x-2 rtl:space-x-reverse">
                         <Button
-                            type="button" // Add this
+                            type="button"
                             size="xs"
                             variant="solid"
                             onClick={(e) => {
@@ -220,6 +226,27 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
             },
         },
     ]
+
+    // Calculate data for the current page
+    const paginatedOrders = useMemo(() => {
+        const startIndex = (currentPage - 1) * pageSize
+        const endIndex = startIndex + pageSize
+        console.log('pagination indexxxxxx',startIndex,endIndex);
+        
+        return values.orders ? values.orders.slice(startIndex, endIndex) : []
+    }, [values.orders, currentPage, pageSize])
+
+    const totalOrdersCount = values.orders?.length || 0
+
+    // Handlers for pagination changes
+    const onPaginationChange = (page: number) => {
+        setCurrentPage(page)
+    }
+
+    const onPageSizeChange = (size: number) => {
+        setPageSize(size)
+        setCurrentPage(1) // Reset to first page when page size changes
+    }
 
     return (
         <>
@@ -278,8 +305,19 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                 <h5 className="mt-8 mb-4">الطلبات </h5>
                 <DataTable
                     columns={ordersColumns}
-                    data={values.orders || []}
+                    data={paginatedOrders} // Pass the paginated data
                     onRowClick={handleRowClick}
+                    // Pagination Props
+                    skeletonAvatarColumns={[0]} // Example: if you have avatar columns
+                    skeletonRowCount={pageSize} // Show skeleton rows based on page size
+                    loading={false} // Set to true when fetching data from API
+                    totalData={totalOrdersCount} // Total number of orders
+                    currentPage={currentPage} // Current page
+                    pageSize={pageSize} // Current page size
+                    onPaginationChange={onPaginationChange} // Handler for page change
+                    onPageSizeChange={onPageSizeChange} // Handler for page size change
+                    // You might also need to pass `pageCount` if DataTable calculates it internally
+                    // For example: pageCount={Math.ceil(totalOrdersCount / pageSize)}
                 />
             </AdaptableCard>
         </>

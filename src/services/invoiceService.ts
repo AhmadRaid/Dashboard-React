@@ -29,6 +29,13 @@ export async function apiGetInvoiceByOrderId(orderId: string) {
     })
 }
 
+export async function apiGetFinancialReports(clientId: string) {
+    return ApiService.fetchData<Invoice>({
+        url: `/invoices/financial-reports/${clientId}`,
+        method: 'get',
+    })
+}
+
 export async function apiGetClientInvoices(clientId: string) {
     return ApiService.fetchData<GetInvoicesResponse>({
         url: `/clients/${clientId}/invoices`,

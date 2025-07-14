@@ -8,28 +8,29 @@ export async function apiGetOrders() {
         method: 'get',
     })
 }
-export async function apiGetClientOrders(clientId:string) {
+export async function apiGetClientOrders(clientId: string) {
     return ApiService.fetchData<GetOrdersResponse>({
         url: `/client/${clientId}`,
         method: 'get',
     })
 }
 
-export async function apiGetOrdersDetails(orderId:string) {
+export async function apiGetOrdersDetails(orderId: string) {
     return ApiService.fetchData<GetOrdersResponse>({
         url: `/orders/${orderId}`,
         method: 'get',
     })
 }
 
-export async function apiAddOrder(clientId:string) {
+export async function apiAddOrder(clientId: string, data: any) {
     return ApiService.fetchData<GetOrdersResponse>({
         url: `/orders/add-order/${clientId}`,
         method: 'post',
+        data,
     })
 }
 
-export async function apiSendServiceForOrder(data:any) {
+export async function apiSendServiceForOrder(data: any) {
     return ApiService.fetchData<GetOrdersResponse>({
         url: `/orders/add-service`,
         method: 'post',

@@ -15,6 +15,25 @@ export interface ServiceItem {
 
 export type InvoiceStatus = 'paid' | 'unpaid' | 'partially_paid' | 'cancelled'
 
+// src/@types/invoice.d.ts (or add to an existing types file)
+
+export interface FinancialReportData {
+    client: {
+        _id: string;
+        firstName: string;
+        middleName: string;
+        lastName: string;
+        clientNumber: string;
+        email?: string;
+        phone?: string;
+    };
+    totalInvoices: number;
+    totalSubtotal: number;
+    totalTaxAmount: number;
+    totalAmount: number;
+    averageInvoiceAmount: number;
+}
+
 export interface Invoice {
     _id: string
     invoiceNumber: string

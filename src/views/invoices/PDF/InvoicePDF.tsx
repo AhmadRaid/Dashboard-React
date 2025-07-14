@@ -458,16 +458,14 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => (
                         <Text style={styles.label}>رقم الجوال:</Text>
                         <Text style={styles.value}>{invoice.client.phone}</Text>
 
-                        {invoice.client.email && (
-                            <>
-                                <Text style={[styles.label, { marginTop: 2 }]}>
-                                    البريد الإلكتروني:
-                                </Text>
-                                <Text style={styles.value}>
-                                    {invoice.client.email}
-                                </Text>
-                            </>
-                        )}
+                        <>
+                            <Text style={[styles.label, { marginTop: 2 }]}>
+                                البريد الإلكتروني:
+                            </Text>
+                            <Text style={styles.value}>
+                                {invoice.client.email}
+                            </Text>
+                        </>
                     </View>
                 </View>
             </View>
@@ -530,11 +528,7 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => (
                         <View key={index} style={styles.tableRow}>
                             {/* Order of cells in JSX is now adjusted to visually appear correctly in RTL */}
                             <View style={[styles.tableCol, styles.col_price]}>
-                                <Text style={styles.value}>
-                                    {service.servicePrice.toLocaleString(
-                                        'EN-US'
-                                    )}
-                                </Text>
+                                <Text style={styles.value}>50</Text>
                             </View>
                             <View style={[styles.tableCol, styles.col_service]}>
                                 <Text style={styles.value}>
@@ -568,7 +562,7 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => (
                                         </Text>
                                     )}
                             </View>
-                                  <View
+                            <View
                                 style={[styles.tableCol, styles.col_category]}
                             >
                                 <Text style={styles.value}>
@@ -582,7 +576,6 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => (
                                 <Text style={styles.value}>{index + 1}</Text>{' '}
                                 {/* Item number */}
                             </View>
-                      
                         </View>
                     ))}
                 </View>
@@ -602,18 +595,14 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => (
                     <View style={styles.totalsRow}>
                         {/* Value on the right, Label on the left in the totals box for RTL */}
                         <Text style={styles.totalLabel}>المجموع الفرعي:</Text>
-                        <Text style={styles.totalValue}>
-                            {invoice.subtotal.toLocaleString('EN-US')}
-                        </Text>
+                        <Text style={styles.totalValue}>100</Text>
                     </View>
                     <View style={styles.totalsRow}>
                         {/* Value on the right, Label on the left in the totals box for RTL */}
                         <Text style={styles.totalLabel}>
                             الضريبة ({invoice.taxRate}%):
                         </Text>
-                        <Text style={styles.totalValue}>
-                            {invoice.taxAmount.toLocaleString('EN-US')}
-                        </Text>
+                        <Text style={styles.totalValue}>200</Text>
                     </View>
                     <View
                         style={[
@@ -631,7 +620,7 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => (
                             المجموع الكلي:
                         </Text>
                         <Text style={[styles.totalValue, styles.grandTotal]}>
-                            {invoice.totalAmount.toLocaleString('EN-US')}
+                            652
                         </Text>
                     </View>
                 </View>
