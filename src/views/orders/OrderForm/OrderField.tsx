@@ -42,7 +42,7 @@ const branchOptions = [
     { label: 'اخرى', value: 'اخرى' },
 ]
 
-const ClientFields = (props: ClientFieldsProps) => {
+const OrderFields = (props: ClientFieldsProps) => {
     const [services, setServices] = useState<
         { label: string; value: string }[]
     >([])
@@ -76,160 +76,6 @@ const ClientFields = (props: ClientFieldsProps) => {
 
     return (
         <AdaptableCard divider className="mb-4">
-            <h5 className="text-lg font-semibold">معلومات العميل</h5>
-            <p className="mb-6 text-sm text-gray-500">
-                قسم لإعداد معلومات العميل الأساسية
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormItem
-                    label="الاسم الأول"
-                    invalid={!!errors.firstName && !!touched.firstName}
-                    errorMessage={errors.firstName}
-                >
-                    <Field
-                        name="firstName"
-                        size="sm"
-                        autoComplete="off"
-                        type="text"
-                        placeholder="الاسم الأول"
-                        component={Input}
-                    />
-                </FormItem>
-
-                <FormItem
-                    label="الاسم الثاني"
-                    invalid={!!errors.middleName && !!touched.middleName}
-                    errorMessage={errors.middleName}
-                >
-                    <Field
-                        name="middleName"
-                        size="sm"
-                        autoComplete="off"
-                        type="text"
-                        placeholder="الاسم الثاني"
-                        component={Input}
-                    />
-                </FormItem>
-
-                <FormItem
-                    label="اسم العائلة"
-                    invalid={!!errors.lastName && !!touched.lastName}
-                    errorMessage={errors.lastName}
-                >
-                    <Field
-                        name="lastName"
-                        size="sm"
-                        autoComplete="off"
-                        type="text"
-                        placeholder="اسم العائلة"
-                        component={Input}
-                    />
-                </FormItem>
-
-                <FormItem
-                    label="البريد الإلكتروني"
-                    invalid={!!errors.email && !!touched.email}
-                    errorMessage={errors.email}
-                >
-                    <Field
-                        name="email"
-                        size="sm"
-                        type="email"
-                        placeholder="البريد الإلكتروني"
-                        component={Input}
-                    />
-                </FormItem>
-
-                <FormItem
-                    label="رقم الهاتف"
-                    invalid={!!errors.phone && !!touched.phone}
-                    errorMessage={errors.phone}
-                >
-                    <Field name="phone">
-                        {({ field, form }: FieldProps) => (
-                            <Input
-                                {...field}
-                                type="text"
-                                size="sm"
-                                placeholder="05xxxxxxxx"
-                                onChange={(e) => {
-                                    let value = e.target.value.replace(
-                                        /\D/g,
-                                        ''
-                                    ) // Remove non-digits
-                                    if (
-                                        value.length > 0 &&
-                                        !value.startsWith('05')
-                                    ) {
-                                        value = '05' + value.substring(2)
-                                    }
-                                    if (value.length > 10) {
-                                        value = value.substring(0, 10)
-                                    }
-                                    form.setFieldValue(field.name, value)
-                                }}
-                            />
-                        )}
-                    </Field>
-                </FormItem>
-
-                <FormItem
-                    label="نوع العميل"
-                    invalid={!!errors.clientType && !!touched.clientType}
-                    errorMessage={errors.clientType}
-                >
-                    <Field name="clientType">
-                        {({ field, form }: FieldProps) => (
-                            <Select
-                                field={field}
-                                size="sm"
-                                form={form}
-                                options={clientTypes}
-                                value={clientTypes.find(
-                                    (option) =>
-                                        option.value === values.clientType
-                                )}
-                                onChange={(option) => {
-                                    form.setFieldValue(
-                                        field.name,
-                                        option?.value
-                                    )
-                                }}
-                                placeholder="نوع العميل"
-                            />
-                        )}
-                    </Field>
-                </FormItem>
-
-                <FormItem
-                    label="الفرع"
-                    invalid={!!errors.branch && !!touched.branch}
-                    errorMessage={errors.branch as string}
-                >
-                    <Field name="branch">
-                        {({ field, form }: FieldProps) => (
-                            <Select
-                                field={field}
-                                size="sm"
-                                form={form}
-                                options={branchOptions}
-                                value={branchOptions.find(
-                                    (option) => option.value === values.branch
-                                )}
-                                onChange={(option) => {
-                                    form.setFieldValue(
-                                        field.name,
-                                        option?.value
-                                    )
-                                }}
-                                placeholder="اختر الفرع"
-                            />
-                        )}
-                    </Field>
-                </FormItem>
-            </div>
-
             <h5 className="mt-8 text-lg font-semibold">معلومات السيارة</h5>
             <p className="mb-6 text-sm text-gray-500">
                 قسم لإعداد معلومات السيارة
@@ -377,4 +223,4 @@ const ClientFields = (props: ClientFieldsProps) => {
     )
 }
 
-export default ClientFields
+export default OrderFields

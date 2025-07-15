@@ -6,8 +6,8 @@ import { Button } from '@/components/ui'
 import { HiOutlineArrowRight } from 'react-icons/hi'
 import { useNavigate } from 'react-router-dom'
 import AdaptableCard from '@/components/shared/AdaptableCard'
-import OrderFields from '../OrderForm/OrderFields'
 import { FiAlertCircle, FiLoader, FiRefreshCw } from 'react-icons/fi'
+import ShowOrderFields from './ShowOrderField'
 
 const OrderDetails = () => {
     const { orderId } = useParams()
@@ -80,7 +80,7 @@ const OrderDetails = () => {
             </div>
 
             <AdaptableCard>
-                <AddOrder
+                <ShowOrderFields
                     values={{
                         carModel: order.carModel,
                         carColor: order.carColor,

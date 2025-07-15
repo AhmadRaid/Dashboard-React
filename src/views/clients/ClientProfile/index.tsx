@@ -202,7 +202,7 @@ const OrdersClientForm = forwardRef<
 
                     <div className="mb-6 flex flex-wrap gap-3 justify-end md:justify-start">
                         {/* "Add New Order" button */}
-                        {/* <Button
+                        <Button
                             type="button"
                             variant="solid"
                             icon={<AiOutlineShoppingCart className="text-lg" />}
@@ -213,7 +213,7 @@ const OrdersClientForm = forwardRef<
                             <span className="flex items-center gap-2">
                                 إضافة طلب <span className="bg-white/20 rounded-full px-2 py-1 text-xs">جديد</span>
                             </span>
-                        </Button> */}
+                        </Button>
 
                         {/* "Add New Service" button */}
                         <Button

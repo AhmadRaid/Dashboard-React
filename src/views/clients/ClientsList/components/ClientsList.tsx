@@ -54,16 +54,18 @@ const ClientsTable = () => {
                 accessorKey: 'lastName',
                 sortable: false,
             },
-          {
+            {
                 header: 'نوع العميل',
                 accessorKey: 'clientType',
                 cell: (props) => {
                     const clientType = props.row.original.clientType
                     return (
                         <span>
-                            {clientType === 'individual' ? 'فردي' :
-                             clientType === 'company' ? 'شركة' :
-                             clientType}
+                            {clientType === 'individual'
+                                ? 'فردي'
+                                : clientType === 'company'
+                                ? 'شركة'
+                                : clientType}
                         </span>
                     )
                 },
@@ -74,7 +76,9 @@ const ClientsTable = () => {
                 header: 'تاريخ الانشاء',
                 accessorKey: 'createdAt',
                 cell: (props) =>
-                    new Date(props.row.original.createdAt).toLocaleString(),
+                    new Date(props.row.original.createdAt).toLocaleDateString(
+                        'en-GB'
+                    ),
                 sortable: true,
             },
         ],

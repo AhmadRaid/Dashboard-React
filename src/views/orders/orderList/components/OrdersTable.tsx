@@ -53,16 +53,6 @@ const OrdersTable = () => {
                     : 'غير محدد',
             }))
         }
-
-        // If data is a single object, wrap it in an array
-        return [
-            {
-                ...orderData,
-                clientName: orderData.client
-                    ? `${orderData.client.firstName} ${orderData.client.middleName} ${orderData.client.lastName}`
-                    : 'غير محدد',
-            },
-        ]
     }, [orderData])
 
     const columns: ColumnDef<any>[] = useMemo(
@@ -90,6 +80,11 @@ const OrdersTable = () => {
             {
                 header: 'اللون',
                 accessorKey: 'carColor',
+                cell: (props) => props.getValue() || 'غير محدد',
+            },
+            {
+                header: 'حالة الطلب',
+                accessorKey: 'status',
                 cell: (props) => props.getValue() || 'غير محدد',
             },
             {
@@ -138,7 +133,7 @@ const OrdersTable = () => {
                 header: 'تاريخ الإنشاء',
                 cell: (props) =>
                     new Date(props.row.original.createdAt).toLocaleDateString(
-                        'ar-SA'
+                        'en-GB'
                     ),
             },
         ],

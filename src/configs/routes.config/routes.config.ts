@@ -58,7 +58,7 @@ export const protectedRoutes = [
     {
         key: 'ordersMenu.AddOrder',
         path: '/orders/add-order/:clientId',
-        component: lazy(() => import('@/views/orders/AddOrder/OrderForm')),
+        component: lazy(() => import('@/views/orders/CreateOrder')),
         authority: [],
     },
 
@@ -100,11 +100,14 @@ export const protectedRoutes = [
         authority: [],
     },
 
-        {
+    {
         key: 'invoicesMenu.reportInvoices',
         path: '/invoices/financial-reports/:clientId',
         component: lazy(
-            () => import('@/views/reports/FinancialReports/ClientFinancialReports')
+            () =>
+                import(
+                    '@/views/reports/FinancialReports/ClientFinancialReports'
+                )
         ),
         authority: [],
     },

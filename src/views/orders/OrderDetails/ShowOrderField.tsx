@@ -81,7 +81,7 @@ const serviceTypeIcons = {
     default: <FaTools className="text-gray-500 dark:text-gray-500" />,
 }
 
-const OrderFields = (props: OrderFieldsProps) => {
+const ShowOrderFields = (props: OrderFieldsProps) => {
     const { values, touched, errors, readOnly = false } = props
 
     // Helper function for rendering readonly values
@@ -744,4 +744,4 @@ const OrderFields = (props: OrderFieldsProps) => {
     )
 }
 
-export default OrderFields
+export default ShowOrderFields
