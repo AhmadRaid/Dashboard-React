@@ -7,7 +7,6 @@ const RatingAndNotesSection = ({ values, readOnly }) => {
     
     return (
         <>
-            {/* Rating Section - نفس حجم الحقول الأخرى */}
             <div className="border rounded p-4">
                 <h6 className="text-sm font-medium text-gray-500 mb-2">
                     تقييم العميل

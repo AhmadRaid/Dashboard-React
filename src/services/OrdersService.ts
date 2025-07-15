@@ -30,6 +30,21 @@ export async function apiAddOrder(clientId: string, data: any) {
     })
 }
 
+export async function apiUpdateOrder(orderId: string, data: any) {
+    return ApiService.fetchData<GetOrdersResponse>({
+        url: `/orders/${orderId}`,
+        method: 'put',
+        data,
+    })
+}
+
+export async function apiDeleteOrder(orderId: string) {
+    return ApiService.fetchData<GetOrdersResponse>({
+        url: `/orders/${orderId}`,
+        method: 'delete',
+    })
+}
+
 export async function apiSendServiceForOrder(data: any) {
     return ApiService.fetchData<GetOrdersResponse>({
         url: `/orders/add-service`,

@@ -478,7 +478,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                         value: 'edges',
                                                     },
                                                     {
-                                                        label: 'أخرى',
+                                                        label: 'اخرى',
                                                         value: 'other',
                                                     },
                                                 ]}
@@ -498,7 +498,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                                       : field.value ===
                                                                         'edges'
                                                                       ? 'أطراف'
-                                                                      : 'أخرى',
+                                                                      : 'اخرى',
                                                               value: field.value,
                                                           }
                                                         : null

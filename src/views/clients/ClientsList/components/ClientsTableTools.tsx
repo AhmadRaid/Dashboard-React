@@ -12,7 +12,7 @@ export const ClientsTableTools = () => {
         { label: 'جميع الفروع', value: '' },
         { label: 'فرع المدينة', value: 'عملاء فرع المدينة' },
         { label: 'فرع أبحر', value: 'عملاء فرع ابحر' },
-        { label: 'أخرى', value: 'اخرى' },
+        { label: 'اخرى', value: 'اخرى' },
     ]
 
     const sortOptions = [

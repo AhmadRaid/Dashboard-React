@@ -996,7 +996,7 @@ const OrderForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                                             value: 'edges',
                                                                         },
                                                                         {
-                                                                            label: 'أخرى',
+                                                                            label: 'اخرى',
                                                                             value: 'other',
                                                                         },
                                                                     ]}
@@ -1016,7 +1016,7 @@ const OrderForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                                                           : field.value ===
                                                                                             'edges'
                                                                                           ? 'أطراف'
-                                                                                          : 'أخرى',
+                                                                                          : 'اخرى',
                                                                                   value: field.value,
                                                                               }
                                                                             : null

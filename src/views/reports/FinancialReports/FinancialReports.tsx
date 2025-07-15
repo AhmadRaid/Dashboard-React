@@ -14,7 +14,6 @@ interface FinancialReportData {
     averageInvoiceAmount: number;
     client: {
         fullName: string;
-        // أضف أي خصائص أخرى للعميل تحتاجها هنا
     };
     // أضف أي حقول أخرى متعلقة بالتقرير المالي هنا
 }

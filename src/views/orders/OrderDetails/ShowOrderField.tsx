@@ -69,7 +69,7 @@ const carSizeOptions = [
 const branchOptions = [
     { label: 'فرع أبحر', value: 'فرع ابحر', icon: '🌊' }, // Changed icon to be more specific
     { label: 'فرع المدينة', value: 'فرع المدينة', icon: '🏢' }, // Changed icon to be more specific
-    { label: 'أخرى', value: 'اخرى', icon: '📍' },
+    { label: 'اخرى', value: 'اخرى', icon: '📍' },
 ]
 
 // Icons will now use gray tones for consistency with the new palette
@@ -594,7 +594,7 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                                                         ? 'أطراف'
                                                         : service.protectionCoverage ===
                                                           'other'
-                                                        ? 'أخرى'
+                                                        ? 'اخرى'
                                                         : service.protectionCoverage ||
                                                           '-'
                                                 )}

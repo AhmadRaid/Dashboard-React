@@ -1,4 +1,4 @@
-import { forwardRef } from 'react'
+import { forwardRef, useState } from 'react'
 // import { FormContainer } from '@/components/ui/Form' // سنقوم بإزالة هذا الاستيراد إذا لم نعد نستخدمه
 import Button from '@/components/ui/Button'
 import StickyFooter from '@/components/shared/StickyFooter'
@@ -18,6 +18,8 @@ import OrdersClientFields from './OrdersClientFields'
 import { ClientWithOrdersData } from '@/@types/clients'
 import { useParams } from 'react-router-dom'
 import { ClientOrdersTools } from '../ClientOrders/components/ClientOrdersTools'
+import { apiDeleteOrder } from '@/services/OrdersService'
+import { toast, Notification } from '@/components/ui'
 // import Container from '@/components/shared/Container' // سنقوم بإزالة هذا الاستيراد إذا لم نعد نستخدمه
 
 export const validationSchema = Yup.object().shape({
@@ -31,8 +33,8 @@ export const validationSchema = Yup.object().shape({
         .min(1, 'التقييم يجب أن يكون بين 1 و 5')
         .max(5, 'التقييم يجب أن يكون بين 1 و 5')
         .optional(),
-    notes: Yup.array()
-        .of(Yup.string().max(500, 'الملاحظة يجب أن تكون أقل من 500 حرف'))
+    notes: Yup.string()
+        .max(500, 'الملاحظة يجب أن تكون أقل من 500 حرف')
         .optional(),
     orders: Yup.array().of(
         Yup.object().shape({
@@ -96,6 +98,36 @@ const OrdersClientForm = forwardRef<
 >(({ type, initialData, onFormSubmit, onDiscard, onDelete }, ref) => {
     const navigate = useNavigate()
     const readOnly = type === 'view'
+    const [orders, setOrders] = useState(initialData?.orders || [])
+    const handleDeleteOrder = async (orderId: string) => {
+        try {
+            await apiDeleteOrder(orderId)
+
+            setOrders((prevOrders) =>
+                prevOrders.filter((order) => order._id !== orderId)
+            )
+
+            toast.push(
+                <Notification title="نجاح" type="success">
+                    تم حذف الطلب بنجاح
+                </Notification>
+            )
+        } catch (error) {
+            toast.push(
+                <Notification title="خطأ" type="danger">
+                    فشل في حذف الطلب
+                </Notification>
+            )
+        }
+    }
+
+    const handleEditOrder = (orderId: string) => {
+        if (!orderId) {
+            console.error('Client ID is missing')
+            return
+        }
+        navigate(`/orders/UpdateOrder/${orderId}`)
+    }
 
     const initialValues = cloneDeep(
         initialData ?? {
@@ -105,7 +137,7 @@ const OrdersClientForm = forwardRef<
             email: '',
             phone: '',
             rating: 0,
-            notes: [],
+            notes: '',
             clientType: 'individual',
             isDeleted: false,
             orderStats: {
@@ -178,7 +210,10 @@ const OrdersClientForm = forwardRef<
         <Formik
             innerRef={ref}
             enableReinitialize
-            initialValues={initialValues}
+            initialValues={{
+                ...initialValues,
+                orders,
+            }}
             validationSchema={validationSchema}
             onSubmit={(values, { setSubmitting }) => {
                 const data = cloneDeep(values)
@@ -196,9 +231,7 @@ const OrdersClientForm = forwardRef<
                 <Form>
                     {/* تمت إزالة Container و FormContainer و Grid Layout */}
                     {/* والآن يتم عرض المحتوى مباشرة داخل الـ Form */}
-                    <ClientOrdersTools
-                        clientNumber={values.clientNumber}
-                    />
+                    <ClientOrdersTools clientNumber={values.clientNumber} />
 
                     <div className="mb-6 flex flex-wrap gap-3 justify-end md:justify-start">
                         {/* "Add New Order" button */}
@@ -211,7 +244,10 @@ const OrdersClientForm = forwardRef<
                             size="sm"
                         >
                             <span className="flex items-center gap-2">
-                                إضافة طلب <span className="bg-white/20 rounded-full px-2 py-1 text-xs">جديد</span>
+                                إضافة طلب{' '}
+                                <span className="bg-white/20 rounded-full px-2 py-1 text-xs">
+                                    جديد
+                                </span>
                             </span>
                         </Button>
 
@@ -225,7 +261,10 @@ const OrdersClientForm = forwardRef<
                             size="sm"
                         >
                             <span className="flex items-center gap-2">
-                                إضافة خدمة <span className="bg-white/20 rounded-full px-2 py-1 text-xs">جديدة</span>
+                                إضافة خدمة{' '}
+                                <span className="bg-white/20 rounded-full px-2 py-1 text-xs">
+                                    جديدة
+                                </span>
                             </span>
                         </Button>
 
@@ -263,7 +302,8 @@ const OrdersClientForm = forwardRef<
                             size="sm"
                         >
                             <span className="flex items-center gap-1">
-                                تقييم العميل <span className="text-yellow-200">★★★★★</span>
+                                تقييم العميل{' '}
+                                <span className="text-yellow-200">★★★★★</span>
                             </span>
                         </Button>
                     </div>
@@ -271,7 +311,12 @@ const OrdersClientForm = forwardRef<
                     <OrdersClientFields
                         touched={touched}
                         errors={errors}
-                        values={values}
+                        values={{
+                            ...values,
+                            orders, // تمرير حالة الطلبات المحلية
+                        }}
+                        onDeleteOrder={handleDeleteOrder}
+                        onEditOrder={handleEditOrder}
                         readOnly={readOnly}
                     />
 

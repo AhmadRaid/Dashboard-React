@@ -16,7 +16,7 @@ const clientTypes = [
 const branchOptions = [
     { label: 'عملاء فرع ابحر', value: 'عملاء فرع ابحر' },
     { label: 'عملاء فرع المدينة', value: 'عملاء فرع المدينة' },
-    { label: 'أخرى', value: 'أخرى' },
+    { label: 'اخرى', value: 'اخرى' },
 ]
 
 const UpdateDataClient = () => {
@@ -29,8 +29,7 @@ const UpdateDataClient = () => {
         firstName: Yup.string().required('الاسم الأول مطلوب'),
         middleName: Yup.string(),
         lastName: Yup.string().required('اسم العائلة مطلوب'),
-        email: Yup.string()
-            .email('بريد إلكتروني غير صالح'),
+        email: Yup.string().email('بريد إلكتروني غير صالح'),
         phone: Yup.string()
             .required('رقم الهاتف مطلوب')
             .matches(
@@ -87,13 +86,13 @@ const UpdateDataClient = () => {
     }, [clientId, navigate])
 
     const handleSubmit = async (values, { setSubmitting }) => {
-
-           const payload = Object.fromEntries(
-            Object.entries(values).filter(([_, value]) => 
-                value !== '' && value !== null && value !== undefined
+        const payload = Object.fromEntries(
+            Object.entries(values).filter(
+                ([_, value]) =>
+                    value !== '' && value !== null && value !== undefined
             )
-        );
-        
+        )
+
         try {
             if (!clientId) {
                 toast.push(
@@ -104,7 +103,6 @@ const UpdateDataClient = () => {
                 navigate('/clients')
                 return
             }
-
 
             await apiUpdateClient(clientId, payload)
             toast.push(
@@ -158,7 +156,7 @@ const UpdateDataClient = () => {
                             email: clientData.email || '',
                             phone: clientData.phone || '',
                             clientType: clientData.clientType || 'individual',
-                            branch: clientData.branch || 'abhor',
+                            branch: clientData.branch || '',
                         }}
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
