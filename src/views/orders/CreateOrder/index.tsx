@@ -41,7 +41,7 @@ const CreateOrder = () => {
                         placement: 'top-center',
                     }
                 )
-                navigate('/clients')
+                navigate(`/clients/${clientId}`)
             }
         } catch (error) {
             toast.push(
