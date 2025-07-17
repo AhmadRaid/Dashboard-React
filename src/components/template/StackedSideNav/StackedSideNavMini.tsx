@@ -104,7 +104,7 @@ const StackedSideNavMini = (props: StackedSideNavMiniProps) => {
             />
             <ScrollBar autoHide direction={direction}>
                 <Menu
-                    className="px-4 pb-4"
+                    className="px-4 pb-4 h-[calc(100vh-220px)] overflow-y-auto"
                     variant={navMode}
                     defaultActiveKeys={activeKeys || [includedRouteTree.key]}
                 >

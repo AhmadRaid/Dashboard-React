@@ -121,4 +121,22 @@ export const protectedRoutes = [
         ),
         authority: [],
     },
+
+    ///////////////////////////////////// Car Route /////////////////////////////////////
+
+    {
+        key: 'carsMenu.carsList',
+        path: '/cars',
+        component: lazy(
+            () => import('@/views/cars/CarList/components/CarsList')
+        ),
+        authority: [],
+    },
+
+    {
+        key: 'carsMenu.AddCar',
+        path: '/cars/add-car',
+        component: lazy(() => import('@/views/cars/CreateCar/CreateCar')),
+        authority: [],
+    },
 ]

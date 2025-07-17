@@ -8,7 +8,6 @@ import {
 import ApiService from './ApiService'
 import { GetCarsParams, GetCarsResponse } from '@/@types/cars'
 
-
 interface GetCarTypesResponse {
     status: string
     code: number
@@ -34,31 +33,18 @@ interface GetCarTypesResponse {
     message: string
 }
 
-// export const apiGetCarTypes = async (params: {
-//     limit: number
-//     offset: number
-//     search?: string
-// }): Promise<{ data: GetCarTypesResponse }> => {
-//     return axios.get('/car-types', { params })
-// }
-
-export async function apiGetCars(params: {
-    limit: number
-    offset: number
-    search?: string
-}) {
+export async function apiGetCars() {
+    
     return ApiService.fetchData<GetCarsResponse, GetCarsParams>({
         url: '/car-types',
         method: 'get',
-        params,
     })
 }
 
-export async function apiCreateNewCar(data: CreateClient) {
+export async function apiAddNewCar(data: CreateClient) {
     return ApiService.fetchData({
         url: '/car-types',
         method: 'post',
         data,
     })
 }
-

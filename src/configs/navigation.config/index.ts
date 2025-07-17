@@ -3,6 +3,7 @@ import {
     NAV_ITEM_TYPE_COLLAPSE,
 } from '@/constants/navigation.constant'
 import type { NavigationTree } from '@/@types/navigation'
+import { userRoles } from '@/@types/roles'
 
 const navigationConfig: NavigationTree[] = [
     // 1. العملاء (Existing Clients Section)
@@ -22,7 +23,7 @@ const navigationConfig: NavigationTree[] = [
                 translateKey: 'nav.clientsMenu.updateClient',
                 icon: 'userEdit',
                 type: NAV_ITEM_TYPE_ITEM,
-                authority: [],
+                authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [],
             },
             {
@@ -32,7 +33,7 @@ const navigationConfig: NavigationTree[] = [
                 translateKey: 'nav.clientsMenu.addClient',
                 icon: 'userPlus',
                 type: NAV_ITEM_TYPE_ITEM,
-                authority: [],
+                authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [],
             },
 
@@ -43,7 +44,7 @@ const navigationConfig: NavigationTree[] = [
                 translateKey: 'nav.clientsMenu.customReport',
                 icon: 'report',
                 type: NAV_ITEM_TYPE_ITEM,
-                authority: [],
+                authority: [userRoles.ADMIN],
                 subMenu: [],
             },
         ],
@@ -207,7 +208,7 @@ const navigationConfig: NavigationTree[] = [
             },
             {
                 key: 'carsMenu.addCar',
-                path: '/cars/add',
+                path: '/cars/add-car',
                 title: 'إضافة سيارة',
                 translateKey: 'nav.clientsMenu.addClient',
                 icon: 'userPlus',
@@ -225,7 +226,7 @@ const navigationConfig: NavigationTree[] = [
         icon: 'warehouse',
         translateKey: 'nav.warehouse.warehouse',
         type: NAV_ITEM_TYPE_COLLAPSE,
-        authority: [],
+        authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
         subMenu: [
             {
                 key: 'warehouse.expenses',
@@ -234,7 +235,7 @@ const navigationConfig: NavigationTree[] = [
                 translateKey: 'nav.warehouse.expenses',
                 icon: 'expenses',
                 type: NAV_ITEM_TYPE_ITEM,
-                authority: [],
+                authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [],
             },
             {
@@ -244,7 +245,7 @@ const navigationConfig: NavigationTree[] = [
                 translateKey: 'nav.warehouse.branchInventory',
                 icon: 'inventory',
                 type: NAV_ITEM_TYPE_ITEM,
-                authority: [],
+                authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [],
             },
             {
@@ -254,7 +255,7 @@ const navigationConfig: NavigationTree[] = [
                 translateKey: 'nav.warehouse.internalSupply',
                 icon: 'internal',
                 type: NAV_ITEM_TYPE_ITEM,
-                authority: [],
+                authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [],
             },
             {
@@ -264,7 +265,7 @@ const navigationConfig: NavigationTree[] = [
                 translateKey: 'nav.warehouse.externalSupply',
                 icon: 'external',
                 type: NAV_ITEM_TYPE_ITEM,
-                authority: [],
+                authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [],
             },
         ],
@@ -278,7 +279,7 @@ const navigationConfig: NavigationTree[] = [
         icon: 'branches',
         translateKey: 'nav.branchesManagement.branchesManagement',
         type: NAV_ITEM_TYPE_COLLAPSE,
-        authority: [],
+        authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
         subMenu: [
             {
                 key: 'branchesManagement.dailyReports',
@@ -287,7 +288,7 @@ const navigationConfig: NavigationTree[] = [
                 translateKey: 'nav.branchesManagement.dailyReports',
                 icon: 'report',
                 type: NAV_ITEM_TYPE_COLLAPSE,
-                authority: [],
+                authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [
                     {
                         key: 'branchesManagement.dailyServicesReport',
@@ -297,7 +298,7 @@ const navigationConfig: NavigationTree[] = [
                             'nav.branchesManagement.dailyServicesReport',
                         icon: 'services',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [],
+                        authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                         subMenu: [],
                     },
                     {
@@ -307,7 +308,7 @@ const navigationConfig: NavigationTree[] = [
                         translateKey: 'nav.branchesManagement.dateRangeReport',
                         icon: 'calendar',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [],
+                        authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                         subMenu: [],
                     },
                     {
@@ -318,7 +319,7 @@ const navigationConfig: NavigationTree[] = [
                             'nav.branchesManagement.serviceTypeReport',
                         icon: 'serviceType',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [],
+                        authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                         subMenu: [],
                     },
                 ],
@@ -330,7 +331,7 @@ const navigationConfig: NavigationTree[] = [
                 translateKey: 'nav.branchesManagement.monthlyClosing',
                 icon: 'monthly',
                 type: NAV_ITEM_TYPE_COLLAPSE,
-                authority: [],
+                authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [
                     {
                         key: 'branchesManagement.incomeClosing',
@@ -339,7 +340,7 @@ const navigationConfig: NavigationTree[] = [
                         translateKey: 'nav.branchesManagement.incomeClosing',
                         icon: 'income',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [],
+                        authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                         subMenu: [],
                     },
                     {
@@ -349,7 +350,7 @@ const navigationConfig: NavigationTree[] = [
                         translateKey: 'nav.branchesManagement.warehouseClosing',
                         icon: 'warehouse',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [],
+                        authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                         subMenu: [],
                     },
                 ],

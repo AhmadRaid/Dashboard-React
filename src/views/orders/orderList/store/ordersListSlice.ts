@@ -88,7 +88,6 @@ const ordersListSlice = createSlice({
                 state.loading = true
             })
             .addCase(getOrders.fulfilled, (state, action) => {
-                console.log('action.payload', action.payload)
 
                 state.orderList = action.payload.data
                 state.loading = false
@@ -97,21 +96,14 @@ const ordersListSlice = createSlice({
                 state.loading = false
             })
             .addCase(getClientOrders.pending, (state) => {
-                console.log('getClientOrderpppppppppppppppppp', action.payload)
-
                 state.loading = true
             })
             .addCase(getClientOrders.fulfilled, (state, action) => {
-                console.log('getClientOrdersssssssssssssssss', action.payload)
-
                 state.orderList = action.payload.data
                 state.loading = false
             })
             .addCase(getClientOrders.rejected, (state) => {
-                console.log(
-                    'getClientOrderrrrrrrrrrrrrrrrrrrrrrrrrrrrr',
-                    action.payload
-                )
+                console.log(action.payload)
 
                 state.loading = false
             })

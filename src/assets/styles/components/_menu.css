@@ -24,4 +24,6 @@
 
 .menu-transparent {
   @apply bg-transparent;
+  height: 65vh;
+  overflow-y: scroll;
 }
