@@ -172,7 +172,7 @@ export const validationSchema = Yup.object().shape({
                     !!carColor ||
                     !!carManufacturer ||
                     !!carPlateNumber ||
-                    !!carSize 
+                    !!carSize
                 // إذا كان هناك أي حقل آخر مملوء، فإن carType مطلوب
                 return anyCarFieldFilled ? !!value : true
             }
@@ -197,8 +197,7 @@ export const validationSchema = Yup.object().shape({
                     !!carColor ||
                     !!carManufacturer ||
                     !!carPlateNumber ||
-                    !!carSize 
-          
+                    !!carSize
 
                 return anyCarFieldFilled ? !!value : true
             }
@@ -245,12 +244,12 @@ export const validationSchema = Yup.object().shape({
                 !!carModel ||
                 !!carColor ||
                 !!carPlateNumber ||
-                !!carSize 
+                !!carSize
             return anyCarFieldFilled ? !!value : true
         }
     ),
 
-   carPlateNumber: Yup.string()
+    carPlateNumber: Yup.string()
         .matches(
             /^[أ-يa-zA-Z0-9]{7,8}$/, // تم تعديل التعبير النمطي هنا
             'يجب أن يتكون رقم اللوحة من 7 أو 8 أحرف عربية/إنجليزية أو أرقام' // رسالة خطأ محدثة
@@ -298,7 +297,7 @@ export const validationSchema = Yup.object().shape({
                     !!carModel ||
                     !!carColor ||
                     !!carManufacturer ||
-                    !!carPlateNumber 
+                    !!carPlateNumber
                 return anyCarFieldFilled ? !!value : true
             }
         ),
@@ -566,6 +565,41 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
         return Object.keys(cleaned).length > 0 ? cleaned : undefined
     }
 
+    // دالة لتحويل servicePrice إلى رقم
+    const convertServicePricesToNumbers = (data: any): any => {
+        if (!data || typeof data !== 'object') return data;
+        
+        if (Array.isArray(data)) {
+            return data.map(item => convertServicePricesToNumbers(item));
+        }
+        
+        const converted = { ...data };
+        
+        // تحويل servicePrice في خدمات
+        if (converted.services && Array.isArray(converted.services)) {
+            converted.services = converted.services.map((service: any) => {
+                if (service.servicePrice !== undefined && service.servicePrice !== null) {
+                    return {
+                        ...service,
+                        servicePrice: typeof service.servicePrice === 'string' 
+                            ? parseFloat(service.servicePrice) || 0 
+                            : Number(service.servicePrice)
+                    };
+                }
+                return service;
+            });
+        }
+        
+        // تحويل servicePrice في المستوى الرئيسي (إذا كان موجودًا)
+        if (converted.servicePrice !== undefined && converted.servicePrice !== null) {
+            converted.servicePrice = typeof converted.servicePrice === 'string' 
+                ? parseFloat(converted.servicePrice) || 0 
+                : Number(converted.servicePrice);
+        }
+        
+        return converted;
+    };
+
     return (
         <>
             <Formik
@@ -575,24 +609,27 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                 }}
                 validationSchema={validationSchema}
                 onSubmit={(values, { setSubmitting }) => {
-                    let data = cloneDeep(values)
-                    console.log('Data values:', values)
+                    let data = cloneDeep(values);
+                    console.log('Data values:', values);
 
                     if (Array.isArray(data.carPlateNumber)) {
-                        data.carPlateNumber = data.carPlateNumber.join('')
+                        data.carPlateNumber = data.carPlateNumber.join('');
                     }
+
+                    // تحويل servicePrice إلى رقم قبل المعالجة
+                    data = convertServicePricesToNumbers(data);
 
                     // تحويل تواريخ الضمان
                     data.services = data.services?.map((service: any) => {
                         if (service.guarantee?.startDate) {
                             service.guarantee.startDate = new Date(
                                 service.guarantee.startDate
-                            ).toISOString()
+                            ).toISOString();
                         }
                         if (service.guarantee?.endDate) {
                             service.guarantee.endDate = new Date(
                                 service.guarantee.endDate
-                            ).toISOString()
+                            ).toISOString();
                         }
 
                         // حذف الضمان إذا كان فارغًا
@@ -602,20 +639,20 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                             !service.guarantee.startDate &&
                             !service.guarantee.endDate
                         ) {
-                            delete service.guarantee
+                            delete service.guarantee;
                         }
 
-                        return service
-                    })
+                        return service;
+                    });
 
                     // حذف كل الحقول الفارغة
-                    data = removeEmptyFields(data)
+                    data = removeEmptyFields(data);
 
                     if (data.services && data.services.length === 0) {
-                        delete data.services
+                        delete data.services;
                     }
 
-                    onFormSubmit?.(data, setSubmitting)
+                    onFormSubmit?.(data, setSubmitting);
                 }}
             >
                 {({ values, touched, errors, isSubmitting, ...form }) => {
@@ -627,6 +664,7 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                     touched={touched}
                                     errors={errors}
                                     values={values}
+                                    setFieldValue={form.setFieldValue}
                                 />
 
                                 {/* Services and Guarantees Sections */}
@@ -1632,6 +1670,109 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                     )}
                                                 </>
                                             )}
+                                        
+                                            <FormItem
+                                                label="سعر الخدمة"
+                                                invalid={
+                                                    !!errors.services?.[index]
+                                                        ?.servicePrice &&
+                                                    !!touched.services?.[index]
+                                                        ?.servicePrice
+                                                }
+                                                errorMessage={
+                                                    errors.services?.[index]
+                                                        ?.servicePrice as string
+                                                }
+                                            >
+                                                <div className="flex flex-col gap-2">
+                                                    <Field
+                                                        name={`services[${index}].servicePrice`}
+                                                    >
+                                                        {({ field, form }: FieldProps) => (
+                                                            <Input
+                                                                {...field}
+                                                                type="number"
+                                                                size="sm"
+                                                                placeholder="أدخل سعر الخدمة"
+                                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                                                    const value = parseFloat(e.target.value) || 0;
+                                                                    form.setFieldValue(
+                                                                        `services[${index}].servicePrice`,
+                                                                        value
+                                                                    );
+                                                                }}
+                                                                onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                                                                    const value = parseFloat(e.target.value) || 0;
+                                                                    form.setFieldValue(
+                                                                        `services[${index}].servicePrice`,
+                                                                        value
+                                                                    );
+                                                                }}
+                                                            />
+                                                        )}
+                                                    </Field>
+                                                    {values.services[index]
+                                                        .servicePrice && (
+                                                        <div className="flex flex-col gap-1 bg-gray-50 p-2 rounded-md">
+                                                            <div className="flex justify-between">
+                                                                <span className="text-sm font-medium text-gray-600">
+                                                                    السعر
+                                                                    الأساسي:
+                                                                </span>
+                                                                <span className="text-sm font-semibold">
+                                                                    {
+                                                                        values
+                                                                            .services[
+                                                                            index
+                                                                        ]
+                                                                            .servicePrice
+                                                                    }{' '}
+                                                                    ريال
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between">
+                                                                <span className="text-sm font-medium text-gray-600">
+                                                                    الضريبة
+                                                                    (5%):
+                                                                </span>
+                                                                <span className="text-sm font-semibold">
+                                                                    {(
+                                                                        values
+                                                                            .services[
+                                                                            index
+                                                                        ]
+                                                                            .servicePrice *
+                                                                        0.05
+                                                                    ).toFixed(
+                                                                        2
+                                                                    )}{' '}
+                                                                    ريال
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between border-t pt-1 mt-1">
+                                                                <span className="text-sm font-medium text-gray-800">
+                                                                    الإجمالي
+                                                                    شامل
+                                                                    الضريبة:
+                                                                </span>
+                                                                <span className="text-sm font-bold text-blue-600">
+                                                                    {(
+                                                                        values
+                                                                            .services[
+                                                                            index
+                                                                        ]
+                                                                            .servicePrice *
+                                                                        1.05
+                                                                    ).toFixed(
+                                                                        2
+                                                                    )}{' '}
+                                                                    ريال
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </FormItem>
 
                                             <FormItem
                                                 label="تفاصيل الاتفاق"

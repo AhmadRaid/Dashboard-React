@@ -8,7 +8,9 @@ import { HiOutlineTrash, HiPlus } from 'react-icons/hi'
 import { AiOutlineSave } from 'react-icons/ai'
 import cloneDeep from 'lodash/cloneDeep'
 import * as Yup from 'yup'
-import CarFields from './CarFields'
+import { Select } from '@/components/ui'
+import Input from '@/components/ui/Input'
+import CarFields from './CarField'
 
 type FormikRef = FormikProps<any>
 
@@ -22,12 +24,11 @@ const initialData: InitialData = {
 
 export const validationSchema = Yup.object().shape({
     name: Yup.string()
-        .required('الاسم السيارة مطلوب')
-        .min(2, 'يجب أن يكون الاسم على الأقل 2 حروف')
-        .max(30, 'يجب ألا يتجاوز الاسم 30 حرف'),
+        .required('اسم العميل مطلوب')
+        .max(100, 'يجب ألا يتجاوز الاسم 100 حرف'),
 })
 
-type CarsFormProps = {
+type ClientFormProps = {
     initialData?: InitialData
     type: 'edit' | 'new'
     onDiscard?: () => void
@@ -81,7 +82,8 @@ const DeleteProductButton = ({ onDelete }: { onDelete: any }) => {
     )
 }
 
-const CarForm = forwardRef<FormikRef, CarsFormProps>((props, ref) => {
+const CarForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
+
     const {
         type,
         initialData = {
@@ -102,7 +104,6 @@ const CarForm = forwardRef<FormikRef, CarsFormProps>((props, ref) => {
                 validationSchema={validationSchema}
                 onSubmit={(values, { setSubmitting }) => {
                     let data = cloneDeep(values)
-                    console.log('Data values:', values)
                     onFormSubmit?.(data, setSubmitting)
                 }}
             >
@@ -110,7 +111,6 @@ const CarForm = forwardRef<FormikRef, CarsFormProps>((props, ref) => {
                     return (
                         <Form>
                             <FormContainer>
-                                {/* Client and Car Info Sections */}
                                 <CarFields
                                     touched={touched}
                                     errors={errors}

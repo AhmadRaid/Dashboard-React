@@ -277,46 +277,58 @@ const ClientFields = (props: ClientFieldsProps) => {
                     />
                 </FormItem>
 
-         <FormItem
-    label="رقم لوحة السيارة"
-    invalid={!!errors.carPlateNumber && !!touched.carPlateNumber}
-    errorMessage={errors.carPlateNumber as string}
->
-    <Field name="carPlateNumber">
-        {({ field, form }: FieldProps) => (
-            <div className="flex gap-2">
-                {[...Array(8)].map((_, i) => (
-                    <Input
-                        key={i}
-                        type="text"
-                        size="sm"
-                        maxLength={1}
-                        className="text-center w-10"
-                        value={field.value?.[i] || ''}
-                        onChange={(e) => {
-                            const value = e.target.value.toUpperCase();
-                            let newValue = field.value || '';
-                            
-                            // إنشاء نسخة من القيمة الحالية مع حرف واحد محدث
-                            newValue = newValue.padEnd(8, ' '); // تأكد من طول 8 أحرف
-                            newValue = newValue.substring(0, i) + value + newValue.substring(i + 1);
-                            
-                            form.setFieldValue(field.name, newValue.trim());
-                            
-                            if (value && i < 7) {
-                                const nextInput = document.querySelector(
-                                    `input[name="${field.name}-${i + 1}"]`
-                                ) as HTMLInputElement;
-                                nextInput?.focus();
-                            }
-                        }}
-                        name={`${field.name}-${i}`}
-                    />
-                ))}
-            </div>
-        )}
-    </Field>
-</FormItem>
+                <FormItem
+                    label="رقم لوحة السيارة"
+                    invalid={
+                        !!errors.carPlateNumber && !!touched.carPlateNumber
+                    }
+                    errorMessage={errors.carPlateNumber as string}
+                >
+                    <Field name="carPlateNumber">
+                        {({ field, form }: FieldProps) => (
+                            <div className="flex gap-2">
+                                {[...Array(8)].map((_, i) => (
+                                    <Input
+                                        key={i}
+                                        type="text"
+                                        size="sm"
+                                        maxLength={1}
+                                        className="text-center w-10"
+                                        value={field.value?.[i] || ''}
+                                        onChange={(e) => {
+                                            const value =
+                                                e.target.value.toUpperCase()
+                                            let newValue = field.value || ''
+
+                                            // إنشاء نسخة من القيمة الحالية مع حرف واحد محدث
+                                            newValue = newValue.padEnd(8, ' ') // تأكد من طول 8 أحرف
+                                            newValue =
+                                                newValue.substring(0, i) +
+                                                value +
+                                                newValue.substring(i + 1)
+
+                                            form.setFieldValue(
+                                                field.name,
+                                                newValue.trim()
+                                            )
+
+                                            if (value && i < 7) {
+                                                const nextInput =
+                                                    document.querySelector(
+                                                        `input[name="${
+                                                            field.name
+                                                        }-${i + 1}"]`
+                                                    ) as HTMLInputElement
+                                                nextInput?.focus()
+                                            }
+                                        }}
+                                        name={`${field.name}-${i}`}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </Field>
+                </FormItem>
 
                 <FormItem
                     label="الشركة المصنعة"
@@ -371,6 +383,49 @@ const ClientFields = (props: ClientFieldsProps) => {
                             </label>
                         ))}
                     </div>
+                </FormItem>
+                <FormItem
+                    label="حالة الطلب"
+                    invalid={!!errors.status && !!touched.status}
+                    errorMessage={errors.status as string}
+                >
+                    <Field name="status">
+                        {({ field, form }: FieldProps) => (
+                            <Select
+                                field={field}
+                                size="sm"
+                                form={form}
+                                options={[
+                                    {
+                                        label: 'طلب جديد',
+                                        value: 'طلب جديد',
+                                    },
+                                    {
+                                        label: 'قيد الصيانة',
+                                        value: 'قيد الصيانة',
+                                    },
+                                ]}
+                                value={
+                                    field.value
+                                        ? {
+                                              label:
+                                                  field.value === 'طلب جديد'
+                                                      ? 'طلب جديد'
+                                                      : 'قيد الصيانة',
+                                              value: field.value,
+                                          }
+                                        : null
+                                }
+                                onChange={(option) => {
+                                    form.setFieldValue(
+                                        field.name,
+                                        option?.value || 'طلب جديد'
+                                    )
+                                }}
+                                placeholder="اختر حالة الطلب"
+                            />
+                        )}
+                    </Field>
                 </FormItem>
             </div>
         </AdaptableCard>

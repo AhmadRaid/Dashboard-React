@@ -128,7 +128,7 @@ export const protectedRoutes = [
         key: 'carsMenu.carsList',
         path: '/cars',
         component: lazy(
-            () => import('@/views/cars/CarList/components/CarsList')
+            () => import('@/views/cars/carList/components/CarsTable')
         ),
         authority: [],
     },
@@ -136,7 +136,14 @@ export const protectedRoutes = [
     {
         key: 'carsMenu.AddCar',
         path: '/cars/add-car',
-        component: lazy(() => import('@/views/cars/CreateCar/CreateCar')),
+        component: lazy(() => import('@/views/cars/CreateCar')),
+        authority: [],
+    },
+
+    {
+        key: 'carsMenu.EditCar',
+        path: '/cars/edit/:carId',
+        component: lazy(() => import('@/views/cars/EditCar')),
         authority: [],
     },
 ]

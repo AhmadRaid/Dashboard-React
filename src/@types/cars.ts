@@ -14,6 +14,11 @@ export interface Pagination {
     offset: number
 }
 
+export type CreateCar = {
+    _id: string
+    name: string
+}
+
 
 export interface GetCarsResponse {
     data: {

@@ -4,12 +4,12 @@ import Notification from '@/components/ui/Notification'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import OrderForm from '../OrderForm/OrderForm'
-import { InitialData } from '../OrderForm/OrderForm' // Assuming InitialData is exported from OrderForm
+import { InitialData } from '../OrderForm/OrderForm'
 import { apiGetOrdersDetails, apiUpdateOrder } from '@/services/OrdersService'
 
 const EditOrder = () => {
     const navigate = useNavigate()
-    const { clientId, orderId } = useParams() // Get both clientId and orderId
+    const { clientId, orderId } = useParams()
     const [loading, setLoading] = useState(true)
     const [initialData, setInitialData] = useState<InitialData | null>(null)
 
@@ -28,7 +28,6 @@ const EditOrder = () => {
             try {
                 const response = await apiGetOrdersDetails(orderId) 
                 if (response.data) {
-
                     const orderData = response.data.data 
                     setInitialData({
                         carModel: orderData.carModel || '',
@@ -38,6 +37,7 @@ const EditOrder = () => {
                         carManufacturer: orderData.carManufacturer || '',
                         carSize: orderData.carSize || '',
                         carType: orderData.carType || '',
+                        orderStatus: orderData.status || 'new',
                         services: orderData.services || [],
                     })
                 } else {
@@ -98,7 +98,7 @@ const EditOrder = () => {
                         placement: 'top-center',
                     }
                 )
-                navigate(`/clients`) // Navigate back to client details or orders list
+                navigate(`/clients`)
             }
         } catch (error) {
             toast.push(
@@ -116,23 +116,23 @@ const EditOrder = () => {
     }
 
     const handleDiscard = () => {
-        navigate(`/clients/${clientId}`) // Navigate back to client details
+        navigate(`/clients/${clientId}`)
     }
 
     return (
         <>
             <h3 className="text-2xl font-bold mb-5">تعديل الطلب</h3>
             {loading ? (
-                <div>جارٍ تحميل بيانات الطلب...</div> // Or a loading spinner
+                <div>جارٍ تحميل بيانات الطلب...</div>
             ) : (
                 <OrderForm
                     type="edit"
-                    initialData={initialData as InitialData} // Cast to InitialData as it's fetched
+                    initialData={initialData as InitialData}
                     onFormSubmit={handleFormSubmit}
                     onDiscard={handleDiscard}
                     onDelete={() =>
                         console.log('Delete functionality for order')
-                    } // Optional: Add delete order functionality
+                    }
                 />
             )}
         </>

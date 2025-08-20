@@ -11,6 +11,7 @@ import * as Yup from 'yup'
 import { Select } from '@/components/ui'
 import Input from '@/components/ui/Input'
 import OrderFields from './OrderField'
+import { Switch } from 'antd'
 
 type FormikRef = FormikProps<any>
 
@@ -25,6 +26,9 @@ type Service = {
     insulatorCoverage?: string
     polishType?: string
     polishSubType?: string
+    externalPolishLevel?: string
+    internalPolishLevel?: string
+    internalAndExternalPolishLevel?: string
     additionType?: string
     washScope?: string
     servicePrice?: number
@@ -50,6 +54,8 @@ type InitialData = {
     carManufacturer: string
     carSize: string
     carType: string
+    orderStatus: 'new' | 'maintenance' // أضفنا هذا الحقل
+
     services: Array<{
         id: string
         serviceType: string
@@ -63,6 +69,9 @@ type InitialData = {
         insulatorCoverage?: string
         polishType?: string
         polishSubType?: string
+        externalPolishLevel?: string
+        internalPolishLevel?: string
+        internalAndExternalPolishLevel?: string
         additionType?: string
         washScope?: string
         servicePrice?: number
@@ -86,6 +95,7 @@ const initialData: InitialData = {
     carManufacturer: '',
     carSize: '',
     carType: '',
+    orderStatus: 'new',
     services: [
         {
             id: 'service-0',
@@ -104,7 +114,6 @@ const initialData: InitialData = {
 }
 
 export const validationSchema = Yup.object().shape({
-
     carType: Yup.string()
         .max(50, 'يجب ألا يتجاوز نوع السيارة 50 حرفًا')
         .test(
@@ -124,7 +133,7 @@ export const validationSchema = Yup.object().shape({
                     !!carColor ||
                     !!carManufacturer ||
                     !!carPlateNumber ||
-                    !!carSize 
+                    !!carSize
                 // إذا كان هناك أي حقل آخر مملوء، فإن carType مطلوب
                 return anyCarFieldFilled ? !!value : true
             }
@@ -149,8 +158,7 @@ export const validationSchema = Yup.object().shape({
                     !!carColor ||
                     !!carManufacturer ||
                     !!carPlateNumber ||
-                    !!carSize 
-          
+                    !!carSize
 
                 return anyCarFieldFilled ? !!value : true
             }
@@ -197,12 +205,12 @@ export const validationSchema = Yup.object().shape({
                 !!carModel ||
                 !!carColor ||
                 !!carPlateNumber ||
-                !!carSize 
+                !!carSize
             return anyCarFieldFilled ? !!value : true
         }
     ),
 
-   carPlateNumber: Yup.string()
+    carPlateNumber: Yup.string()
         .matches(
             /^[أ-يa-zA-Z0-9]{7,8}$/, // تم تعديل التعبير النمطي هنا
             'يجب أن يتكون رقم اللوحة من 7 أو 8 أحرف عربية/إنجليزية أو أرقام' // رسالة خطأ محدثة
@@ -250,62 +258,10 @@ export const validationSchema = Yup.object().shape({
                     !!carModel ||
                     !!carColor ||
                     !!carManufacturer ||
-                    !!carPlateNumber 
+                    !!carPlateNumber
                 return anyCarFieldFilled ? !!value : true
             }
         ),
-
-    // services: Yup.array()
-    //     .of(
-    //         Yup.object().shape({
-    //             serviceType: Yup.string(),
-    //             dealDetails: Yup.string(),
-    //             guarantee: Yup.object().shape({
-    //                 typeGuarantee: Yup.string(),
-    //                 startDate: Yup.string(),
-    //                 terms: Yup.string(),
-    //             }),
-    //         })
-    //     )
-    //     .test(
-    //         'require-if-car-fields-exist',
-    //         'يجب إضافة خدمة واحدة على الأقل عند إدخال أي بيانات للسيارة',
-    //         function (value) {
-    //             const {
-    //                 carType,
-    //                 carModel,
-    //                 carColor,
-    //                 carManufacturer,
-    //                 carPlateNumber,
-    //                 carSize,
-    //             } = this.parent
-    //             const anyCarFieldFilled =
-    //                 !!carType ||
-    //                 !!carModel ||
-    //                 !!carColor ||
-    //                 !!carManufacturer ||
-    //                 !!carPlateNumber ||
-    //                 !!carSize
-
-    //             // إذا لم يكن هناك أي حقل سيارة مملوء، تجاهل services
-    //             if (!anyCarFieldFilled) return true
-
-    //             // إذا كان services فارغًا أو يحتوي على كائنات فارغة، اعتبره غير صالح
-    //             // if (
-    //             //     !value ||
-    //             //     value.every(
-    //             //         (service) =>
-    //             //             !service.serviceType &&
-    //             //             !service.dealDetails &&
-    //             //             !service.guarantee
-    //             //     )
-    //             // ) {
-    //             //     return false // يظهر خطأ "يجب إضافة خدمة واحدة على الأقل"
-    //             // }
-
-    //             return true
-    //         }
-    //     ),
 })
 
 const calculateEndDate = (
@@ -449,6 +405,26 @@ const OrderForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
         setServiceCounter(serviceCounter + 1)
     }
 
+    // أضف هذه الدالة خارج المكون
+const transformInitialData = (data:any) => {
+    // استخدم cloneDeep لتجنب تعديل الكائن الأصلي
+    const transformedData = cloneDeep(data);
+    if (transformedData.services && Array.isArray(transformedData.services)) {
+        transformedData.services = transformedData.services.map(service => {
+            if (service.guarantee && service.guarantee.startDate) {
+                const date = new Date(service.guarantee.startDate);
+                service.guarantee.startDate = date.toISOString().split('T')[0];
+            }
+            if (service.guarantee && service.guarantee.endDate) {
+                const date = new Date(service.guarantee.endDate);
+                service.guarantee.endDate = date.toISOString().split('T')[0];
+            }
+            return service;
+        });
+    }
+    return transformedData;
+};
+
     const removeService = (form: FormikProps<any>, index: number) => {
         if (form.values.services.length <= 1) {
             // لا تسمح بحذف آخر خدمة
@@ -512,12 +488,15 @@ const OrderForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
         return Object.keys(cleaned).length > 0 ? cleaned : undefined
     }
 
+        const transformedInitialData = transformInitialData(initialData);
+
+
     return (
         <>
             <Formik
                 innerRef={ref}
                 initialValues={{
-                    ...initialData,
+                    ...transformedInitialData,
                 }}
                 validationSchema={validationSchema}
                 onSubmit={(values, { setSubmitting }) => {
@@ -722,7 +701,6 @@ const OrderForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                     )}
                                                 </Field>
                                             </FormItem>
-
                                             {/* حقول خاصة بخدمة الحماية */}
                                             {service.serviceType ===
                                                 'protection' && (
@@ -1037,7 +1015,6 @@ const OrderForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                     </FormItem>
                                                 </>
                                             )}
-
                                             {/* حقول خاصة بخدمة العازل الحراري */}
                                             {service.serviceType ===
                                                 'insulator' && (
@@ -1208,7 +1185,6 @@ const OrderForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                     </FormItem>
                                                 </>
                                             )}
-
                                             {/* حقول خاصة بخدمة التلميع */}
                                             {service.serviceType ===
                                                 'polish' && (
@@ -1246,12 +1222,16 @@ const OrderForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                                     form={form}
                                                                     options={[
                                                                         {
-                                                                            label: 'خارجي',
+                                                                            label: 'تلميع خارجي',
                                                                             value: 'external',
                                                                         },
                                                                         {
-                                                                            label: 'داخلي',
+                                                                            label: 'تلميع داخلي',
                                                                             value: 'internal',
+                                                                        },
+                                                                        {
+                                                                            label: 'تلميع خارجي وداخلي',
+                                                                            value: 'internalAndExternal',
                                                                         },
                                                                         {
                                                                             label: 'كراسي',
@@ -1272,10 +1252,13 @@ const OrderForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                                                   label:
                                                                                       field.value ===
                                                                                       'external'
-                                                                                          ? 'خارجي'
+                                                                                          ? 'تلميع خارجي'
                                                                                           : field.value ===
                                                                                             'internal'
-                                                                                          ? 'داخلي'
+                                                                                          ? 'تلميع داخلي'
+                                                                                          : field.value ===
+                                                                                            'both'
+                                                                                          ? 'تلميع خارجي وداخلي'
                                                                                           : field.value ===
                                                                                             'seats'
                                                                                           ? 'كراسي'
@@ -1295,6 +1278,18 @@ const OrderForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                                             ''
                                                                         )
                                                                         form.setFieldValue(
+                                                                            `services[${index}].externalPolishLevel`,
+                                                                            ''
+                                                                        )
+                                                                        form.setFieldValue(
+                                                                            `services[${index}].internalPolishLevel`,
+                                                                            ''
+                                                                        )
+                                                                        form.setFieldValue(
+                                                                            `services[${index}].internalAndExternalPolishLevel`,
+                                                                            ''
+                                                                        )
+                                                                        form.setFieldValue(
                                                                             field.name,
                                                                             option?.value ||
                                                                                 ''
@@ -1306,32 +1301,33 @@ const OrderForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                         </Field>
                                                     </FormItem>
 
-                                                    {/* يظهر فقط عند اختيار خارجي */}
+                                                    {/* يظهر فقط عند اختيار تلميع خارجي */}
                                                     {service.polishType ===
                                                         'external' && (
                                                         <FormItem
-                                                            label="مستوى التلميع"
+                                                            label="مستوى التلميع الخارجي"
                                                             invalid={
                                                                 !!errors
                                                                     .services?.[
                                                                     index
                                                                 ]
-                                                                    ?.polishSubType &&
+                                                                    ?.externalPolishLevel &&
                                                                 !!touched
                                                                     .services?.[
                                                                     index
-                                                                ]?.polishSubType
+                                                                ]
+                                                                    ?.externalPolishLevel
                                                             }
                                                             errorMessage={
                                                                 errors
                                                                     .services?.[
                                                                     index
                                                                 ]
-                                                                    ?.polishSubType as string
+                                                                    ?.externalPolishLevel as string
                                                             }
                                                         >
                                                             <Field
-                                                                name={`services[${index}].polishSubType`}
+                                                                name={`services[${index}].externalPolishLevel`}
                                                             >
                                                                 {({
                                                                     field,
@@ -1376,7 +1372,163 @@ const OrderForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                                                     ''
                                                                             )
                                                                         }}
-                                                                        placeholder="اختر مستوى التلميع"
+                                                                        placeholder="اختر مستوى التلميع الخارجي"
+                                                                    />
+                                                                )}
+                                                            </Field>
+                                                        </FormItem>
+                                                    )}
+
+                                                    {/* يظهر فقط عند اختيار تلميع داخلي */}
+                                                    {service.polishType ===
+                                                        'internal' && (
+                                                        <FormItem
+                                                            label="مستوى التلميع الداخلي"
+                                                            invalid={
+                                                                !!errors
+                                                                    .services?.[
+                                                                    index
+                                                                ]
+                                                                    ?.internalPolishLevel &&
+                                                                !!touched
+                                                                    .services?.[
+                                                                    index
+                                                                ]
+                                                                    ?.internalPolishLevel
+                                                            }
+                                                            errorMessage={
+                                                                errors
+                                                                    .services?.[
+                                                                    index
+                                                                ]
+                                                                    ?.internalPolishLevel as string
+                                                            }
+                                                        >
+                                                            <Field
+                                                                name={`services[${index}].internalPolishLevel`}
+                                                            >
+                                                                {({
+                                                                    field,
+                                                                    form,
+                                                                }: FieldProps) => (
+                                                                    <Select
+                                                                        field={
+                                                                            field
+                                                                        }
+                                                                        size="sm"
+                                                                        form={
+                                                                            form
+                                                                        }
+                                                                        options={[
+                                                                            {
+                                                                                label: 'مستوى 1',
+                                                                                value: '1',
+                                                                            },
+                                                                            {
+                                                                                label: 'مستوى 2',
+                                                                                value: '2',
+                                                                            },
+                                                                            {
+                                                                                label: 'مستوى 3',
+                                                                                value: '3',
+                                                                            },
+                                                                        ]}
+                                                                        value={
+                                                                            field.value
+                                                                                ? {
+                                                                                      label: `مستوى ${field.value}`,
+                                                                                      value: field.value,
+                                                                                  }
+                                                                                : null
+                                                                        }
+                                                                        onChange={(
+                                                                            option
+                                                                        ) => {
+                                                                            form.setFieldValue(
+                                                                                field.name,
+                                                                                option?.value ||
+                                                                                    ''
+                                                                            )
+                                                                        }}
+                                                                        placeholder="اختر مستوى التلميع الداخلي"
+                                                                    />
+                                                                )}
+                                                            </Field>
+                                                        </FormItem>
+                                                    )}
+
+                                                    {/* يظهر فقط عند اختيار تلميع خارجي وداخلي */}
+                                                    {service.polishType ===
+                                                        'both' && (
+                                                        <FormItem
+                                                            label="مستوى التلميع الداخلي والخارجي"
+                                                            invalid={
+                                                                !!errors
+                                                                    .services?.[
+                                                                    index
+                                                                ]
+                                                                    ?.internalAndExternalPolishLevel &&
+                                                                !!touched
+                                                                    .services?.[
+                                                                    index
+                                                                ]
+                                                                    ?.internalAndExternalPolishLevel
+                                                            }
+                                                            errorMessage={
+                                                                errors
+                                                                    .services?.[
+                                                                    index
+                                                                ]
+                                                                    ?.internalAndExternalPolishLevel as string
+                                                            }
+                                                        >
+                                                            <Field
+                                                                name={`services[${index}].internalAndExternalPolishLevel`}
+                                                            >
+                                                                {({
+                                                                    field,
+                                                                    form,
+                                                                }: FieldProps) => (
+                                                                    <Select
+                                                                        field={
+                                                                            field
+                                                                        }
+                                                                        size="sm"
+                                                                        form={
+                                                                            form
+                                                                        }
+                                                                        options={[
+                                                                            {
+                                                                                label: 'مستوى 1',
+                                                                                value: '1',
+                                                                            },
+                                                                            {
+                                                                                label: 'مستوى 2',
+                                                                                value: '2',
+                                                                            },
+                                                                            {
+                                                                                label: 'مستوى 3',
+                                                                                value: '3',
+                                                                            },
+                                                                        ]}
+                                                                        value={
+                                                                            field.value
+                                                                                ? {
+                                                                                      label: `مستوى ${field.value}`,
+                                                                                      value: field.value,
+                                                                                  }
+                                                                                : null
+                                                                        }
+                                                                        onChange={(
+                                                                            option
+                                                                        ) => {
+                                                                            form.setFieldValue(
+                                                                                field.name,
+                                                                                option?.value ||
+                                                                                    ''
+                                                                            )
+                                                                        }}
+                                                                        placeholder="اختر مستوى التلميع المشترك"
                                                                     />
                                                                 )}
                                                             </Field>
@@ -1384,7 +1536,6 @@ const OrderForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                     )}
                                                 </>
                                             )}
-
                                             {/* حقول خاصة بخدمة الإضافات */}
                                             {service.serviceType ===
                                                 'additions' && (
@@ -1578,7 +1729,157 @@ const OrderForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                     )}
                                                 </>
                                             )}
-
+                                            <FormItem
+                                                label="حالة الطلب"
+                                                invalid={
+                                                    !!errors.orderStatus &&
+                                                    !!touched.orderStatus
+                                                }
+                                                errorMessage={
+                                                    errors.orderStatus as string
+                                                }
+                                            >
+                                                <Field name="orderStatus">
+                                                    {({
+                                                        field,
+                                                        form,
+                                                    }: FieldProps) => (
+                                                        <Select
+                                                            field={field}
+                                                            size="sm"
+                                                            form={form}
+                                                            options={[
+                                                                {
+                                                                    label: 'طلب جديد',
+                                                                    value: 'new',
+                                                                },
+                                                                {
+                                                                    label: 'صيانة',
+                                                                    value: 'maintenance',
+                                                                },
+                                                            ]}
+                                                            value={
+                                                                field.value
+                                                                    ? {
+                                                                          label:
+                                                                              field.value ===
+                                                                              'new'
+                                                                                  ? 'طلب جديد'
+                                                                                  : 'صيانة',
+                                                                          value: field.value,
+                                                                      }
+                                                                    : null
+                                                            }
+                                                            onChange={(
+                                                                option
+                                                            ) => {
+                                                                form.setFieldValue(
+                                                                    field.name,
+                                                                    option?.value ||
+                                                                        'new'
+                                                                )
+                                                            }}
+                                                            placeholder="اختر حالة الطلب"
+                                                        />
+                                                    )}
+                                                </Field>
+                                            </FormItem>
+                                            <FormItem
+                                                label="سعر الخدمة"
+                                                invalid={
+                                                    !!errors.services?.[index]
+                                                        ?.servicePrice &&
+                                                    !!touched.services?.[index]
+                                                        ?.servicePrice
+                                                }
+                                                errorMessage={
+                                                    errors.services?.[index]
+                                                        ?.servicePrice as string
+                                                }
+                                            >
+                                                <div className="flex flex-col gap-2">
+                                                    <Field
+                                                        name={`services[${index}].servicePrice`}
+                                                        type="number"
+                                                        size="sm"
+                                                        placeholder="أدخل سعر الخدمة"
+                                                        component={Input}
+                                                        onChange={(
+                                                            e: React.ChangeEvent<HTMLInputElement>
+                                                        ) => {
+                                                            const value =
+                                                                parseFloat(
+                                                                    e.target
+                                                                        .value
+                                                                ) || 0
+                                                            form.setFieldValue(
+                                                                `services[${index}].servicePrice`,
+                                                                value
+                                                            )
+                                                        }}
+                                                    />
+                                                    {values.services[index]
+                                                        .servicePrice && (
+                                                        <div className="flex flex-col gap-1 bg-gray-50 p-2 rounded-md">
+                                                            <div className="flex justify-between">
+                                                                <span className="text-sm font-medium text-gray-600">
+                                                                    السعر
+                                                                    الأساسي:
+                                                                </span>
+                                                                <span className="text-sm font-semibold">
+                                                                    {
+                                                                        values
+                                                                            .services[
+                                                                            index
+                                                                        ]
+                                                                            .servicePrice
+                                                                    }{' '}
+                                                                    ريال
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between">
+                                                                <span className="text-sm font-medium text-gray-600">
+                                                                    الضريبة
+                                                                    (5%):
+                                                                </span>
+                                                                <span className="text-sm font-semibold">
+                                                                    {(
+                                                                        values
+                                                                            .services[
+                                                                            index
+                                                                        ]
+                                                                            .servicePrice *
+                                                                        0.05
+                                                                    ).toFixed(
+                                                                        2
+                                                                    )}{' '}
+                                                                    ريال
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between border-t pt-1 mt-1">
+                                                                <span className="text-sm font-medium text-gray-800">
+                                                                    الإجمالي
+                                                                    شامل
+                                                                    الضريبة:
+                                                                </span>
+                                                                <span className="text-sm font-bold text-blue-600">
+                                                                    {(
+                                                                        values
+                                                                            .services[
+                                                                            index
+                                                                        ]
+                                                                            .servicePrice *
+                                                                        1.05
+                                                                    ).toFixed(
+                                                                        2
+                                                                    )}{' '}
+                                                                    ريال
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </FormItem>
                                             <FormItem
                                                 label="تفاصيل الاتفاق"
                                                 invalid={
@@ -1603,6 +1904,30 @@ const OrderForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                         </div>
 
                                         {/* Guarantee Fields */}
+                                        {/* <FormItem
+                                            label="تفعيل الضمان"
+                                            className="col-span-1"
+                                        >
+                                            <div className="flex items-center gap-3 p-4 border rounded-lg bg-gray-50">
+                                                <Switch
+                                                    checked={
+                                                        service.guarantee
+                                                            ?.isActive || false
+                                                    }
+                                                    onChange={() =>
+                                                        toggleGuarantee(
+                                                            form,
+                                                            index
+                                                        )
+                                                    }
+                                                />
+                                                <span className="font-medium">
+                                                    {service.guarantee?.isActive
+                                                        ? 'الضمان مفعل'
+                                                        : 'الضمان غير مفعل'}
+                                                </span>
+                                            </div>
+                                        </FormItem> */}
                                         {service.guarantee && (
                                             <div className="mt-6">
                                                 <h5 className="text-md font-semibold mb-4">
@@ -1741,6 +2066,21 @@ const OrderForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                                     <Input
                                                                         type="date"
                                                                         size="sm"
+                                                                        value={
+                                                                            values
+                                                                                .services?.[
+                                                                                index
+                                                                            ]
+                                                                                ?.guarantee
+                                                                                ?.startDate
+                                                                                ? values.services[
+                                                                                      index
+                                                                                  ].guarantee.startDate.split(
+                                                                                      'T'
+                                                                                  )[0]
+                                                                                : ''
+                                                                        }
+                                                                        className="bg-gray-50"
                                                                         {...field}
                                                                         onChange={(
                                                                             e
@@ -1804,15 +2144,20 @@ const OrderForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                                     size="sm"
                                                                     value={
                                                                         values
-                                                                            .services[
+                                                                            .services?.[
                                                                             index
                                                                         ]
-                                                                            .guarantee
-                                                                            ?.endDate ||
-                                                                        ''
+                                                                            ?.guarantee
+                                                                            ?.startDate
+                                                                            ? values.services[
+                                                                                  index
+                                                                              ].guarantee.endDate.split(
+                                                                                  'T'
+                                                                              )[0]
+                                                                            : ''
                                                                     }
                                                                     readOnly
-                                                                    className="bg-gray-50" // إضافة خلفية رمادية فاتحة
+                                                                    className="bg-gray-50"
                                                                 />
                                                             </div>
                                                             {values.services[

@@ -1,24 +1,25 @@
 import toast from '@/components/ui/toast'
-import { useNavigate } from 'react-router-dom'
+import Notification from '@/components/ui/Notification'
+import { useNavigate, useParams } from 'react-router-dom'
 
+import { apiCreateNewClient } from '@/services/ClientsService'
+import { apiAddOrder } from '@/services/OrdersService'
 import { apiAddNewCar } from '@/services/CarsService'
 import CarForm from '../CarForm/CarForm'
 
 const CreateCar = () => {
     const navigate = useNavigate()
 
-    const addNewCar = async (data: any) => {
+    const addCar = async (data: any) => {
+
         const response = await apiAddNewCar(data)
         return response.data
     }
 
-    const handleFormSubmit = async (
-        values: any,
-        setSubmitting: SetSubmitting
-    ) => {
+    const handleFormSubmit = async (values: any, setSubmitting: any) => {
         setSubmitting(true)
         try {
-            const success = await addNewCar(values)
+            const success = await addCar(values)
             setSubmitting(false)
             if (success) {
                 toast.push(
@@ -27,18 +28,18 @@ const CreateCar = () => {
                         type="success"
                         duration={2500}
                     >
-                        تم اضافة سيارة بنجاح
+                        تم اضافة الطلب بنجاح
                     </Notification>,
                     {
                         placement: 'top-center',
                     }
                 )
-                navigate('/cars')
+                navigate(`/cars`)
             }
         } catch (error) {
             toast.push(
                 <Notification
-                    title="للاسف تم رفض اضافة سيارة! الرجاء المحاولة مرة اخرى"
+                    title="للاسف تم رفض الطلب! الرجاء المحاولة مرة اخرى"
                     type="danger"
                     duration={2500}
                 />,
@@ -51,7 +52,7 @@ const CreateCar = () => {
     }
 
     const handleDiscard = () => {
-        navigate('/cars')
+        navigate('/clients')
     }
 
     return (

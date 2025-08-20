@@ -1,7 +1,6 @@
-// store/carsListSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
-import { Car, GetCarsParams } from '@/@types/cars'
 import { apiGetCars } from '@/services/CarsService'
+import { Car } from '@/@types/cars'
 
 export const SLICE_NAME = 'carsListSlice'
 
@@ -17,13 +16,14 @@ interface TableData {
 }
 
 export interface CarsListState {
+    carsList: Car[]
     loading: boolean
-    carList: Car[]
     tableData: TableData
+    selectedCar: any | null
 }
 
 const initialState: CarsListState = {
-    carList: [],
+    carsList: [],
     loading: false,
     tableData: {
         pageIndex: 1,
@@ -35,20 +35,16 @@ const initialState: CarsListState = {
             key: '',
         },
     },
+    selectedCar: null,
 }
 
 export const getCars = createAsyncThunk(
-    `${SLICE_NAME}/getCars`,
+    `${SLICE_NAME}/getCarsList`,
     async () => {
-        try {
-            const response = await apiGetCars()
-            console.log('respooooonse',response.data.data );
-            
-            return response.data.data 
-        } catch (error) {
-            console.error('API Error:', error)
-            return error
-        }
+        const response = await apiGetCars()
+        console.log('yyyyyyyyyyy',response.data.data);
+        
+        return response?.data
     }
 )
 
@@ -70,25 +66,25 @@ const carsListSlice = createSlice({
                 total: state.tableData.total,
             }
         },
+        setSelectedCar: (state, action: PayloadAction<any | null>) => {
+            state.selectedCar = action.payload
+        },
     },
     extraReducers: (builder) => {
         builder
             .addCase(getCars.pending, (state) => {
-                console.log('PEEEEEENDING',state)
                 state.loading = true
             })
             .addCase(getCars.fulfilled, (state, action) => {
-                console.log('FULLLLFIELD',state)
-                state.carList = action.payload.carTypes
-                state.tableData.total = action.payload.pagination.totalCarTypes
+                state.carsList = action.payload.data.carTypes
                 state.loading = false
             })
-            .addCase(getCars.rejected, (state, action) => {
-                console.log('REEEJECTED',state)
+            .addCase(getCars.rejected, (state) => {
                 state.loading = false
             })
     },
 })
 
-export const { setTableData, resetFilters } = carsListSlice.actions
+export const { setTableData, resetFilters, setSelectedCar } =
+    carsListSlice.actions
 export default carsListSlice.reducer

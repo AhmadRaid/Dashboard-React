@@ -17,7 +17,7 @@ export async function apiGetClients(params: GetClientsParams) {
 
 export async function apiGetClientProfile(clientId: string) {
     return ApiService.fetchData({
-        url: `/clients/${clientId}`, // Updated to use clientId directly
+        url: `/clients/${clientId}`, 
         method: 'get',
     })
 }
