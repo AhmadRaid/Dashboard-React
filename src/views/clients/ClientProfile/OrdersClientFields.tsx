@@ -24,6 +24,7 @@ import { createRoot } from 'react-dom/client'
 import type { FormikErrors, FormikTouched } from 'formik'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import { HiOutlineTrash } from 'react-icons/hi'
+import GuaranteePDF from '@/views/PDF/GuarantePDF'
 
 // --- Helper Functions ---
 const formatDate = (isoString?: string) => {
@@ -156,28 +157,8 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                         values.orders?.find((o) => o._id === orderId) || {},
                 }
                 fileName = `ضمان_${orderId}.pdf`
-                pdfComponent = (
-                    <div
-                        style={{
-                            padding: '20px',
-                            fontFamily: 'Arial, sans-serif',
-                        }}
-                    >
-                        <h1>وثيقة ضمان</h1>
-                        <p>هذا ضمان لطلب رقم: {responseData.orderId}</p>
-                        <p>العميل: {responseData.clientName}</p>
-                        <p>
-                            تفاصيل السيارة: {responseData.carDetails.carType} -{' '}
-                            {responseData.carDetails.carModel} -{' '}
-                            {responseData.carDetails.carColor}
-                        </p>
-                        <p>تاريخ الإصدار: {new Date().toLocaleDateString()}</p>
-                        <p>
-                            هذا مستند توضيحي فقط. يرجى استبداله بمكون PDF الضمان
-                            الفعلي.
-                        </p>
-                    </div>
-                )
+                               pdfComponent = <GuaranteePDF guaranteeDoc={responseData} />
+
             } else if (type === 'receipt') {
                 responseData = {
                     orderId,
@@ -186,28 +167,8 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                         values.orders?.find((o) => o._id === orderId) || {},
                 }
                 fileName = `إيصال_سيارة_${orderId}.pdf`
-                pdfComponent = (
-                    <div
-                        style={{
-                            padding: '20px',
-                            fontFamily: 'Arial, sans-serif',
-                        }}
-                    >
-                        <h1>إيصال استلام سيارة</h1>
-                        <p>هذا إيصال استلام لطلب رقم: {responseData.orderId}</p>
-                        <p>العميل: {responseData.clientName}</p>
-                        <p>
-                            تفاصيل السيارة: {responseData.carDetails.carType} -{' '}
-                            {responseData.carDetails.carModel} -{' '}
-                            {responseData.carDetails.carColor}
-                        </p>
-                        <p>تاريخ الاستلام: {new Date().toLocaleDateString()}</p>
-                        <p>
-                            هذا مستند توضيحي فقط. يرجى استبداله بمكون PDF
-                            الإيصال الفعلي.
-                        </p>
-                    </div>
-                )
+                                               pdfComponent = <GuaranteePDF guaranteeDoc={responseData} />
+
             } else {
                 throw new Error('Invalid download type.')
             }
