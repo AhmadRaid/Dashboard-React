@@ -157,13 +157,13 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     sectionTitle: {
-        fontSize: 12,
-        fontWeight: 'bold',
+        fontSize: 14,
+        fontWeight: 'extrabold',
         color: '#1A202C',
-        marginBottom: 4,
-        paddingBottom: 2,
-        borderBottomWidth: 1,
-        borderBottomColor: '#D1D5DB',
+        marginBottom: 8,
+        paddingBottom: 4,
+        borderBottomWidth: 2,
+        borderBottomColor: '#2D3748',
     },
     clientInfo: {
         flexDirection: 'row-reverse',
@@ -252,8 +252,13 @@ const styles = StyleSheet.create({
     },
     guaranteeDetailItem: {
         width: '48%',
-        marginBottom: 4,
+        marginBottom: 8,
         textAlign: 'right',
+        padding: 4,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: '#B2F5EA',
     },
     guaranteeLabel: {
         fontSize: 8,
@@ -277,13 +282,13 @@ const styles = StyleSheet.create({
     termsTitle: {
         fontSize: 10,
         fontWeight: 'bold',
-        color: #2C5282,
+        color: '#2C5282',
         marginBottom: 4,
         textAlign: 'right',
     },
     termsText: {
         fontSize: 8,
-        color: #2C5282,
+        color: '#2C5282',
         textAlign: 'right',
     },
     notesSection: {
@@ -297,13 +302,13 @@ const styles = StyleSheet.create({
     notesTitle: {
         fontSize: 10,
         fontWeight: 'bold',
-        color: #553C9A,
+        color: '#553C9A',
         marginBottom: 4,
         textAlign: 'right',
     },
     notesText: {
         fontSize: 8,
-        color: #553C9A,
+        color: '#553C9A',
         textAlign: 'right',
     },
     footer: {
@@ -325,9 +330,10 @@ const styles = StyleSheet.create({
         paddingVertical: 2,
         borderRadius: 4,
         fontSize: 8,
-        marginTop: 4,
         fontWeight: 'bold',
         textAlign: 'center',
+        alignSelf: 'flex-start',
+        marginLeft: 'auto',
     },
     activeBadge: {
         backgroundColor: '#C6F6D5',
@@ -336,9 +342,32 @@ const styles = StyleSheet.create({
         paddingVertical: 2,
         borderRadius: 4,
         fontSize: 8,
-        marginTop: 4,
         fontWeight: 'bold',
         textAlign: 'center',
+        alignSelf: 'flex-start',
+        marginLeft: 'auto',
+    },
+    dualDate: {
+        flexDirection: 'column',
+    },
+    gregorianDate: {
+        fontSize: 9,
+        color: '#1A202C',
+        fontWeight: 'bold',
+    },
+    hijriDate: {
+        fontSize: 8,
+        color: '#4A5568',
+        marginTop: 2,
+    },
+    dateContainer: {
+        marginBottom: 4,
+    },
+    statusContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        marginTop: 4,
     },
 })
 
@@ -356,18 +385,45 @@ Font.register({
     ],
 })
 
-// دالة لتحويل التاريخ إلى الهجري
+// دالة لتحويل التاريخ إلى الهجري مع تحسينات
 const toHijriDate = (gregorianDate: string | Date): string => {
     if (!gregorianDate) return ''
 
-    const date = new Date(gregorianDate)
-    const hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-    }).format(date)
+    try {
+        const date = new Date(gregorianDate)
+        if (isNaN(date.getTime())) return 'تاريخ غير صالح'
+        
+        const hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+        }).format(date)
 
-    return hijri
+        return hijri
+    } catch (error) {
+        console.error('Error converting to Hijri date:', error)
+        return 'خطأ في التحويل'
+    }
+}
+
+// دالة لعرض التاريخ بالميلادي بشكل منسق
+const formatGregorianDate = (date: string | Date): string => {
+    if (!date) return ''
+    
+    try {
+        const d = new Date(date)
+        if (isNaN(d.getTime())) return 'تاريخ غير صالح'
+        
+        const day = d.getDate().toString().padStart(2, '0')
+        const month = (d.getMonth() + 1).toString().padStart(2, '0')
+        const year = d.getFullYear()
+        
+        return `${day}/${month}/${year}`
+        
+    } catch (error) {
+        console.error('Error formatting Gregorian date:', error)
+        return 'خطأ في التنسيق'
+    }
 }
 
 // دالة للتحقق من حالة الضمان
@@ -434,14 +490,11 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => (
                         تاريخ الإصدار:
                     </Text>
                     <Text style={styles.value}>
-                        {new Date(guaranteeDoc.issueDate).toLocaleDateString(
-                            'ar-SA',
-                            {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                            }
-                        )}
+                        {formatGregorianDate(guaranteeDoc.issueDate)}
+                        {'\n'}
+                        <Text style={{ fontSize: 8, color: '#4A5568' }}>
+                            ({toHijriDate(guaranteeDoc.issueDate)})
+                        </Text>
                     </Text>
                 </View>
                 <View style={styles.infoColumn}>
@@ -454,14 +507,11 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => (
                         تاريخ الطلب:
                     </Text>
                     <Text style={styles.value}>
-                        {new Date(guaranteeDoc.order.createdAt).toLocaleDateString(
-                            'ar-SA',
-                            {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                            }
-                        )}
+                        {formatGregorianDate(guaranteeDoc.order.createdAt)}
+                        {'\n'}
+                        <Text style={{ fontSize: 8, color: '#4A5568' }}>
+                            ({toHijriDate(guaranteeDoc.order.createdAt)})
+                        </Text>
                     </Text>
                 </View>
             </View>
@@ -560,14 +610,11 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => (
                                 <View style={styles.serviceDetailItem}>
                                     <Text style={styles.label}>تاريخ الخدمة:</Text>
                                     <Text style={styles.value}>
-                                        {new Date(service.serviceDate).toLocaleDateString(
-                                            'ar-SA',
-                                            {
-                                                year: 'numeric',
-                                                month: 'long',
-                                                day: 'numeric',
-                                            }
-                                        )}
+                                        {formatGregorianDate(service.serviceDate)}
+                                        {'\n'}
+                                        <Text style={{ fontSize: 8, color: '#4A5568' }}>
+                                            ({toHijriDate(service.serviceDate)})
+                                        </Text>
                                     </Text>
                                 </View>
                             )}
@@ -782,42 +829,34 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => (
                                     <View style={styles.guaranteeDetailItem}>
                                         <Text style={styles.guaranteeLabel}>تاريخ البدء:</Text>
                                         <Text style={styles.guaranteeValue}>
-                                            {new Date(service.guarantee.startDate).toLocaleDateString(
-                                                'ar-SA',
-                                                {
-                                                    year: 'numeric',
-                                                    month: 'long',
-                                                    day: 'numeric',
-                                                }
-                                            )}
-                                            {' ('}{toHijriDate(service.guarantee.startDate)}{')'}
+                                            {formatGregorianDate(service.guarantee.startDate)}
+                                            {'\n'}
+                                            <Text style={{ fontSize: 8, color: '#4A5568' }}>
+                                                ({toHijriDate(service.guarantee.startDate)})
+                                            </Text>
                                         </Text>
                                     </View>
                                     
                                     <View style={styles.guaranteeDetailItem}>
                                         <Text style={styles.guaranteeLabel}>تاريخ الانتهاء:</Text>
                                         <Text style={styles.guaranteeValue}>
-                                            {new Date(service.guarantee.endDate).toLocaleDateString(
-                                                'ar-SA',
-                                                {
-                                                    year: 'numeric',
-                                                    month: 'long',
-                                                    day: 'numeric',
-                                                }
-                                            )}
-                                            {' ('}{toHijriDate(service.guarantee.endDate)}{')'}
+                                            {formatGregorianDate(service.guarantee.endDate)}
+                                            {'\n'}
+                                            <Text style={{ fontSize: 8, color: '#4A5568' }}>
+                                                ({toHijriDate(service.guarantee.endDate)})
+                                            </Text>
                                         </Text>
                                     </View>
                                     
                                     <View style={styles.guaranteeDetailItem}>
                                         <Text style={styles.guaranteeLabel}>حالة الضمان:</Text>
-                                        <Text style={styles.guaranteeValue}>
+                                        <View style={styles.statusContainer}>
                                             {isGuaranteeActive(service.guarantee.endDate) ? (
                                                 <Text style={styles.activeBadge}>نشط</Text>
                                             ) : (
                                                 <Text style={styles.validityBadge}>منتهي</Text>
                                             )}
-                                        </Text>
+                                        </View>
                                     </View>
                                 </View>
 

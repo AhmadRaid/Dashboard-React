@@ -94,6 +94,62 @@ const DeleteOrderButton = ({
     )
 }
 
+// Helper function to transform order data to GuaranteeDocument format
+const transformOrderToGuaranteeDoc = (order: any, client: any): any => {
+    return {
+        documentNumber: `G-${order.orderNumber}`,
+        issueDate: new Date(),
+        client: {
+            firstName: client.firstName,
+            middleName: client.middleName || '',
+            lastName: client.lastName,
+            clientNumber: client.clientNumber || `CL-${client._id}`,
+            phone: client.phone,
+            email: client.email
+        },
+        order: {
+            orderNumber: order.orderNumber,
+            carType: order.carType,
+            carModel: order.carModel,
+            carColor: order.carColor,
+            carPlateNumber: order.carPlateNumber,
+            carManufacturer: order.carManufacturer,
+            carSize: order.carSize,
+            orderStatus: order.orderStatus,
+            createdAt: order.createdAt,
+            services: order.services.map((service: any) => ({
+                id: service._id || `SVC-${Date.now()}`,
+                serviceType: service.serviceType,
+                dealDetails: service.dealDetails,
+                protectionFinish: service.protectionFinish,
+                protectionSize: service.protectionSize,
+                protectionCoverage: service.protectionCoverage,
+                originalCarColor: service.originalCarColor,
+                protectionColor: service.protectionColor,
+                insulatorType: service.insulatorType,
+                insulatorCoverage: service.insulatorCoverage,
+                polishType: service.polishType,
+                polishSubType: service.polishSubType,
+                externalPolishLevel: service.externalPolishLevel,
+                internalPolishLevel: service.internalPolishLevel,
+                internalAndExternalPolishLevel: service.internalAndExternalPolishLevel,
+                additionType: service.additionType,
+                washScope: service.washScope,
+                servicePrice: service.servicePrice,
+                serviceDate: service.serviceDate,
+                guarantee: {
+                    id: service.guarantee?._id || `GUA-${Date.now()}`,
+                    typeGuarantee: service.guarantee?.typeGuarantee || '1 سنة',
+                    startDate: service.guarantee?.startDate || new Date(),
+                    endDate: service.guarantee?.endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+                    terms: service.guarantee?.terms,
+                    Notes: service.guarantee?.Notes
+                }
+            }))
+        }
+    };
+};
+
 // --- Main Component ---
 const OrdersClientFields = (props: OrdersClientFieldsProps) => {
     // --- State Management ---
@@ -141,7 +197,7 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
         try {
             let responseData: any
             let fileName: string = ''
-            let pdfComponent: JSX.Element
+            let pdfComponent: JSX.Element | null = null
 
             if (type === 'invoice') {
                 const response = await apiGetInvoiceByOrderId(orderId)
@@ -149,28 +205,30 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                 if (!responseData) throw new Error('Invoice data not found.')
                 fileName = `فاتورة_${responseData.invoiceNumber}.pdf`
                 pdfComponent = <InvoicePDF invoice={responseData} />
-            } else if (type === 'guarantee') {
-                responseData = {
-                    orderId,
-                    clientName: values.firstName + ' ' + values.lastName,
-                    carDetails:
-                        values.orders?.find((o) => o._id === orderId) || {},
-                }
-                fileName = `ضمان_${orderId}.pdf`
-                               pdfComponent = <GuaranteePDF guaranteeDoc={responseData} />
-
-            } else if (type === 'receipt') {
-                responseData = {
-                    orderId,
-                    clientName: values.firstName + ' ' + values.lastName,
-                    carDetails:
-                        values.orders?.find((o) => o._id === orderId) || {},
-                }
-                fileName = `إيصال_سيارة_${orderId}.pdf`
-                                               pdfComponent = <GuaranteePDF guaranteeDoc={responseData} />
-
             } else {
-                throw new Error('Invalid download type.')
+                // Find the order in the client's orders
+                const order = values.orders?.find((o: any) => o._id === orderId)
+                if (!order) throw new Error('Order not found.')
+                
+                if (type === 'guarantee') {
+                    responseData = transformOrderToGuaranteeDoc(order, values)
+                    fileName = `ضمان_${order.orderNumber}.pdf`
+                    pdfComponent = <GuaranteePDF guaranteeDoc={responseData} />
+                } else if (type === 'receipt') {
+                    responseData = {
+                        orderId,
+                        clientName: values.firstName + ' ' + values.lastName,
+                        carDetails: order
+                    }
+                    fileName = `إيصال_سيارة_${order.orderNumber}.pdf`
+                    // You'll need to create a ReceiptPDF component similar to GuaranteePDF
+                    // pdfComponent = <ReceiptPDF receiptData={responseData} />
+                    throw new Error('Receipt PDF generation not implemented yet.')
+                }
+            }
+
+            if (!pdfComponent) {
+                throw new Error('Failed to create PDF component.')
             }
 
             // Render PDF and trigger download
@@ -282,74 +340,74 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
             accessorKey: 'createdAt',
             cell: (props) => formatDate(props.row.original.createdAt),
         },
-{
-    header: 'تصدير PDF',
-    id: 'exportActions',
-    cell: (props) => {
-        const order = props.row.original
-        const isLoadingCurrentOrder = downloadLoadingOrderId === order._id
+        {
+            header: 'تصدير PDF',
+            id: 'exportActions',
+            cell: (props) => {
+                const order = props.row.original
+                const isLoadingCurrentOrder = downloadLoadingOrderId === order._id
 
-        return (
-            <div onClick={(e) => e.stopPropagation()} className="relative">
-                <Dropdown
-                    placement="bottom-end"
-                    renderTitle={
-                        <Button
-                            size="xs"
-                            variant="solid"
-                            icon={
-                                isLoadingCurrentOrder ? (
-                                    <Spinner size={20} />
-                                ) : (
-                                    <FiDownload />
-                                )
+                return (
+                    <div onClick={(e) => e.stopPropagation()} className="relative">
+                        <Dropdown
+                            placement="bottom-end"
+                            renderTitle={
+                                <Button
+                                    size="xs"
+                                    variant="solid"
+                                    icon={
+                                        isLoadingCurrentOrder ? (
+                                            <Spinner size={20} />
+                                        ) : (
+                                            <FiDownload />
+                                        )
+                                    }
+                                    disabled={isLoadingCurrentOrder}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                                >
+                                    {isLoadingCurrentOrder ? 'جاري التنزيل...' : 'تصدير'}
+                                </Button>
                             }
-                            disabled={isLoadingCurrentOrder}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
-                            {isLoadingCurrentOrder ? 'جاري التنزيل...' : 'تصدير'}
-                        </Button>
-                    }
-                >
-                    <Menu className="min-w-[200px]"> {/* تحديد عرض أدنى للقائمة */}
-                        <div className="max-h-[300px] overflow-y-auto"> {/* إضافة scroll عند الحاجة */}
-                            <Menu.MenuItem
-                                onSelect={(event) =>
-                                    handleStartDownload(event, order._id, 'invoice')
-                                }
-                                disabled={isLoadingCurrentOrder && downloadType !== 'invoice'}
-                            >
-                                <span className="flex items-center gap-2">
-                                    <FiFileText /> فاتورة
-                                </span>
-                            </Menu.MenuItem>
-                            <Menu.MenuItem
-                                onSelect={(event) =>
-                                    handleStartDownload(event, order._id, 'guarantee')
-                                }
-                                disabled={isLoadingCurrentOrder && downloadType !== 'guarantee'}
-                            >
-                                <span className="flex items-center gap-2">
-                                    <FiBookOpen /> ضمان
-                                </span>
-                            </Menu.MenuItem>
-                            <Menu.MenuItem
-                                onSelect={(event) =>
-                                    handleStartDownload(event, order._id, 'receipt')
-                                }
-                                disabled={isLoadingCurrentOrder && downloadType !== 'receipt'}
-                            >
-                                <span className="flex items-center gap-2">
-                                    <FiPrinter /> استلام سيارة
-                                </span>
-                            </Menu.MenuItem>
-                        </div>
-                    </Menu>
-                </Dropdown>
-            </div>
-        )
-    },
-},
+                            <Menu className="min-w-[200px]">
+                                <div className="max-h-[300px] overflow-y-auto">
+                                    <Menu.MenuItem
+                                        onSelect={(event) =>
+                                            handleStartDownload(event, order._id, 'invoice')
+                                        }
+                                        disabled={isLoadingCurrentOrder && downloadType !== 'invoice'}
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            <FiFileText /> فاتورة
+                                        </span>
+                                    </Menu.MenuItem>
+                                    <Menu.MenuItem
+                                        onSelect={(event) =>
+                                            handleStartDownload(event, order._id, 'guarantee')
+                                        }
+                                        disabled={isLoadingCurrentOrder && downloadType !== 'guarantee'}
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            <FiBookOpen /> ضمان
+                                        </span>
+                                    </Menu.MenuItem>
+                                    <Menu.MenuItem
+                                        onSelect={(event) =>
+                                            handleStartDownload(event, order._id, 'receipt')
+                                        }
+                                        disabled={isLoadingCurrentOrder && downloadType !== 'receipt'}
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            <FiPrinter /> استلام سيارة
+                                        </span>
+                                    </Menu.MenuItem>
+                                </div>
+                            </Menu>
+                        </Dropdown>
+                    </div>
+                )
+            },
+        },
         {
             header: 'إجراءات الإدارة',
             id: 'managementActions',
@@ -476,7 +534,6 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
             </AdaptableCard>
 
             <AdaptableCard divider className="mb-4">
-                {/* تم تغيير النص هنا بناءً على طلبك */}
                 <h5 className="mb-4 text-center">الطلبات السابقة</h5>
                 <DataTable
                     columns={ordersColumns}
@@ -490,9 +547,9 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                     pageSize={pageSize}
                     onPaginationChange={onPaginationChange}
                     onPageSizeChange={onPageSizeChange}
-                    rowSize="lg" // يجعل الصفوف أعلى
-                    scrollable={true} // يضيف scroll عند الحاجة
-                    style={{ minHeight: '400px' }}
+                    rowSize="lg"
+                    scrollable={true}
+                    style={{ minHeight: '800px' }}
                 />
             </AdaptableCard>
         </>

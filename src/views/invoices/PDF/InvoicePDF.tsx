@@ -346,300 +346,311 @@ Font.register({
     ],
 })
 
-const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => (
-    <Document>
-        <Page size="A4" style={styles.page}>
-            {/* Header with Company Info and Logo */}
-            <View style={styles.header}>
-                {/* English Info (Left) */}
-                <View style={styles.englishInfo}>
-                    <Text style={styles.companyName}>
-                        Premium Umbrella Company for Car Services
-                    </Text>
-                    <Text style={styles.companyAddress}>
-                        Jeddah - North Obhur - Emerald District - King Saud Road
-                    </Text>
-                    <Text style={styles.companyTax}>C.R: 7036331400</Text>
-                    <Text style={styles.companyTax}>
-                        VAT No: 312682121400003
+const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => {
+    // حساب المجموع الفرعي من servicePrice لجميع الخدمات
+    const subtotal = invoice.order.services.reduce((sum, service) => {
+        return sum + (service.servicePrice || 0);
+    }, 0);
+
+    // حساب قيمة الضريبة
+    const taxAmount = subtotal * (invoice.taxRate / 100);
+    
+    // حساب المجموع الكلي
+    const totalAmount = subtotal + taxAmount;
+
+    return (
+        <Document>
+            <Page size="A4" style={styles.page}>
+                {/* Header with Company Info and Logo */}
+                <View style={styles.header}>
+                    {/* English Info (Left) */}
+                    <View style={styles.englishInfo}>
+                        <Text style={styles.companyName}>
+                            Premium Umbrella Company for Car Services
+                        </Text>
+                        <Text style={styles.companyAddress}>
+                            Jeddah - North Obhur - Emerald District - King Saud Road
+                        </Text>
+                        <Text style={styles.companyTax}>C.R: 7036331400</Text>
+                        <Text style={styles.companyTax}>
+                            VAT No: 312682121400003
+                        </Text>
+                    </View>
+
+                    {/* Logo (Center) */}
+                    <View style={styles.logoContainer}>
+                        <Image src="/logo.jpg" style={styles.logo} />
+                    </View>
+
+                    {/* Arabic Info (Right) */}
+                    <View style={styles.arabicInfo}>
+                        <Text style={styles.companyName}>
+                            شركة مظلة التميز لخدمات السيارات
+                        </Text>
+                        <Text style={styles.companyAddress}>
+                            جدة - أبحر الشمالية - حي الزمرد - طريق الملك سعود
+                        </Text>
+                        <Text style={styles.companyContact}>هاتف: 0554474543</Text>
+                        <Text style={styles.companyTax}>
+                            الرقم الضريبي: 312682121400003
+                        </Text>
+                    </View>
+                </View>
+
+                {/* Invoice Title */}
+                <View>
+                    <Text style={styles.title}>فاتورة ضريبية</Text>
+                    <Text style={styles.subtitle}>
+                        فاتورة خدمات عزل وتلميع السيارات
                     </Text>
                 </View>
 
-                {/* Logo (Center) */}
-                <View style={styles.logoContainer}>
-                    <Image src="/logo.jpg" style={styles.logo} />
-                </View>
+                {/* Invoice Info */}
+                <View style={styles.invoiceInfo}>
+                    {/* Invoice Number & Date (Right in RTL) */}
+                    <View style={styles.infoColumn}>
+                        <Text style={styles.label}>رقم الفاتورة:</Text>
+                        <Text style={styles.value}>{invoice.invoiceNumber}</Text>
 
-                {/* Arabic Info (Right) */}
-                <View style={styles.arabicInfo}>
-                    <Text style={styles.companyName}>
-                        شركة مظلة التميز لخدمات السيارات
-                    </Text>
-                    <Text style={styles.companyAddress}>
-                        جدة - أبحر الشمالية - حي الزمرد - طريق الملك سعود
-                    </Text>
-                    <Text style={styles.companyContact}>هاتف: 0554474543</Text>
-                    <Text style={styles.companyTax}>
-                        الرقم الضريبي: 312682121400003
-                    </Text>
-                </View>
-            </View>
-
-            {/* Invoice Title */}
-            <View>
-                <Text style={styles.title}>فاتورة ضريبية</Text>
-                <Text style={styles.subtitle}>
-                    فاتورة خدمات عزل وتلميع السيارات
-                </Text>
-            </View>
-
-            {/* Invoice Info */}
-            <View style={styles.invoiceInfo}>
-                {/* Invoice Number & Date (Right in RTL) */}
-                <View style={styles.infoColumn}>
-                    <Text style={styles.label}>رقم الفاتورة:</Text>
-                    <Text style={styles.value}>{invoice.invoiceNumber}</Text>
-
-                    <Text style={[styles.label, { marginTop: 2 }]}>
-                        تاريخ الفاتورة:
-                    </Text>
-                    <Text style={styles.value}>
-                        {new Date(invoice.invoiceDate).toLocaleDateString(
-                            'ar-SA',
-                            {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                            }
-                        )}
-                    </Text>
-                </View>
-                {/* Order Info (Left in RTL) */}
-                <View style={styles.infoColumn}>
-                    <Text style={styles.label}>رقم الطلب:</Text>
-                    <Text style={styles.value}>
-                        {invoice.order.orderNumber}
-                    </Text>
-
-                    <Text style={[styles.label, { marginTop: 2 }]}>
-                        تاريخ الطلب:
-                    </Text>
-                    <Text style={styles.value}>
-                        {/* {new Date(invoice.order.createdAt).toLocaleDateString('ar-SA', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                        })} */}
-                        ١٤ محرم ١٤٤٧ هـ
-                    </Text>
-                </View>
-            </View>
-
-            {/* Client Info */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>معلومات العميل</Text>
-                <View style={styles.clientInfo}>
-                    {/* Client Name & Number (Right in RTL) */}
-                    <View style={styles.clientInfoItem}>
-                        <Text style={styles.label}>اسم العميل:</Text>
+                        <Text style={[styles.label, { marginTop: 2 }]}>
+                            تاريخ الفاتورة:
+                        </Text>
                         <Text style={styles.value}>
-                            {`${invoice.client.firstName} ${invoice.client.middleName} ${invoice.client.lastName}`}
+                            {new Date(invoice.invoiceDate).toLocaleDateString(
+                                'ar-SA',
+                                {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                }
+                            )}
+                        </Text>
+                    </View>
+                    {/* Order Info (Left in RTL) */}
+                    <View style={styles.infoColumn}>
+                        <Text style={styles.label}>رقم الطلب:</Text>
+                        <Text style={styles.value}>
+                            {invoice.order.orderNumber}
                         </Text>
 
                         <Text style={[styles.label, { marginTop: 2 }]}>
-                            رقم العميل:
+                            تاريخ الطلب:
                         </Text>
                         <Text style={styles.value}>
-                            {invoice.client.clientNumber}
+                            {new Date(invoice.order.createdAt).toLocaleDateString('ar-SA', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                            })}
                         </Text>
                     </View>
-                    {/* Phone & Email (Left in RTL) */}
-                    <View style={styles.clientInfoItem}>
-                        <Text style={styles.label}>رقم الجوال:</Text>
-                        <Text style={styles.value}>{invoice.client.phone}</Text>
+                </View>
 
-                        <>
+                {/* Client Info */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>معلومات العميل</Text>
+                    <View style={styles.clientInfo}>
+                        {/* Client Name & Number (Right in RTL) */}
+                        <View style={styles.clientInfoItem}>
+                            <Text style={styles.label}>اسم العميل:</Text>
+                            <Text style={styles.value}>
+                                {`${invoice.client.firstName} ${invoice.client.middleName} ${invoice.client.lastName}`}
+                            </Text>
+
                             <Text style={[styles.label, { marginTop: 2 }]}>
-                                البريد الإلكتروني:
+                                رقم العميل:
                             </Text>
                             <Text style={styles.value}>
-                                {invoice.client.email}
+                                {invoice.client.clientNumber}
                             </Text>
-                        </>
+                        </View>
+                        {/* Phone & Email (Left in RTL) */}
+                        <View style={styles.clientInfoItem}>
+                            <Text style={styles.label}>رقم الجوال:</Text>
+                            <Text style={styles.value}>{invoice.client.phone}</Text>
+
+                            {invoice.client.email && (
+                                <>
+                                    <Text style={[styles.label, { marginTop: 2 }]}>
+                                        البريد الإلكتروني:
+                                    </Text>
+                                    <Text style={styles.value}>
+                                        {invoice.client.email}
+                                    </Text>
+                                </>
+                            )}
+                        </View>
                     </View>
                 </View>
-            </View>
 
-            {/* Car Info */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>معلومات السيارة</Text>
-                <View style={styles.carInfo}>
-                    {[
-                        { label: 'نوع السيارة', value: invoice.order.carType },
-                        {
-                            label: 'موديل السيارة',
-                            value: invoice.order.carModel,
-                        },
-                        { label: 'لون السيارة', value: invoice.order.carColor },
-                        {
-                            label: 'رقم اللوحة',
-                            value: invoice.order.carPlateNumber,
-                        },
-                        {
-                            label: 'الشركة المصنعة',
-                            value: invoice.order.carManufacturer,
-                        },
-                        { label: 'حجم السيارة', value: invoice.order.carSize },
-                    ].map((item, index) => (
-                        <View key={index} style={styles.carInfoItem}>
-                            <Text style={styles.label}>{item.label}</Text>
-                            <Text style={styles.value}>
-                                {item.value || 'غير محدد'}
-                            </Text>
-                        </View>
-                    ))}
-                </View>
-            </View>
-
-            {/* Services Table */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>الخدمات المقدمة</Text>
-                <View style={styles.table}>
-                    {/* Table Header */}
-                    <View style={styles.tableHeader}>
-                        <View style={[styles.tableCol, styles.col_price]}>
-                            <Text style={styles.tableHeaderText}>السعر</Text>
-                        </View>
-                        <View style={[styles.tableCol, styles.col_service]}>
-                            <Text style={styles.tableHeaderText}>الخدمة</Text>
-                        </View>
-                        <View style={[styles.tableCol, styles.col_category]}>
-                            <Text style={styles.tableHeaderText}>الصنف</Text>
-                        </View>
-                        <View style={[styles.tableCol, styles.col_itemNumber]}>
-                            <Text style={styles.tableHeaderText}>
-                                رقم الصنف
-                            </Text>
-                        </View>
+                {/* Car Info */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>معلومات السيارة</Text>
+                    <View style={styles.carInfo}>
+                        {[
+                            { label: 'نوع السيارة', value: invoice.order.carType },
+                            {
+                                label: 'موديل السيارة',
+                                value: invoice.order.carModel,
+                            },
+                            { label: 'لون السيارة', value: invoice.order.carColor },
+                            {
+                                label: 'رقم اللوحة',
+                                value: invoice.order.carPlateNumber,
+                            },
+                            {
+                                label: 'الشركة المصنعة',
+                                value: invoice.order.carManufacturer,
+                            },
+                            { label: 'حجم السيارة', value: invoice.order.carSize },
+                        ].map((item, index) => (
+                            <View key={index} style={styles.carInfoItem}>
+                                <Text style={styles.label}>{item.label}</Text>
+                                <Text style={styles.value}>
+                                    {item.value || 'غير محدد'}
+                                </Text>
+                            </View>
+                        ))}
                     </View>
+                </View>
 
-                    {/* Table Rows */}
-                    {invoice.order.services.map((service, index) => (
-                        <View key={index} style={styles.tableRow}>
-                            {/* Order of cells in JSX is now adjusted to visually appear correctly in RTL */}
+                {/* Services Table */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>الخدمات المقدمة</Text>
+                    <View style={styles.table}>
+                        {/* Table Header */}
+                        <View style={styles.tableHeader}>
                             <View style={[styles.tableCol, styles.col_price]}>
-                                <Text style={styles.value}>50</Text>
+                                <Text style={styles.tableHeaderText}>السعر</Text>
                             </View>
                             <View style={[styles.tableCol, styles.col_service]}>
-                                <Text style={styles.value}>
-                                    {service.serviceType === 'protection'
-                                        ? 'حماية'
-                                        : service.serviceType === 'polish'
-                                        ? 'تلميع'
-                                        : service.serviceType === 'insulator'
-                                        ? 'عازل حراري'
-                                        : service.serviceType === 'additions'
-                                        ? 'إضافات'
-                                        : service.serviceType}
+                                <Text style={styles.tableHeaderText}>الخدمة</Text>
+                            </View>
+                            <View style={[styles.tableCol, styles.col_category]}>
+                                <Text style={styles.tableHeaderText}>الصنف</Text>
+                            </View>
+                            <View style={[styles.tableCol, styles.col_itemNumber]}>
+                                <Text style={styles.tableHeaderText}>
+                                    رقم الصنف
                                 </Text>
-                                {service.dealDetails && (
-                                    <Text
-                                        style={{
-                                            fontSize: 7,
-                                            color: '#4A5568',
-                                            marginTop: 1,
-                                            textAlign: 'right',
-                                        }}
-                                    >
-                                        {service.dealDetails}
-                                    </Text>
-                                )}
-                                {service.guarantee &&
-                                    service.guarantee.accepted && (
-                                        <Text style={styles.guaranteeBadge}>
-                                            ضمان:{' '}
-                                            {service.guarantee.typeGuarantee}
-                                        </Text>
-                                    )}
-                            </View>
-                            <View
-                                style={[styles.tableCol, styles.col_category]}
-                            >
-                                <Text style={styles.value}>
-                                    {service.category || 'غير محدد'}
-                                </Text>{' '}
-                                {/* Display category */}
-                            </View>
-                            <View
-                                style={[styles.tableCol, styles.col_itemNumber]}
-                            >
-                                <Text style={styles.value}>{index + 1}</Text>{' '}
-                                {/* Item number */}
                             </View>
                         </View>
-                    ))}
-                </View>
-            </View>
 
-            {/* Notes */}
-            {invoice.notes && (
-                <View style={styles.notesSection}>
-                    <Text style={styles.notesTitle}>ملاحظات:</Text>
-                    <Text style={styles.notesText}>{invoice.notes}</Text>
+                        {/* Table Rows */}
+                        {invoice.order.services.map((service, index) => (
+                            <View key={index} style={styles.tableRow}>
+                                {/* Order of cells in JSX is now adjusted to visually appear correctly in RTL */}
+                                <View style={[styles.tableCol, styles.col_price]}>
+                                    <Text style={styles.value}>{service.servicePrice.toFixed(2)}</Text>
+                                </View>
+                                <View style={[styles.tableCol, styles.col_service]}>
+                                    <Text style={styles.value}>
+                                        {service.serviceType === 'protection'
+                                            ? 'حماية'
+                                            : service.serviceType === 'polish'
+                                            ? 'تلميع'
+                                            : service.serviceType === 'insulator'
+                                            ? 'عازل حراري'
+                                            : service.serviceType === 'additions'
+                                            ? 'إضافات'
+                                            : service.serviceType}
+                                    </Text>
+                                    {service.dealDetails && (
+                                        <Text
+                                            style={{
+                                                fontSize: 7,
+                                                color: '#4A5568',
+                                                marginTop: 1,
+                                                textAlign: 'right',
+                                            }}
+                                        >
+                                            {service.dealDetails}
+                                        </Text>
+                                    )}
+                                    {service.guarantee &&
+                                        service.guarantee.accepted && (
+                                            <Text style={styles.guaranteeBadge}>
+                                                ضمان:{' '}
+                                                {service.guarantee.typeGuarantee}
+                                            </Text>
+                                        )}
+                                </View>
+                                <View
+                                    style={[styles.tableCol, styles.col_category]}
+                                >
+                                    <Text style={styles.value}>
+                                        {service.category || 'غير محدد'}
+                                    </Text>{' '}
+                                    {/* Display category */}
+                                </View>
+                                <View
+                                    style={[styles.tableCol, styles.col_itemNumber]}
+                                >
+                                    <Text style={styles.value}>{index + 1}</Text>{' '}
+                                    {/* Item number */}
+                                </View>
+                            </View>
+                        ))}
+                    </View>
                 </View>
-            )}
 
-            {/* Totals */}
-            <View style={styles.totalsContainer}>
-                <View style={styles.totalsBox}>
-                    <View style={styles.totalsRow}>
-                        {/* Value on the right, Label on the left in the totals box for RTL */}
-                        <Text style={styles.totalLabel}>المجموع الفرعي:</Text>
-                        <Text style={styles.totalValue}>100</Text>
+                {/* Notes */}
+                {invoice.notes && (
+                    <View style={styles.notesSection}>
+                        <Text style={styles.notesTitle}>ملاحظات:</Text>
+                        <Text style={styles.notesText}>{invoice.notes}</Text>
                     </View>
-                    <View style={styles.totalsRow}>
-                        {/* Value on the right, Label on the left in the totals box for RTL */}
-                        <Text style={styles.totalLabel}>
-                            الضريبة ({invoice.taxRate}%):
-                        </Text>
-                        <Text style={styles.totalValue}>200</Text>
-                    </View>
-                    <View
-                        style={[
-                            styles.totalsRow,
-                            {
-                                marginTop: 4,
-                                paddingTop: 4,
-                                borderTopWidth: 1,
-                                borderTopColor: '#D1D5DB',
-                            },
-                        ]}
-                    >
-                        {/* Value on the right, Label on the left in the totals box for RTL */}
-                        <Text style={[styles.totalLabel, styles.grandTotal]}>
-                            المجموع الكلي:
-                        </Text>
-                        <Text style={[styles.totalValue, styles.grandTotal]}>
-                            652
-                        </Text>
+                )}
+
+                {/* Totals */}
+                <View style={styles.totalsContainer}>
+                    <View style={styles.totalsBox}>
+                        <View style={styles.totalsRow}>
+                            <Text style={styles.totalLabel}>المجموع الفرعي:</Text>
+                            <Text style={styles.totalValue}>{subtotal.toFixed(2)}</Text>
+                        </View>
+                        <View style={styles.totalsRow}>
+                            <Text style={styles.totalLabel}>
+                                الضريبة ({invoice.taxRate}%):
+                            </Text>
+                            <Text style={styles.totalValue}>{taxAmount.toFixed(2)}</Text>
+                        </View>
+                        <View
+                            style={[
+                                styles.totalsRow,
+                                {
+                                    marginTop: 4,
+                                    paddingTop: 4,
+                                    borderTopWidth: 1,
+                                    borderTopColor: '#D1D5DB',
+                                },
+                            ]}
+                        >
+                            <Text style={[styles.totalLabel, styles.grandTotal]}>
+                                المجموع الكلي:
+                            </Text>
+                            <Text style={[styles.totalValue, styles.grandTotal]}>
+                                {totalAmount.toFixed(2)}
+                            </Text>
+                        </View>
                     </View>
                 </View>
-            </View>
 
-            {/* Footer */}
-            <View style={styles.footer}>
-                <Text style={styles.footerText}>
-                    شكراً لثقتكم وتعاملكم مع شركة مظلة التميز لخدمات السيارات
-                </Text>
-                <Text style={styles.footerText}>
-                    للاستفسارات، يرجى الاتصال على: 0554474543
-                </Text>
-                <Text style={[styles.footerText, { marginTop: 4 }]}>
-                    جميع الحقوق محفوظة لشركة مظلة التميز 2025 ©
-                </Text>
-            </View>
-        </Page>
-    </Document>
-)
+                {/* Footer */}
+                <View style={styles.footer}>
+                    <Text style={styles.footerText}>
+                        شكراً لثقتكم وتعاملكم مع شركة مظلة التميز لخدمات السيارات
+                    </Text>
+                    <Text style={styles.footerText}>
+                        للاستفسارات، يرجى الاتصال على: 0554474543
+                    </Text>
+                    <Text style={[styles.footerText, { marginTop: 4 }]}>
+                        جميع الحقوق محفوظة لشركة مظلة التميز 2025 ©
+                    </Text>
+                </View>
+            </Page>
+        </Document>
+    )
+}
 
 export default InvoicePDF
