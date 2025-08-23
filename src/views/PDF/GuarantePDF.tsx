@@ -11,7 +11,6 @@ import {
 
 // تعريف أنواع بيانات الضمان
 interface Guarantee {
-    id?: string // جعلها اختيارية
     typeGuarantee: string
     startDate: string | Date
     endDate: string | Date
@@ -20,7 +19,6 @@ interface Guarantee {
 }
 
 interface Service {
-    id?: string // جعلها اختيارية
     serviceType: 'protection' | 'polish' | 'insulator' | 'additions' | string
     dealDetails?: string
     protectionFinish?: string
@@ -65,9 +63,11 @@ interface Client {
 }
 
 interface GuaranteeDocument {
+    orderNumber: string
+    createdAt: string | Date
     documentNumber: string
     issueDate: string | Date
-    client: Client
+    clientId: Client
     order: Order
 }
 
@@ -241,52 +241,76 @@ const styles = StyleSheet.create({
         textAlign: 'right',
     },
     guaranteeSection: {
-        backgroundColor: '#E6FFFA',
+        backgroundColor: '#F3F4F6',
         padding: 8,
         borderRadius: 4,
         borderWidth: 1,
-        borderColor: '#81E6D9',
+        borderColor: '#2D3748',
         marginBottom: 8,
     },
     guaranteeTitle: {
         fontSize: 12,
         fontWeight: 'bold',
         color: '#234E52',
-        marginBottom: 4,
-        textAlign: 'right',
-    },
-    guaranteeDetails: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-    },
-    guaranteeDetailItem: {
-        width: '48%',
         marginBottom: 8,
-        textAlign: 'right',
-        padding: 4,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 4,
-        borderWidth: 1,
-        borderColor: '#B2F5EA',
+        textAlign: 'center',
+        paddingBottom: 4,
+        borderBottomWidth: 1,
+        borderBottomColor: '#2D3748',
+    },
+    guaranteeContainer: {
+        marginBottom: 4,
+    },
+    guaranteeItem: {
+        flexDirection: 'row-reverse',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 6,
     },
     guaranteeLabel: {
-        fontSize: 8,
-        color: '#234E52',
+        width: '25%',
+        fontSize: 9,
         fontWeight: 'bold',
+        color: '#2D3748',
         textAlign: 'right',
+        paddingTop: 4,
+    },
+    guaranteeValueContainer: {
+        width: '73%',
+        backgroundColor: '#FFFFFF',
+        padding: 6,
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
     },
     guaranteeValue: {
         fontSize: 9,
-        color: '#234E52',
+        color: '#2D3748',
         textAlign: 'right',
+    },
+    guaranteeDateContainer: {
+        flexDirection: 'column',
+    },
+    gregorianDate: {
+        fontSize: 9,
+        color: '#2D3748',
+        fontWeight: 'bold',
+    },
+    hijriDate: {
+        fontSize: 8,
+        color: '#718096',
+        marginTop: 2,
+    },
+    guaranteeStatus: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
     },
     termsSection: {
         backgroundColor: '#EBF8FF',
         padding: 8,
         borderRadius: 4,
         borderWidth: 1,
-        borderColor: '#90CDF4',
+        borderColor: '#2D3748',
         marginBottom: 8,
     },
     termsTitle: {
@@ -342,8 +366,6 @@ const styles = StyleSheet.create({
         fontSize: 8,
         fontWeight: 'bold',
         textAlign: 'center',
-        alignSelf: 'flex-start',
-        marginLeft: 'auto',
     },
     activeBadge: {
         backgroundColor: '#C6F6D5',
@@ -354,36 +376,12 @@ const styles = StyleSheet.create({
         fontSize: 8,
         fontWeight: 'bold',
         textAlign: 'center',
-        alignSelf: 'flex-start',
-        marginLeft: 'auto',
-    },
-    dualDate: {
-        flexDirection: 'column',
-    },
-    gregorianDate: {
-        fontSize: 9,
-        color: '#1A202C',
-        fontWeight: 'bold',
-    },
-    hijriDate: {
-        fontSize: 8,
-        color: '#4A5568',
-        marginTop: 2,
-    },
-    dateContainer: {
-        marginBottom: 4,
-    },
-    statusContainer: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        marginTop: 4,
     },
 })
 
 // تعريف واجهة الخصائص
 interface GuaranteePDFProps {
-    guaranteeDoc: GuaranteeDocument
+    guaranteeDoc: any
 }
 
 // دالة لتحويل التاريخ إلى الهجري مع تحسينات
@@ -393,7 +391,7 @@ const toHijriDate = (gregorianDate: string | Date): string => {
     try {
         const date = new Date(gregorianDate)
         if (isNaN(date.getTime())) return 'تاريخ غير صالح'
-        
+
         const hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
             day: 'numeric',
             month: 'long',
@@ -410,17 +408,16 @@ const toHijriDate = (gregorianDate: string | Date): string => {
 // دالة لعرض التاريخ بالميلادي بشكل منسق
 const formatGregorianDate = (date: string | Date): string => {
     if (!date) return ''
-    
+
     try {
         const d = new Date(date)
         if (isNaN(d.getTime())) return 'تاريخ غير صالح'
-        
+
         const day = d.getDate().toString().padStart(2, '0')
         const month = (d.getMonth() + 1).toString().padStart(2, '0')
         const year = d.getFullYear()
-        
+
         return `${day}/${month}/${year}`
-        
     } catch (error) {
         console.error('Error formatting Gregorian date:', error)
         return 'خطأ في التنسيق'
@@ -435,15 +432,15 @@ const isGuaranteeActive = (endDate: string | Date): boolean => {
 }
 
 const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
-    // إنشاء معرف فريد لكل خدمة إذا لم يكن موجوداً
-    const servicesWithIds = guaranteeDoc.order.services.map((service, index) => ({
-        ...service,
-        id: service.id || `service-${index}-${Date.now()}`,
-        guarantee: {
-            ...service.guarantee,
-            id: service.guarantee.id || `guarantee-${index}-${Date.now()}`
-        }
-    }))
+    if (!guaranteeDoc || !guaranteeDoc.services) {
+        return (
+            <Document>
+                <Page size="A4">
+                    <Text>خطأ: بيانات الضمان غير متوفرة</Text>
+                </Page>
+            </Document>
+        )
+    }
 
     return (
         <Document>
@@ -456,7 +453,8 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                             Premium Umbrella Company for Car Services
                         </Text>
                         <Text style={styles.companyAddress}>
-                            Jeddah - North Obhur - Emerald District - King Saud Road
+                            Jeddah - North Obhur - Emerald District - King Saud
+                            Road
                         </Text>
                         <Text style={styles.companyTax}>C.R: 7036331400</Text>
                         <Text style={styles.companyTax}>
@@ -477,7 +475,9 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                         <Text style={styles.companyAddress}>
                             جدة - أبحر الشمالية - حي الزمرد - طريق الملك سعود
                         </Text>
-                        <Text style={styles.companyContact}>هاتف: 0554474543</Text>
+                        <Text style={styles.companyContact}>
+                            هاتف: 0554474543
+                        </Text>
                         <Text style={styles.companyTax}>
                             الرقم الضريبي: 312682121400003
                         </Text>
@@ -496,33 +496,36 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                 <View style={styles.documentInfo}>
                     <View style={styles.infoColumn}>
                         <Text style={styles.label}>رقم الوثيقة:</Text>
-                        <Text style={styles.value}>{guaranteeDoc.documentNumber}</Text>
+                        <Text style={styles.value}>
+                            {guaranteeDoc.orderNumber}
+                        </Text>
 
                         <Text style={[styles.label, { marginTop: 2 }]}>
                             تاريخ الإصدار:
                         </Text>
                         <Text style={styles.value}>
-                            {formatGregorianDate(guaranteeDoc.issueDate)}
+                            {formatGregorianDate(guaranteeDoc.createdAt)}
                             {'\n'}
                             <Text style={{ fontSize: 8, color: '#4A5568' }}>
                                 ({toHijriDate(guaranteeDoc.issueDate)})
                             </Text>
                         </Text>
                     </View>
+
                     <View style={styles.infoColumn}>
                         <Text style={styles.label}>رقم الطلب:</Text>
                         <Text style={styles.value}>
-                            {guaranteeDoc.order.orderNumber}
+                            {guaranteeDoc.orderNumber}
                         </Text>
 
                         <Text style={[styles.label, { marginTop: 2 }]}>
                             تاريخ الطلب:
                         </Text>
                         <Text style={styles.value}>
-                            {formatGregorianDate(guaranteeDoc.order.createdAt)}
+                            {formatGregorianDate(guaranteeDoc.createdAt)}
                             {'\n'}
                             <Text style={{ fontSize: 8, color: '#4A5568' }}>
-                                ({toHijriDate(guaranteeDoc.order.createdAt)})
+                                ({toHijriDate(guaranteeDoc.createdAt)})
                             </Text>
                         </Text>
                     </View>
@@ -535,27 +538,31 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                         <View style={styles.clientInfoItem}>
                             <Text style={styles.label}>اسم العميل:</Text>
                             <Text style={styles.value}>
-                                {`${guaranteeDoc.client.firstName} ${guaranteeDoc.client.middleName} ${guaranteeDoc.client.lastName}`}
+                                {`${guaranteeDoc.clientId.firstName} ${guaranteeDoc.clientId.middleName} ${guaranteeDoc.clientId.lastName}`}
                             </Text>
 
                             <Text style={[styles.label, { marginTop: 2 }]}>
                                 رقم العميل:
                             </Text>
                             <Text style={styles.value}>
-                                {guaranteeDoc.client.clientNumber}
+                                {guaranteeDoc.clientId.clientNumber}
                             </Text>
                         </View>
                         <View style={styles.clientInfoItem}>
                             <Text style={styles.label}>رقم الجوال:</Text>
-                            <Text style={styles.value}>{guaranteeDoc.client.phone}</Text>
+                            <Text style={styles.value}>
+                                {guaranteeDoc.clientId.phone}
+                            </Text>
 
-                            {guaranteeDoc.client.email && (
+                            {guaranteeDoc.clientId.email && (
                                 <>
-                                    <Text style={[styles.label, { marginTop: 2 }]}>
+                                    <Text
+                                        style={[styles.label, { marginTop: 2 }]}
+                                    >
                                         البريد الإلكتروني:
                                     </Text>
                                     <Text style={styles.value}>
-                                        {guaranteeDoc.client.email}
+                                        {guaranteeDoc.clientId.email}
                                     </Text>
                                 </>
                             )}
@@ -568,21 +575,30 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                     <Text style={styles.sectionTitle}>معلومات السيارة</Text>
                     <View style={styles.carInfo}>
                         {[
-                            { label: 'نوع السيارة', value: guaranteeDoc.order.carType },
+                            {
+                                label: 'نوع السيارة',
+                                value: guaranteeDoc.carType,
+                            },
                             {
                                 label: 'موديل السيارة',
-                                value: guaranteeDoc.order.carModel,
+                                value: guaranteeDoc.carModel,
                             },
-                            { label: 'لون السيارة', value: guaranteeDoc.order.carColor },
+                            {
+                                label: 'لون السيارة',
+                                value: guaranteeDoc.carColor,
+                            },
                             {
                                 label: 'رقم اللوحة',
-                                value: guaranteeDoc.order.carPlateNumber,
+                                value: guaranteeDoc.carPlateNumber,
                             },
                             {
                                 label: 'الشركة المصنعة',
-                                value: guaranteeDoc.order.carManufacturer,
+                                value: guaranteeDoc.carManufacturer,
                             },
-                            { label: 'حجم السيارة', value: guaranteeDoc.order.carSize },
+                            {
+                                label: 'حجم السيارة',
+                                value: guaranteeDoc.carSize,
+                            },
                         ].map((item, index) => (
                             <View key={index} style={styles.carInfoItem}>
                                 <Text style={styles.label}>{item.label}</Text>
@@ -597,9 +613,12 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                 {/* Services and Guarantees */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>الخدمات والضمانات</Text>
-                    
-                    {servicesWithIds.map((service, index) => (
-                        <View key={service.id} style={styles.serviceSection}>
+
+                    {guaranteeDoc.services.map((service, index) => (
+                        <View
+                            key={`service-${index}`}
+                            style={styles.serviceSection}
+                        >
                             {/* Service Header */}
                             <View style={styles.serviceHeader}>
                                 <Text style={styles.serviceTitle}>
@@ -620,120 +639,187 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                             <View style={styles.serviceDetails}>
                                 {service.serviceDate && (
                                     <View style={styles.serviceDetailItem}>
-                                        <Text style={styles.label}>تاريخ الخدمة:</Text>
+                                        <Text style={styles.label}>
+                                            تاريخ الخدمة:
+                                        </Text>
                                         <Text style={styles.value}>
-                                            {formatGregorianDate(service.serviceDate)}
+                                            {formatGregorianDate(
+                                                service.serviceDate
+                                            )}
                                             {'\n'}
-                                            <Text style={{ fontSize: 8, color: '#4A5568' }}>
-                                                ({toHijriDate(service.serviceDate)})
+                                            <Text
+                                                style={{
+                                                    fontSize: 8,
+                                                    color: '#4A5568',
+                                                }}
+                                            >
+                                            
                                             </Text>
                                         </Text>
                                     </View>
                                 )}
-                                
+
                                 {service.servicePrice && (
                                     <View style={styles.serviceDetailItem}>
-                                        <Text style={styles.label}>سعر الخدمة:</Text>
+                                        <Text style={styles.label}>
+                                            سعر الخدمة:
+                                        </Text>
                                         <Text style={styles.value}>
-                                            {service.servicePrice.toLocaleString('ar-SA')} ريال
+                                            {service.servicePrice.toLocaleString(
+                                                'ar-SA'
+                                            )}{' '}
+                                            ريال
                                         </Text>
                                     </View>
                                 )}
-                                
+
                                 {service.dealDetails && (
                                     <View style={styles.serviceDetailItem}>
-                                        <Text style={styles.label}>تفاصيل الخدمة:</Text>
-                                        <Text style={styles.value}>{service.dealDetails}</Text>
+                                        <Text style={styles.label}>
+                                            تفاصيل الخدمة:
+                                        </Text>
+                                        <Text style={styles.value}>
+                                            {service.dealDetails}
+                                        </Text>
                                     </View>
                                 )}
-                                
+
                                 {/* Service-specific details */}
                                 {service.serviceType === 'protection' && (
                                     <>
                                         {service.protectionFinish && (
-                                            <View style={styles.serviceDetailItem}>
-                                                <Text style={styles.label}>اللمعان:</Text>
+                                            <View
+                                                style={styles.serviceDetailItem}
+                                            >
+                                                <Text style={styles.label}>
+                                                    اللمعان:
+                                                </Text>
                                                 <Text style={styles.value}>
-                                                    {service.protectionFinish === 'glossy'
+                                                    {service.protectionFinish ===
+                                                    'glossy'
                                                         ? 'لامع'
-                                                        : service.protectionFinish === 'matte'
+                                                        : service.protectionFinish ===
+                                                          'matte'
                                                         ? 'مطفى'
-                                                        : service.protectionFinish === 'colored'
+                                                        : service.protectionFinish ===
+                                                          'colored'
                                                         ? 'ملون'
                                                         : service.protectionFinish}
                                                 </Text>
                                             </View>
                                         )}
                                         {service.protectionSize && (
-                                            <View style={styles.serviceDetailItem}>
-                                                <Text style={styles.label}>الحجم:</Text>
+                                            <View
+                                                style={styles.serviceDetailItem}
+                                            >
+                                                <Text style={styles.label}>
+                                                    الحجم:
+                                                </Text>
                                                 <Text style={styles.value}>
                                                     {service.protectionSize} مل
                                                 </Text>
                                             </View>
                                         )}
                                         {service.protectionCoverage && (
-                                            <View style={styles.serviceDetailItem}>
-                                                <Text style={styles.label}>التغطية:</Text>
+                                            <View
+                                                style={styles.serviceDetailItem}
+                                            >
+                                                <Text style={styles.label}>
+                                                    التغطية:
+                                                </Text>
                                                 <Text style={styles.value}>
-                                                    {service.protectionCoverage === 'full'
+                                                    {service.protectionCoverage ===
+                                                    'full'
                                                         ? 'كامل'
-                                                        : service.protectionCoverage === 'half'
+                                                        : service.protectionCoverage ===
+                                                          'half'
                                                         ? 'نص'
-                                                        : service.protectionCoverage === 'quarter'
+                                                        : service.protectionCoverage ===
+                                                          'quarter'
                                                         ? 'ربع'
-                                                        : service.protectionCoverage === 'edges'
+                                                        : service.protectionCoverage ===
+                                                          'edges'
                                                         ? 'أطراف'
-                                                        : service.protectionCoverage === 'other'
+                                                        : service.protectionCoverage ===
+                                                          'other'
                                                         ? 'اخرى'
                                                         : service.protectionCoverage}
                                                 </Text>
                                             </View>
                                         )}
+
                                         {service.originalCarColor && (
-                                            <View style={styles.serviceDetailItem}>
-                                                <Text style={styles.label}>لون السيارة الأصلي:</Text>
-                                                <Text style={styles.value}>{service.originalCarColor}</Text>
+                                            <View
+                                                style={styles.serviceDetailItem}
+                                            >
+                                                <Text style={styles.label}>
+                                                    لون السيارة الأصلي:
+                                                </Text>
+                                                <Text style={styles.value}>
+                                                    {service.originalCarColor}
+                                                </Text>
                                             </View>
                                         )}
                                         {service.protectionColor && (
-                                            <View style={styles.serviceDetailItem}>
-                                                <Text style={styles.label}>لون الحماية:</Text>
-                                                <Text style={styles.value}>{service.protectionColor}</Text>
+                                            <View
+                                                style={styles.serviceDetailItem}
+                                            >
+                                                <Text style={styles.label}>
+                                                    لون الحماية:
+                                                </Text>
+                                                <Text style={styles.value}>
+                                                    {service.protectionColor}
+                                                </Text>
                                             </View>
                                         )}
                                     </>
                                 )}
-                                
+
                                 {service.serviceType === 'insulator' && (
                                     <>
                                         {service.insulatorType && (
-                                            <View style={styles.serviceDetailItem}>
-                                                <Text style={styles.label}>نوع العازل:</Text>
+                                            <View
+                                                style={styles.serviceDetailItem}
+                                            >
+                                                <Text style={styles.label}>
+                                                    نوع العازل:
+                                                </Text>
                                                 <Text style={styles.value}>
-                                                    {service.insulatorType === 'ceramic'
+                                                    {service.insulatorType ===
+                                                    'ceramic'
                                                         ? 'سيراميك'
-                                                        : service.insulatorType === 'carbon'
+                                                        : service.insulatorType ===
+                                                          'carbon'
                                                         ? 'كاربون'
-                                                        : service.insulatorType === 'crystal'
+                                                        : service.insulatorType ===
+                                                          'crystal'
                                                         ? 'كرستال'
                                                         : service.insulatorType}
                                                 </Text>
                                             </View>
                                         )}
                                         {service.insulatorCoverage && (
-                                            <View style={styles.serviceDetailItem}>
-                                                <Text style={styles.label}>نطاق التغطية:</Text>
+                                            <View
+                                                style={styles.serviceDetailItem}
+                                            >
+                                                <Text style={styles.label}>
+                                                    نطاق التغطية:
+                                                </Text>
                                                 <Text style={styles.value}>
-                                                    {service.insulatorCoverage === 'full'
+                                                    {service.insulatorCoverage ===
+                                                    'full'
                                                         ? 'كامل'
-                                                        : service.insulatorCoverage === 'half'
+                                                        : service.insulatorCoverage ===
+                                                          'half'
                                                         ? 'نص'
-                                                        : service.insulatorCoverage === 'piece'
+                                                        : service.insulatorCoverage ===
+                                                          'piece'
                                                         ? 'قطعة'
-                                                        : service.insulatorCoverage === 'shield'
+                                                        : service.insulatorCoverage ===
+                                                          'shield'
                                                         ? 'درع حماية'
-                                                        : service.insulatorCoverage === 'external'
+                                                        : service.insulatorCoverage ===
+                                                          'external'
                                                         ? 'خارجية'
                                                         : service.insulatorCoverage}
                                                 </Text>
@@ -741,84 +827,138 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                                         )}
                                     </>
                                 )}
-                                
+
                                 {service.serviceType === 'polish' && (
                                     <>
                                         {service.polishType && (
-                                            <View style={styles.serviceDetailItem}>
-                                                <Text style={styles.label}>نوع التلميع:</Text>
+                                            <View
+                                                style={styles.serviceDetailItem}
+                                            >
+                                                <Text style={styles.label}>
+                                                    نوع التلميع:
+                                                </Text>
                                                 <Text style={styles.value}>
-                                                    {service.polishType === 'external'
+                                                    {service.polishType ===
+                                                    'external'
                                                         ? 'تلميع خارجي'
-                                                        : service.polishType === 'internal'
+                                                        : service.polishType ===
+                                                          'internal'
                                                         ? 'تلميع داخلي'
-                                                        : service.polishType === 'internalAndExternal'
+                                                        : service.polishType ===
+                                                          'internalAndExternal'
                                                         ? 'تلميع خارجي وداخلي'
-                                                        : service.polishType === 'seats'
+                                                        : service.polishType ===
+                                                          'seats'
                                                         ? 'كراسي'
-                                                        : service.polishType === 'piece'
+                                                        : service.polishType ===
+                                                          'piece'
                                                         ? 'قطعة'
-                                                        : service.polishType === 'water_polish'
+                                                        : service.polishType ===
+                                                          'water_polish'
                                                         ? 'تلميع مائي'
-                                                        : service.polishType
-                                                        }
+                                                        : service.polishType}
                                                 </Text>
                                             </View>
                                         )}
                                         {service.externalPolishLevel && (
-                                            <View style={styles.serviceDetailItem}>
-                                                <Text style={styles.label}>مستوى التلميع الخارجي:</Text>
-                                                <Text style={styles.value}>مستوى {service.externalPolishLevel}</Text>
+                                            <View
+                                                style={styles.serviceDetailItem}
+                                            >
+                                                <Text style={styles.label}>
+                                                    مستوى التلميع الخارجي:
+                                                </Text>
+                                                <Text style={styles.value}>
+                                                    مستوى{' '}
+                                                    {
+                                                        service.externalPolishLevel
+                                                    }
+                                                </Text>
                                             </View>
                                         )}
                                         {service.internalPolishLevel && (
-                                            <View style={styles.serviceDetailItem}>
-                                                <Text style={styles.label}>مستوى التلميع الداخلي:</Text>
-                                                <Text style={styles.value}>مستوى {service.internalPolishLevel}</Text>
+                                            <View
+                                                style={styles.serviceDetailItem}
+                                            >
+                                                <Text style={styles.label}>
+                                                    مستوى التلميع الداخلي:
+                                                </Text>
+                                                <Text style={styles.value}>
+                                                    مستوى{' '}
+                                                    {
+                                                        service.internalPolishLevel
+                                                    }
+                                                </Text>
                                             </View>
                                         )}
                                         {service.internalAndExternalPolishLevel && (
-                                            <View style={styles.serviceDetailItem}>
-                                                <Text style={styles.label}>مستوى التلميع المشترك:</Text>
-                                                <Text style={styles.value}>مستوى {service.internalAndExternalPolishLevel}</Text>
+                                            <View
+                                                style={styles.serviceDetailItem}
+                                            >
+                                                <Text style={styles.label}>
+                                                    مستوى التلميع المشترك:
+                                                </Text>
+                                                <Text style={styles.value}>
+                                                    مستوى{' '}
+                                                    {
+                                                        service.internalAndExternalPolishLevel
+                                                    }
+                                                </Text>
                                             </View>
                                         )}
                                     </>
                                 )}
-                                
+
                                 {service.serviceType === 'additions' && (
                                     <>
                                         {service.additionType && (
-                                            <View style={styles.serviceDetailItem}>
-                                                <Text style={styles.label}>نوع الإضافة:</Text>
+                                            <View
+                                                style={styles.serviceDetailItem}
+                                            >
+                                                <Text style={styles.label}>
+                                                    نوع الإضافة:
+                                                </Text>
                                                 <Text style={styles.value}>
-                                                    {service.additionType === 'detailed_wash'
+                                                    {service.additionType ===
+                                                    'detailed_wash'
                                                         ? 'غسيل تفصيلي'
-                                                        : service.additionType === 'premium_wash'
+                                                        : service.additionType ===
+                                                          'premium_wash'
                                                         ? 'غسيل تفصيلي خاص'
-                                                        : service.additionType === 'leather_pedals'
+                                                        : service.additionType ===
+                                                          'leather_pedals'
                                                         ? 'دواسات جلد'
-                                                        : service.additionType === 'blackout'
+                                                        : service.additionType ===
+                                                          'blackout'
                                                         ? 'تكحيل'
-                                                        : service.additionType === 'nano_interior_decor'
+                                                        : service.additionType ===
+                                                          'nano_interior_decor'
                                                         ? 'نانو داخلي ديكور'
-                                                        : service.additionType === 'nano_interior_seats'
+                                                        : service.additionType ===
+                                                          'nano_interior_seats'
                                                         ? 'نانو داخلي مقاعد'
                                                         : service.additionType}
                                                 </Text>
                                             </View>
                                         )}
                                         {service.washScope && (
-                                            <View style={styles.serviceDetailItem}>
-                                                <Text style={styles.label}>نطاق الغسيل:</Text>
+                                            <View
+                                                style={styles.serviceDetailItem}
+                                            >
+                                                <Text style={styles.label}>
+                                                    نطاق الغسيل:
+                                                </Text>
                                                 <Text style={styles.value}>
-                                                    {service.washScope === 'full'
+                                                    {service.washScope ===
+                                                    'full'
                                                         ? 'كامل'
-                                                        : service.washScope === 'external_only'
+                                                        : service.washScope ===
+                                                          'external_only'
                                                         ? 'خارجي فقط'
-                                                        : service.washScope === 'internal_only'
+                                                        : service.washScope ===
+                                                          'internal_only'
                                                         ? 'داخلي فقط'
-                                                        : service.washScope === 'engine'
+                                                        : service.washScope ===
+                                                          'engine'
                                                         ? 'محرك'
                                                         : service.washScope}
                                                 </Text>
@@ -831,63 +971,71 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                             {/* Guarantee Details */}
                             {service.guarantee && (
                                 <View style={styles.guaranteeSection}>
-                                    <Text style={styles.guaranteeTitle}>تفاصيل الضمان</Text>
-                                    
-                                    <View style={styles.guaranteeDetails}>
-                                        <View style={styles.guaranteeDetailItem}>
-                                            <Text style={styles.guaranteeLabel}>مدة الضمان:</Text>
-                                            <Text style={styles.guaranteeValue}>{service.guarantee.typeGuarantee}</Text>
-                                        </View>
-                                        
-                                        <View style={styles.guaranteeDetailItem}>
-                                            <Text style={styles.guaranteeLabel}>تاريخ البدء:</Text>
-                                            <Text style={styles.guaranteeValue}>
-                                                {formatGregorianDate(service.guarantee.startDate)}
-                                                {'\n'}
-                                                <Text style={{ fontSize: 8, color: '#4A5568' }}>
-                                                    ({toHijriDate(service.guarantee.startDate)})
-                                                </Text>
+                                    <Text style={styles.guaranteeTitle}>
+                                        تفاصيل الضمان
+                                    </Text>
+
+                                    <View style={styles.guaranteeContainer}>
+                                        {/* مدة الضمان */}
+                                        <View style={styles.guaranteeItem}>
+                                            <Text style={styles.guaranteeLabel}>
+                                                مدة الضمان:
                                             </Text>
-                                        </View>
-                                        
-                                        <View style={styles.guaranteeDetailItem}>
-                                            <Text style={styles.guaranteeLabel}>تاريخ الانتهاء:</Text>
-                                            <Text style={styles.guaranteeValue}>
-                                                {formatGregorianDate(service.guarantee.endDate)}
-                                                {'\n'}
-                                                <Text style={{ fontSize: 8, color: '#4A5568' }}>
-                                                    ({toHijriDate(service.guarantee.endDate)})
+                                            <View style={styles.guaranteeValueContainer}>
+                                                <Text style={styles.guaranteeValue}>
+                                                    {service.guarantee.typeGuarantee}
                                                 </Text>
-                                            </Text>
+                                            </View>
                                         </View>
                                         
-                                        <View style={styles.guaranteeDetailItem}>
-                                            <Text style={styles.guaranteeLabel}>حالة الضمان:</Text>
-                                            <View style={styles.statusContainer}>
-                                                {isGuaranteeActive(service.guarantee.endDate) ? (
-                                                    <Text style={styles.activeBadge}>نشط</Text>
-                                                ) : (
-                                                    <Text style={styles.validityBadge}>منتهي</Text>
-                                                )}
+                                        {/* تاريخ البدء */}
+                                        <View style={styles.guaranteeItem}>
+                                            <Text style={styles.guaranteeLabel}>
+                                                تاريخ البدء:
+                                            </Text>
+                                            <View style={styles.guaranteeValueContainer}>
+                                                <View style={styles.guaranteeDateContainer}>
+                                                    <Text style={styles.gregorianDate}>
+                                                        {formatGregorianDate(service.guarantee.startDate)}
+                                                    </Text>
+                                                    <Text style={styles.hijriDate}>
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                        </View>
+                                        
+                                        {/* تاريخ الانتهاء */}
+                                        <View style={styles.guaranteeItem}>
+                                            <Text style={styles.guaranteeLabel}>
+                                                تاريخ الانتهاء:
+                                            </Text>
+                                            <View style={styles.guaranteeValueContainer}>
+                                                <View style={styles.guaranteeDateContainer}>
+                                                    <Text style={styles.gregorianDate}>
+                                                        {formatGregorianDate(service.guarantee.endDate)}
+                                                    </Text>
+                                                    <Text style={styles.hijriDate}>
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                        </View>
+                                        
+                                        {/* حالة الضمان */}
+                                        <View style={styles.guaranteeItem}>
+                                            <Text style={styles.guaranteeLabel}>
+                                                حالة الضمان:
+                                            </Text>
+                                            <View style={styles.guaranteeValueContainer}>
+                                                <View style={styles.guaranteeStatus}>
+                                                    {isGuaranteeActive(service.guarantee.endDate) ? (
+                                                        <Text style={styles.activeBadge}>نشط</Text>
+                                                    ) : (
+                                                        <Text style={styles.validityBadge}>منتهي</Text>
+                                                    )}
+                                                </View>
                                             </View>
                                         </View>
                                     </View>
-
-                                    {/* Guarantee Terms */}
-                                    {service.guarantee.terms && (
-                                        <View style={styles.termsSection}>
-                                            <Text style={styles.termsTitle}>شروط الضمان:</Text>
-                                            <Text style={styles.termsText}>{service.guarantee.terms}</Text>
-                                        </View>
-                                    )}
-
-                                    {/* Guarantee Notes */}
-                                    {service.guarantee.Notes && (
-                                        <View style={styles.notesSection}>
-                                            <Text style={styles.notesTitle}>ملاحظات على الضمان:</Text>
-                                            <Text style={styles.notesText}>{service.guarantee.Notes}</Text>
-                                        </View>
-                                    )}
                                 </View>
                             )}
                         </View>
@@ -897,7 +1045,8 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                 {/* Footer */}
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>
-                        شروط الضمان: يخضع هذا الضمان للشروط والأحكام المذكورة أعلاه
+                        شروط الضمان: يخضع هذا الضمان للشروط والأحكام المذكورة
+                        أعلاه
                     </Text>
                     <Text style={styles.footerText}>
                         للاستفسارات حول الضمان، يرجى الاتصال على: 0554474543

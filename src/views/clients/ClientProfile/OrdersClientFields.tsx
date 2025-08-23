@@ -25,6 +25,7 @@ import type { FormikErrors, FormikTouched } from 'formik'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import { HiOutlineTrash } from 'react-icons/hi'
 import GuaranteePDF from '@/views/PDF/GuarantePDF'
+import { apiGetOrdersDetails } from '@/services/OrdersService'
 
 // --- Helper Functions ---
 const formatDate = (isoString?: string) => {
@@ -94,7 +95,6 @@ const DeleteOrderButton = ({
     )
 }
 
-// Helper function to transform order data to GuaranteeDocument format
 const transformOrderToGuaranteeDoc = (order: any, client: any): any => {
     return {
         documentNumber: `G-${order.orderNumber}`,
@@ -117,8 +117,8 @@ const transformOrderToGuaranteeDoc = (order: any, client: any): any => {
             carSize: order.carSize,
             orderStatus: order.orderStatus,
             createdAt: order.createdAt,
-            services: order.services.map((service: any) => ({
-                id: service._id || `SVC-${Date.now()}`,
+            services: order.services.map((service: any, index: number) => ({
+                id: service._id || `SVC-${Date.now()}-${index}`,
                 serviceType: service.serviceType,
                 dealDetails: service.dealDetails,
                 protectionFinish: service.protectionFinish,
@@ -138,7 +138,7 @@ const transformOrderToGuaranteeDoc = (order: any, client: any): any => {
                 servicePrice: service.servicePrice,
                 serviceDate: service.serviceDate,
                 guarantee: {
-                    id: service.guarantee?._id || `GUA-${Date.now()}`,
+                    id: service.guarantee?._id || `GUA-${Date.now()}-${index}`,
                     typeGuarantee: service.guarantee?.typeGuarantee || '1 سنة',
                     startDate: service.guarantee?.startDate || new Date(),
                     endDate: service.guarantee?.endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
@@ -171,61 +171,39 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
         navigate(`/orders/${row.original._id}`)
     }
 
-    // --- Document Download Handlers ---
-    const handleStartDownload = async (
-        event: React.MouseEvent,
-        orderId: string,
-        type: 'invoice' | 'guarantee' | 'receipt'
-    ) => {
-        if (downloadLoadingOrderId === orderId) return
+const handleStartDownload = async (
+    event: React.MouseEvent,
+    orderId: string,
+    type: 'invoice' | 'guarantee' | 'receipt'
+) => {
+    if (downloadLoadingOrderId === orderId) return
 
-        setDownloadLoadingOrderId(orderId)
-        setDownloadType(type)
+    setDownloadLoadingOrderId(orderId)
+    setDownloadType(type)
 
-        toast.push(
-            <Notification title="تصدير" type="info">
-                جارٍ إعداد ملف{' '}
-                {type === 'invoice'
-                    ? 'الفاتورة'
-                    : type === 'guarantee'
-                    ? 'الضمان'
-                    : 'إيصال السيارة'}{' '}
-                للتنزيل...
-            </Notification>
-        )
+    try {
+        let responseData: any
+        let fileName: string = ''
+        let pdfComponent: JSX.Element | null = null
 
-        try {
-            let responseData: any
-            let fileName: string = ''
-            let pdfComponent: JSX.Element | null = null
-
-            if (type === 'invoice') {
-                const response = await apiGetInvoiceByOrderId(orderId)
-                responseData = response.data.data
-                if (!responseData) throw new Error('Invoice data not found.')
-                fileName = `فاتورة_${responseData.invoiceNumber}.pdf`
-                pdfComponent = <InvoicePDF invoice={responseData} />
-            } else {
-                // Find the order in the client's orders
-                const order = values.orders?.find((o: any) => o._id === orderId)
-                if (!order) throw new Error('Order not found.')
-                
-                if (type === 'guarantee') {
-                    responseData = transformOrderToGuaranteeDoc(order, values)
-                    fileName = `ضمان_${order.orderNumber}.pdf`
-                    pdfComponent = <GuaranteePDF guaranteeDoc={responseData} />
-                } else if (type === 'receipt') {
-                    responseData = {
-                        orderId,
-                        clientName: values.firstName + ' ' + values.lastName,
-                        carDetails: order
-                    }
-                    fileName = `إيصال_سيارة_${order.orderNumber}.pdf`
-                    // You'll need to create a ReceiptPDF component similar to GuaranteePDF
-                    // pdfComponent = <ReceiptPDF receiptData={responseData} />
-                    throw new Error('Receipt PDF generation not implemented yet.')
-                }
+        if (type === 'invoice') {
+            const response = await apiGetInvoiceByOrderId(orderId)
+            responseData = response.data.data
+            if (!responseData) throw new Error('Invoice data not found.')
+            fileName = `فاتورة_${responseData.invoiceNumber}.pdf`
+            pdfComponent = <InvoicePDF invoice={responseData} />
+        } else {
+            const response = await apiGetOrdersDetails(orderId)
+            responseData = response.data.data
+            if (!responseData) throw new Error('Order data not found.')
+            
+            if (type === 'guarantee') {
+                fileName = `ضمان_${responseData.orderNumber}.pdf`
+                pdfComponent = <GuaranteePDF guaranteeDoc={responseData} />
+            } else if (type === 'receipt') {
+                throw new Error('Receipt PDF generation not implemented yet.')
             }
+        }
 
             if (!pdfComponent) {
                 throw new Error('Failed to create PDF component.')
@@ -260,6 +238,8 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                             setDownloadType(null)
                         }
                         if (error) {
+                            console.log('erreeeeeeeeeeeeeeeeeeeeor', error);
+                            
                             toast.push(
                                 <Notification title="خطأ" type="danger">
                                     حدث خطأ أثناء إنشاء ملف PDF: {error.message}
