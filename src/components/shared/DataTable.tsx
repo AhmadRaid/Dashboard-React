@@ -300,20 +300,25 @@ function _DataTable<T>(
                             .rows.slice(0, pageSize)
                             .map((row) => {
                                 return (
-                                    <Tr
-                                        key={row.id}
-                                        onClick={() => onRowClick?.(row)}
-                                        className="cursor-pointer hover:bg-gray-100"
-                                    >
-                                        {row.getVisibleCells().map((cell) => (
-                                            <Td key={cell.id}>
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext()
-                                                )}
-                                            </Td>
-                                        ))}
-                                    </Tr>
+                                    <>
+                                        <Tr
+                                            key={row.id}
+                                            onClick={() => onRowClick?.(row)}
+                                            className="cursor-pointer hover:bg-gray-100"
+                                        >
+                                            {row
+                                                .getVisibleCells()
+                                                .map((cell) => (
+                                                    <Td key={cell.id}>
+                                                        {flexRender(
+                                                            cell.column
+                                                                .columnDef.cell,
+                                                            cell.getContext()
+                                                        )}
+                                                    </Td>
+                                                ))}
+                                        </Tr>
+                                    </>
                                 )
                             })}
                     </TBody>
