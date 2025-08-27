@@ -541,7 +541,7 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => {
                             <View key={index} style={styles.tableRow}>
                                 {/* Order of cells in JSX is now adjusted to visually appear correctly in RTL */}
                                 <View style={[styles.tableCol, styles.col_price]}>
-                                    <Text style={styles.value}>{service.servicePrice.toFixed(2)}</Text>
+                                    <Text style={styles.value}>{service.servicePrice}</Text>
                                 </View>
                                 <View style={[styles.tableCol, styles.col_service]}>
                                     <Text style={styles.value}>
@@ -607,13 +607,13 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => {
                     <View style={styles.totalsBox}>
                         <View style={styles.totalsRow}>
                             <Text style={styles.totalLabel}>المجموع الفرعي:</Text>
-                            <Text style={styles.totalValue}>{subtotal.toFixed(2)}</Text>
+                            <Text style={styles.totalValue}>{subtotal}</Text>
                         </View>
                         <View style={styles.totalsRow}>
                             <Text style={styles.totalLabel}>
                                 الضريبة ({invoice.taxRate}%):
                             </Text>
-                            <Text style={styles.totalValue}>{taxAmount.toFixed(2)}</Text>
+                            <Text style={styles.totalValue}>{taxAmount}</Text>
                         </View>
                         <View
                             style={[
@@ -630,7 +630,7 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => {
                                 المجموع الكلي:
                             </Text>
                             <Text style={[styles.totalValue, styles.grandTotal]}>
-                                {totalAmount.toFixed(2)}
+                                {totalAmount}
                             </Text>
                         </View>
                     </View>

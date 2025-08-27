@@ -1,10 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
-import { apiGetClients } from '@/services/ClientsService'
-import {
-    Client,
-    GetClientsParams,
-    GetClientsResponse,
-} from '@/@types/clients'
+import { apiGetClients, apiGetStatistics } from '@/services/ClientsService'
+import { Client, GetClientsParams, GetClientsResponse } from '@/@types/clients'
 
 export const SLICE_NAME = 'clientsListSlice'
 
@@ -24,6 +20,7 @@ export interface ClientsListState {
     clientList: Client[]
     loading: boolean
     tableData: TableData
+    statistics: any
 }
 
 const initialState: ClientsListState = {
@@ -40,12 +37,21 @@ const initialState: ClientsListState = {
         },
         branchFilter: '',
     },
+    statistics: {},
 }
 
 export const getClients = createAsyncThunk(
     `${SLICE_NAME}/getClients`,
     async (params: GetClientsParams) => {
         const response = await apiGetClients(params)
+        return response.data
+    }
+)
+
+export const getStatistics = createAsyncThunk(
+    'clientsList/data/getStatistics',
+    async () => {
+        const response = await apiGetStatistics()
         return response.data
     }
 )
@@ -57,7 +63,7 @@ const clientsListSlice = createSlice({
         setTableData: (state, action: PayloadAction<Partial<TableData>>) => {
             state.tableData = {
                 ...state.tableData,
-                ...action.payload
+                ...action.payload,
             }
         },
         resetFilters: (state) => {
@@ -65,7 +71,7 @@ const clientsListSlice = createSlice({
                 ...initialState.tableData,
                 pageIndex: 1,
                 limit: state.tableData.limit,
-                total: state.tableData.total
+                total: state.tableData.total,
             }
         },
     },
@@ -76,8 +82,11 @@ const clientsListSlice = createSlice({
             })
             .addCase(getClients.fulfilled, (state, action) => {
                 state.clientList = action.payload.data.clients
-                state.tableData.total = action.payload.data.pagination.totalClients
+                state.tableData.total =
+                    action.payload.data.pagination.totalClients
                 state.loading = false
+                state.statistics = action.payload
+
             })
             .addCase(getClients.rejected, (state) => {
                 state.loading = false

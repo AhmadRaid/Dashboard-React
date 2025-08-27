@@ -22,7 +22,20 @@ export async function apiGetClientProfile(clientId: string) {
     })
 }
 
+export async function apiGetStatistics() {
+    return ApiService.fetchData({
+        url: `/statistics`, 
+        method: 'get',
+    })
+}
 
+
+export async function apiSearchClients(data:string) {
+    return ApiService.fetchData({
+        url: `/clients?search=${data}`, 
+        method: 'get',
+    })
+}
 
 export async function apiUpdateClient(clientId: string, data: any) {
     return ApiService.fetchData({

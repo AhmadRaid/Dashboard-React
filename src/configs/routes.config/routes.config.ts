@@ -35,6 +35,13 @@ export const protectedRoutes = [
         component: lazy(() => import('@/views/clients/UpdateClient')),
         authority: [],
     },
+    
+    {
+        key: 'clientsMenu.updateProfile',
+        path: '/clients/add-service',
+        component: lazy(() => import('@/views/clients/ClientService/ClientServiceForm')),
+        authority: [],
+    },
 
     {
         key: 'clientsMenu.clientRating',

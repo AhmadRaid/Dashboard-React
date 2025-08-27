@@ -507,7 +507,7 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                             {formatGregorianDate(guaranteeDoc.createdAt)}
                             {'\n'}
                             <Text style={{ fontSize: 8, color: '#4A5568' }}>
-                                ({toHijriDate(guaranteeDoc.issueDate)})
+                                ({toHijriDate(guaranteeDoc.createdAt)})
                             </Text>
                         </Text>
                     </View>
