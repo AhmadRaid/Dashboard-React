@@ -4,7 +4,12 @@ import { useState, useMemo } from 'react'
 import DataTable from '@/components/shared/DataTable'
 import type { ColumnDef } from '@/components/shared/DataTable'
 import { Notification, toast } from '@/components/ui'
-import { Button, Spinner, Dropdown, Menu } from '@/components/ui'
+import { Button, Spinner } from '@/components/ui'
+import {
+    Popover,
+    PopoverTrigger,
+    PopoverContent,
+} from '@/components/ui/Popover'
 import {
     FiDownload,
     FiTrash,
@@ -105,7 +110,7 @@ const transformOrderToGuaranteeDoc = (order: any, client: any): any => {
             lastName: client.lastName,
             clientNumber: client.clientNumber || `CL-${client._id}`,
             phone: client.phone,
-            email: client.email
+            email: client.email,
         },
         order: {
             orderNumber: order.orderNumber,
@@ -132,7 +137,8 @@ const transformOrderToGuaranteeDoc = (order: any, client: any): any => {
                 polishSubType: service.polishSubType,
                 externalPolishLevel: service.externalPolishLevel,
                 internalPolishLevel: service.internalPolishLevel,
-                internalAndExternalPolishLevel: service.internalAndExternalPolishLevel,
+                internalAndExternalPolishLevel:
+                    service.internalAndExternalPolishLevel,
                 additionType: service.additionType,
                 washScope: service.washScope,
                 servicePrice: service.servicePrice,
@@ -141,14 +147,16 @@ const transformOrderToGuaranteeDoc = (order: any, client: any): any => {
                     id: service.guarantee?._id || `GUA-${Date.now()}`,
                     typeGuarantee: service.guarantee?.typeGuarantee || '1 سنة',
                     startDate: service.guarantee?.startDate || new Date(),
-                    endDate: service.guarantee?.endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+                    endDate:
+                        service.guarantee?.endDate ||
+                        new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
                     terms: service.guarantee?.terms,
-                    Notes: service.guarantee?.Notes
-                }
-            }))
-        }
-    };
-};
+                    Notes: service.guarantee?.Notes,
+                },
+            })),
+        },
+    }
+}
 
 // --- Main Component ---
 const OrdersClientFields = (props: OrdersClientFieldsProps) => {
@@ -209,7 +217,7 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                 // Find the order in the client's orders
                 const order = values.orders?.find((o: any) => o._id === orderId)
                 if (!order) throw new Error('Order not found.')
-                
+
                 if (type === 'guarantee') {
                     responseData = transformOrderToGuaranteeDoc(order, values)
                     fileName = `ضمان_${order.orderNumber}.pdf`
@@ -218,12 +226,14 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                     responseData = {
                         orderId,
                         clientName: values.firstName + ' ' + values.lastName,
-                        carDetails: order
+                        carDetails: order,
                     }
                     fileName = `إيصال_سيارة_${order.orderNumber}.pdf`
                     // You'll need to create a ReceiptPDF component similar to GuaranteePDF
                     // pdfComponent = <ReceiptPDF receiptData={responseData} />
-                    throw new Error('Receipt PDF generation not implemented yet.')
+                    throw new Error(
+                        'Receipt PDF generation not implemented yet.'
+                    )
                 }
             }
 
@@ -345,65 +355,77 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
             id: 'exportActions',
             cell: (props) => {
                 const order = props.row.original
-                const isLoadingCurrentOrder = downloadLoadingOrderId === order._id
+                const [isOpen, setIsOpen] = useState(false)
+                const isLoadingCurrentOrder =
+                    downloadLoadingOrderId === order._id
 
                 return (
-                    <div onClick={(e) => e.stopPropagation()} className="relative">
-                        <Dropdown
-                            placement="bottom-end"
-                            renderTitle={
-                                <Button
-                                    size="xs"
-                                    variant="solid"
-                                    icon={
-                                        isLoadingCurrentOrder ? (
-                                            <Spinner size={20} />
-                                        ) : (
-                                            <FiDownload />
-                                        )
-                                    }
-                                    disabled={isLoadingCurrentOrder}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                                >
-                                    {isLoadingCurrentOrder ? 'جاري التنزيل...' : 'تصدير'}
-                                </Button>
-                            }
-                        >
-                            <Menu className="min-w-[200px]">
-                                <div className="max-h-[300px] overflow-y-auto">
-                                    <Menu.MenuItem
-                                        onSelect={(event) =>
-                                            handleStartDownload(event, order._id, 'invoice')
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="relative"
+                    >
+                        <Popover open={isOpen} onOpenChange={setIsOpen}>
+                            <PopoverTrigger size="xs" variant="solid">
+                                {isLoadingCurrentOrder
+                                    ? 'جاري التنزيل...'
+                                    : 'تصدير'}
+                            </PopoverTrigger>
+                            <PopoverContent className="w-48 p-2">
+                                <div className="space-y-1">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleStartDownload(
+                                                e as any,
+                                                order._id,
+                                                'invoice'
+                                            )
+                                        }}
+                                        disabled={
+                                            isLoadingCurrentOrder &&
+                                            downloadType !== 'invoice'
                                         }
-                                        disabled={isLoadingCurrentOrder && downloadType !== 'invoice'}
+                                        className="w-full text-right px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2"
                                     >
-                                        <span className="flex items-center gap-2">
-                                            <FiFileText /> فاتورة
-                                        </span>
-                                    </Menu.MenuItem>
-                                    <Menu.MenuItem
-                                        onSelect={(event) =>
-                                            handleStartDownload(event, order._id, 'guarantee')
+                                        <FiFileText /> فاتورة
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleStartDownload(
+                                                e as any,
+                                                order._id,
+                                                'guarantee'
+                                            )
+                                        }}
+                                        disabled={
+                                            isLoadingCurrentOrder &&
+                                            downloadType !== 'guarantee'
                                         }
-                                        disabled={isLoadingCurrentOrder && downloadType !== 'guarantee'}
+                                        className="w-full text-right px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2"
                                     >
-                                        <span className="flex items-center gap-2">
-                                            <FiBookOpen /> ضمان
-                                        </span>
-                                    </Menu.MenuItem>
-                                    <Menu.MenuItem
-                                        onSelect={(event) =>
-                                            handleStartDownload(event, order._id, 'receipt')
+                                        <FiBookOpen /> ضمان
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleStartDownload(
+                                                e as any,
+                                                order._id,
+                                                'receipt'
+                                            )
+                                        }}
+                                        disabled={
+                                            isLoadingCurrentOrder &&
+                                            downloadType !== 'receipt'
                                         }
-                                        disabled={isLoadingCurrentOrder && downloadType !== 'receipt'}
+                                        className="w-full text-right px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2"
                                     >
-                                        <span className="flex items-center gap-2">
-                                            <FiPrinter /> استلام سيارة
-                                        </span>
-                                    </Menu.MenuItem>
+                                        <FiPrinter /> استلام سيارة
+                                    </button>
                                 </div>
-                            </Menu>
-                        </Dropdown>
+                            </PopoverContent>
+                        </Popover>
                     </div>
                 )
             },
@@ -541,6 +563,7 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                     onRowClick={handleRowClick}
                     skeletonAvatarColumns={[0]}
                     skeletonRowCount={pageSize}
+                    // wrapperClass="pb-28"
                     loading={false}
                     totalData={totalOrdersCount}
                     currentPage={currentPage}
