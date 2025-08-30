@@ -5,6 +5,15 @@ import type { Routes } from '@/@types/routes'
 export const publicRoutes: Routes = [...authRoute]
 
 export const protectedRoutes = [
+    ///////////////////////////////////// Home Page Route /////////////////////////////////////
+
+    {
+        key: 'HomePage',
+        path: '/home-page',
+        component: lazy(() => import('@/views/Home/index')),
+        authority: [],
+    },
+
     ///////////////////////////////////// Client Route /////////////////////////////////////
     {
         key: 'clientsMenu.clientsList',
@@ -35,11 +44,22 @@ export const protectedRoutes = [
         component: lazy(() => import('@/views/clients/UpdateClient')),
         authority: [],
     },
-    
+
     {
-        key: 'clientsMenu.updateProfile',
+        key: 'clientsMenu.addService',
         path: '/clients/add-service',
-        component: lazy(() => import('@/views/clients/ClientService/ClientServiceForm')),
+        component: lazy(
+            () => import('@/views/clients/ClientService/ClientServiceForm')
+        ),
+        authority: [],
+    },
+
+    {
+        key: 'clientsMenu.workOrder',
+        path: '/clients/work-order',
+        component: lazy(
+            () => import('@/views/clients/WorkOrder/WorkOrderForm')
+        ),
         authority: [],
     },
 
@@ -63,6 +83,13 @@ export const protectedRoutes = [
         key: 'ordersMenu.UpdateProfile',
         path: '/clients/updateProfile/:clientId',
         component: lazy(() => import('@/views/clients/ClientProfile')),
+        authority: [],
+    },
+
+        {
+        key: 'users.clientsCommunication',
+        path: '/clients-communication',
+        component: lazy(() => import('@/views/clientsCommunication/components/clientsCommunicationList')),
         authority: [],
     },
 

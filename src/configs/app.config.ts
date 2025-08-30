@@ -9,7 +9,7 @@ export type AppConfig = {
 
 const appConfig: AppConfig = {
     apiPrefix: 'https://car-project-zsac.onrender.com/api/v1',
-    authenticatedEntryPath: '/clients',
+    authenticatedEntryPath: '/home-page',
     unAuthenticatedEntryPath: '/sign-in',
     tourPath: '/',
     locale: 'en',

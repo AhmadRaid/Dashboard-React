@@ -80,7 +80,6 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
             )
         }
 
-        // لا تظهر أخطاء الخدمة إذا كان البحث فقط هو الذي تم تشغيله
         if (fieldName.includes('services') && searchTriggered) {
             return false
         }
@@ -243,7 +242,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 <Input
                                     {...field}
                                     size="sm"
-                                    placeholder="أدخل اسم العميل أو رقم الهاتف "
+                                    placeholder="الرجاء أدخل رقم هاتف العميل"
                                     onChange={(e) => {
                                         field.onChange(e)
                                         if (!e.target.value) {
@@ -279,7 +278,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                         المعلومات أو إضافة عميل جديد.
                     </p>
                     <Link
-                        to="/clients/new"
+                        to="/clients/create-client"
                         className="mt-3 inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
                     >
                         إضافة عميل جديد

@@ -2,14 +2,14 @@ import toast from '@/components/ui/toast'
 import Notification from '@/components/ui/Notification'
 import { useNavigate } from 'react-router-dom'
 
-import { apiCreateNewClient } from '@/services/ClientsService'
 import ClientForm, { SetSubmitting } from '../ClientForm/ClientForm'
+import { apiCreateClient } from '@/services/ClientsService'
 
 const CreateClient = () => {
     const navigate = useNavigate()
 
     const addClient = async (data: any) => {
-        const response = await apiCreateNewClient(data)
+        const response = await apiCreateClient(data)
         return response.data
     }
 

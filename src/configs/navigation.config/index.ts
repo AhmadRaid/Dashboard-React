@@ -6,13 +6,12 @@ import type { NavigationTree } from '@/@types/navigation'
 import { userRoles } from '@/@types/roles'
 
 const navigationConfig: NavigationTree[] = [
-    // 1. العملاء (Existing Clients Section)
     {
         key: 'clientsMenu',
         path: '',
         title: 'العملاء',
         translateKey: 'nav.clientsMenu.clientsMenu',
-        icon: 'clientss',
+        icon: 'users', // تغيير من 'clientss' إلى 'users' (أكثر وضوحًا)
         type: NAV_ITEM_TYPE_COLLAPSE,
         authority: [],
         subMenu: [
@@ -21,7 +20,7 @@ const navigationConfig: NavigationTree[] = [
                 path: '/clients',
                 title: 'قائمة العملاء',
                 translateKey: 'nav.clientsMenu.updateClient',
-                icon: 'userEdit',
+                icon: 'userGroup', // أيقونة مجموعة المستخدمين
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [],
@@ -31,18 +30,27 @@ const navigationConfig: NavigationTree[] = [
                 path: '/clients/create-client',
                 title: 'إضافة عميل',
                 translateKey: 'nav.clientsMenu.addClient',
-                icon: 'userPlus',
+                icon: 'userAdd', // أيقونة إضافة مستخدم
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [],
             },
-
+            {
+                key: 'clientsMenu.workOrder',
+                path: '/clients/work-order',
+                title: 'امر عمل',
+                translateKey: 'nav.clientsMenu.workOrder',
+                icon: 'documentText', // أيقونة مستند نصي
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
+                subMenu: [],
+            },
             {
                 key: 'clientsMenu.customReport',
                 path: '/clients/custom-report',
                 title: 'تقرير عملاء مخصص',
                 translateKey: 'nav.clientsMenu.customReport',
-                icon: 'report',
+                icon: 'chartBar', // أيقونة الرسم البياني
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [userRoles.ADMIN],
                 subMenu: [],
@@ -55,7 +63,7 @@ const navigationConfig: NavigationTree[] = [
         key: 'servicesSales',
         path: '',
         title: 'الخدمات والمبيعات',
-        icon: 'sales',
+        icon: 'shoppingCart', // تغيير من 'sales' إلى 'shoppingCart'
         translateKey: 'nav.servicesSales.servicesSales',
         type: NAV_ITEM_TYPE_COLLAPSE,
         authority: [],
@@ -65,7 +73,7 @@ const navigationConfig: NavigationTree[] = [
                 path: '/orders',
                 title: 'قائمة الخدمات والمبيعات',
                 translateKey: 'nav.servicesSales.createInvoice',
-                icon: 'invoice',
+                icon: 'listBullet', // أيقونة قائمة
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [],
                 subMenu: [],
@@ -75,7 +83,7 @@ const navigationConfig: NavigationTree[] = [
                 path: '/sales/create-quote',
                 title: 'إنشاء عرض سعر',
                 translateKey: 'nav.servicesSales.createQuote',
-                icon: 'quote',
+                icon: 'documentDuplicate', // أيقونة مستند مكرر (للعروض)
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [],
                 subMenu: [],
@@ -85,7 +93,7 @@ const navigationConfig: NavigationTree[] = [
                 path: '/sales/payment-vouchers',
                 title: 'سند صرف وقبض',
                 translateKey: 'nav.servicesSales.paymentVouchers',
-                icon: 'payment',
+                icon: 'creditCard', // أيقونة بطاقة ائتمان
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [],
                 subMenu: [],
@@ -95,7 +103,7 @@ const navigationConfig: NavigationTree[] = [
                 path: '/appointments/book',
                 title: 'حجز موعد',
                 translateKey: 'nav.servicesSales.bookAppointment',
-                icon: 'calendar',
+                icon: 'calendar', // أيقونة التقويم (مناسبة)
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [],
                 subMenu: [],
@@ -105,7 +113,7 @@ const navigationConfig: NavigationTree[] = [
                 path: '/reports/status',
                 title: 'تقرير حالة',
                 translateKey: 'nav.servicesSales.statusReport',
-                icon: 'status',
+                icon: 'chartPie', // أيقونة رسم بياني دائري
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [],
                 subMenu: [],
@@ -115,16 +123,16 @@ const navigationConfig: NavigationTree[] = [
                 path: '',
                 title: 'إدارة الخدمات',
                 translateKey: 'nav.servicesMenu.servicesMenu',
-                icon: 'services',
+                icon: 'cog', // أيقونة الإعدادات/التروس
                 type: NAV_ITEM_TYPE_COLLAPSE,
-                authority: [],
+                authority: [userRoles.ADMIN],
                 subMenu: [
                     {
                         key: 'servicesMenu.servicesList',
                         path: '/services',
                         title: 'قائمة الخدمات',
                         translateKey: 'nav.servicesMenu.servicesList',
-                        icon: 'list',
+                        icon: 'viewList', // أيقونة عرض القائمة
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [],
                         subMenu: [],
@@ -134,7 +142,7 @@ const navigationConfig: NavigationTree[] = [
                         path: '/services/create-service',
                         title: 'إنشاء خدمة جديدة',
                         translateKey: 'nav.servicesMenu.createService',
-                        icon: 'plus',
+                        icon: 'plusCircle', // أيقونة إضافة دائرة
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [],
                         subMenu: [],
@@ -149,17 +157,27 @@ const navigationConfig: NavigationTree[] = [
         key: 'users',
         path: '',
         title: 'المستخدمين',
-        icon: 'users',
+        icon: 'userGroup', // تغيير من 'users' إلى 'userGroup'
         translateKey: 'nav.users.users',
         type: NAV_ITEM_TYPE_COLLAPSE,
         authority: [],
         subMenu: [
+                        {
+                key: 'users.clientsCommunication',
+                path: '/clients-communication',
+                title: 'اتصالات العملاء',
+                translateKey: 'nav.users.clientsCommunication',
+                icon: 'clipboardList', // أيقونة قائمة الحافظة
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [],
+                subMenu: [],
+            },
             {
                 key: 'users.manageUsers',
                 path: '/users/manage',
                 title: 'إدارة المستخدمين',
                 translateKey: 'nav.users.manageUsers',
-                icon: 'userManagement',
+                icon: 'userCircle', // أيقونة دائرة المستخدم
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [],
                 subMenu: [],
@@ -169,7 +187,7 @@ const navigationConfig: NavigationTree[] = [
                 path: '/users/roles',
                 title: 'الصلاحيات والأدوار',
                 translateKey: 'nav.users.rolesPermissions',
-                icon: 'permissions',
+                icon: 'key', // أيقونة المفتاح (للصلاحيات)
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [],
                 subMenu: [],
@@ -179,7 +197,7 @@ const navigationConfig: NavigationTree[] = [
                 path: '/users/activity-log',
                 title: 'سجل النشاطات',
                 translateKey: 'nav.users.activityLog',
-                icon: 'activity',
+                icon: 'clipboardList', // أيقونة قائمة الحافظة
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [],
                 subMenu: [],
@@ -187,12 +205,13 @@ const navigationConfig: NavigationTree[] = [
         ],
     },
 
+    // 4. السيارات (Cars)
     {
         key: 'cars',
         path: '',
         title: 'السيارات',
-        translateKey: 'nav.clientsMenu.clientsMenu',
-        icon: 'clientss',
+        translateKey: 'nav.cars.cars',
+        icon: 'truck', // أيقونة السيارة/الشاحنة
         type: NAV_ITEM_TYPE_COLLAPSE,
         authority: [],
         subMenu: [
@@ -200,8 +219,8 @@ const navigationConfig: NavigationTree[] = [
                 key: 'carsMenu.carsList',
                 path: '/cars',
                 title: 'قائمة السيارات',
-                translateKey: 'nav.clientsMenu.addClient',
-                icon: 'userPlus',
+                translateKey: 'nav.cars.carsList',
+                icon: 'listBullet', // أيقونة القائمة
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [],
                 subMenu: [],
@@ -210,20 +229,21 @@ const navigationConfig: NavigationTree[] = [
                 key: 'carsMenu.addCar',
                 path: '/cars/add-car',
                 title: 'إضافة سيارة',
-                translateKey: 'nav.clientsMenu.addClient',
-                icon: 'userPlus',
+                translateKey: 'nav.cars.addCar',
+                icon: 'plus', // أيقونة الإضافة
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [],
                 subMenu: [],
             },
         ],
     },
-    // 4. المستودع (Warehouse)
+
+    // 5. المستودع (Warehouse)
     {
         key: 'warehouse',
         path: '',
         title: 'المستودع',
-        icon: 'warehouse',
+        icon: 'archive', // تغيير من 'warehouse' إلى 'archive'
         translateKey: 'nav.warehouse.warehouse',
         type: NAV_ITEM_TYPE_COLLAPSE,
         authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
@@ -233,7 +253,7 @@ const navigationConfig: NavigationTree[] = [
                 path: '/warehouse/expenses',
                 title: 'المصروفات (المشتريات)',
                 translateKey: 'nav.warehouse.expenses',
-                icon: 'expenses',
+                icon: 'currencyDollar', // أيقونة العملة
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [],
@@ -243,7 +263,7 @@ const navigationConfig: NavigationTree[] = [
                 path: '/warehouse/inventory',
                 title: 'مخزون الفرع',
                 translateKey: 'nav.warehouse.branchInventory',
-                icon: 'inventory',
+                icon: 'cube', // أيقونة المكعب (للمخزون)
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [],
@@ -253,7 +273,7 @@ const navigationConfig: NavigationTree[] = [
                 path: '/warehouse/internal-supply',
                 title: 'طلب توريد داخلي',
                 translateKey: 'nav.warehouse.internalSupply',
-                icon: 'internal',
+                icon: 'arrowCircleDown', // أيقونة السهم الدائري للداخل
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [],
@@ -263,7 +283,7 @@ const navigationConfig: NavigationTree[] = [
                 path: '/warehouse/external-supply',
                 title: 'طلب توريد خارجي',
                 translateKey: 'nav.warehouse.externalSupply',
-                icon: 'external',
+                icon: 'arrowCircleUp', // أيقونة السهم الدائري للخارج
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [],
@@ -271,12 +291,12 @@ const navigationConfig: NavigationTree[] = [
         ],
     },
 
-    // 5. إدارة فروع (Branches Management - Existing)
+    // 6. إدارة فروع (Branches Management)
     {
         key: 'branchesManagement',
         path: '',
         title: 'إدارة فروع',
-        icon: 'branches',
+        icon: 'officeBuilding', // أيقونة مبنى المكاتب
         translateKey: 'nav.branchesManagement.branchesManagement',
         type: NAV_ITEM_TYPE_COLLAPSE,
         authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
@@ -286,7 +306,7 @@ const navigationConfig: NavigationTree[] = [
                 path: '',
                 title: 'تقرير يومي',
                 translateKey: 'nav.branchesManagement.dailyReports',
-                icon: 'report',
+                icon: 'documentReport', // أيقونة تقرير
                 type: NAV_ITEM_TYPE_COLLAPSE,
                 authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [
@@ -294,9 +314,8 @@ const navigationConfig: NavigationTree[] = [
                         key: 'branchesManagement.dailyServicesReport',
                         path: '/reports/daily-services',
                         title: 'تقرير خدمات مقدمة في نفس اليوم',
-                        translateKey:
-                            'nav.branchesManagement.dailyServicesReport',
-                        icon: 'services',
+                        translateKey: 'nav.branchesManagement.dailyServicesReport',
+                        icon: 'clock', // أيقونة الساعة (للتقارير اليومية)
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                         subMenu: [],
@@ -306,7 +325,7 @@ const navigationConfig: NavigationTree[] = [
                         path: '/reports/date-range',
                         title: 'تقرير لفترة',
                         translateKey: 'nav.branchesManagement.dateRangeReport',
-                        icon: 'calendar',
+                        icon: 'calendar', // أيقونة التقويم
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                         subMenu: [],
@@ -315,9 +334,8 @@ const navigationConfig: NavigationTree[] = [
                         key: 'branchesManagement.serviceTypeReport',
                         path: '/reports/service-type',
                         title: 'تقرير لنوع الخدمة',
-                        translateKey:
-                            'nav.branchesManagement.serviceTypeReport',
-                        icon: 'serviceType',
+                        translateKey: 'nav.branchesManagement.serviceTypeReport',
+                        icon: 'tag', // أيقونة الوسم (لأنواع الخدمات)
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                         subMenu: [],
@@ -329,7 +347,7 @@ const navigationConfig: NavigationTree[] = [
                 path: '',
                 title: 'الاغلاق الشهري',
                 translateKey: 'nav.branchesManagement.monthlyClosing',
-                icon: 'monthly',
+                icon: 'lockClosed', // أيقونة القفل (للإغلاق)
                 type: NAV_ITEM_TYPE_COLLAPSE,
                 authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [
@@ -338,7 +356,7 @@ const navigationConfig: NavigationTree[] = [
                         path: '/monthly-closing/income',
                         title: 'اغلاق الدخل الشهري',
                         translateKey: 'nav.branchesManagement.incomeClosing',
-                        icon: 'income',
+                        icon: 'cash', // أيقونة النقود
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                         subMenu: [],
@@ -348,7 +366,7 @@ const navigationConfig: NavigationTree[] = [
                         path: '/monthly-closing/warehouse',
                         title: 'اغلاق المستودعات الداخلية',
                         translateKey: 'nav.branchesManagement.warehouseClosing',
-                        icon: 'warehouse',
+                        icon: 'archive', // أيقونة الأرشيف
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                         subMenu: [],
@@ -357,6 +375,7 @@ const navigationConfig: NavigationTree[] = [
             },
         ],
     },
+
 ]
 
 export default navigationConfig

@@ -17,22 +17,21 @@ export async function apiGetClients(params: GetClientsParams) {
 
 export async function apiGetClientProfile(clientId: string) {
     return ApiService.fetchData({
-        url: `/clients/${clientId}`, 
+        url: `/clients/${clientId}`,
         method: 'get',
     })
 }
 
 export async function apiGetStatistics() {
     return ApiService.fetchData({
-        url: `/statistics`, 
+        url: `/statistics-data`,
         method: 'get',
     })
 }
 
-
-export async function apiSearchClients(data:string) {
+export async function apiSearchClients(data: string) {
     return ApiService.fetchData({
-        url: `/clients?search=${data}`, 
+        url: `/clients?search=${data}`,
         method: 'get',
     })
 }
@@ -45,10 +44,23 @@ export async function apiUpdateClient(clientId: string, data: any) {
     })
 }
 
-
-export async function apiCreateNewClient(data: CreateClient) {
+export async function apiCreateClient(
+    data: any,
+    confirm: boolean = false
+) {
     return ApiService.fetchData({
-        url: '/clients',
+        url: `/clients/create-with-confirmation?confirm=${confirm}`,
+        method: 'post',
+        data,
+    })
+}
+
+export async function apiGetClientsCommunication(
+    data: any,
+    confirm: boolean = false
+) {
+    return ApiService.fetchData({
+        url: `/clients/create-with-confirmation?confirm=${confirm}`,
         method: 'post',
         data,
     })

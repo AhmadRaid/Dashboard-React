@@ -11,6 +11,7 @@ import * as Yup from 'yup'
 import ClientFields from './ClientFields'
 import { Select } from '@/components/ui'
 import Input from '@/components/ui/Input'
+import { apiCreateClient } from '@/services/ClientsService'
 
 type FormikRef = FormikProps<any>
 
@@ -355,6 +356,8 @@ export const validationSchema = Yup.object().shape({
     //     ),
 })
 
+
+
 const calculateEndDate = (
     startDate: string,
     guaranteePeriod: string
@@ -565,40 +568,107 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
         return Object.keys(cleaned).length > 0 ? cleaned : undefined
     }
 
+    const [confirmationDialog, setConfirmationDialog] = useState({
+    isOpen: false,
+    clientData: null,
+    formData: null,
+})
+
+const handleSubmitWithConfirmation = async (
+    data: any,
+    setSubmitting: (isSubmitting: boolean) => void
+) => {
+    try {
+        const response = await apiCreateClient(data)
+
+        if (response.data.requiresConfirmation) {
+            // عرض حوار التأكيد
+            setConfirmationDialog({
+                isOpen: true,
+                clientData: response.data.client,
+                formData: data,
+            })
+            setSubmitting(false)
+            return
+        }
+
+        // إذا لم يتطلب تأكيداً، تابع العملية الطبيعية
+        onFormSubmit?.(data, setSubmitting)
+    } catch (error) {
+        setSubmitting(false)
+        // معالجة الأخطاء هنا
+    }
+}
+
+const ConfirmationDialog = ({ isOpen, onClose, onConfirm, clientData }) => {
+    if (!isOpen) return null
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-96">
+                <h3 className="text-lg font-semibold mb-4">
+                    تأكيد إضافة الطلب
+                </h3>
+                <p className="text-gray-600 mb-4">
+                    العميل {clientData?.firstName} {clientData?.lastName} موجود
+                    مسبقاً في النظام. هل أنت متأكد من إضافة طلب جديد لهذا
+                    العميل؟
+                </p>
+                <div className="flex justify-end gap-3">
+                    <Button type="button" variant="plain" onClick={onClose}>
+                        إلغاء
+                    </Button>
+                    <Button type="button" variant="solid" onClick={onConfirm}>
+                        تأكيد الإضافة
+                    </Button>
+                </div>
+            </div>
+        </div>
+    )
+}
+
     // دالة لتحويل servicePrice إلى رقم
     const convertServicePricesToNumbers = (data: any): any => {
-        if (!data || typeof data !== 'object') return data;
-        
+        if (!data || typeof data !== 'object') return data
+
         if (Array.isArray(data)) {
-            return data.map(item => convertServicePricesToNumbers(item));
+            return data.map((item) => convertServicePricesToNumbers(item))
         }
-        
-        const converted = { ...data };
-        
+
+        const converted = { ...data }
+
         // تحويل servicePrice في خدمات
         if (converted.services && Array.isArray(converted.services)) {
             converted.services = converted.services.map((service: any) => {
-                if (service.servicePrice !== undefined && service.servicePrice !== null) {
+                if (
+                    service.servicePrice !== undefined &&
+                    service.servicePrice !== null
+                ) {
                     return {
                         ...service,
-                        servicePrice: typeof service.servicePrice === 'string' 
-                            ? parseFloat(service.servicePrice) || 0 
-                            : Number(service.servicePrice)
-                    };
+                        servicePrice:
+                            typeof service.servicePrice === 'string'
+                                ? parseFloat(service.servicePrice) || 0
+                                : Number(service.servicePrice),
+                    }
                 }
-                return service;
-            });
+                return service
+            })
         }
-        
+
         // تحويل servicePrice في المستوى الرئيسي (إذا كان موجودًا)
-        if (converted.servicePrice !== undefined && converted.servicePrice !== null) {
-            converted.servicePrice = typeof converted.servicePrice === 'string' 
-                ? parseFloat(converted.servicePrice) || 0 
-                : Number(converted.servicePrice);
+        if (
+            converted.servicePrice !== undefined &&
+            converted.servicePrice !== null
+        ) {
+            converted.servicePrice =
+                typeof converted.servicePrice === 'string'
+                    ? parseFloat(converted.servicePrice) || 0
+                    : Number(converted.servicePrice)
         }
-        
-        return converted;
-    };
+
+        return converted
+    }
 
     return (
         <>
@@ -609,27 +679,29 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                 }}
                 validationSchema={validationSchema}
                 onSubmit={(values, { setSubmitting }) => {
-                    let data = cloneDeep(values);
-                    console.log('Data values:', values);
+                    handleSubmitWithConfirmation(values, setSubmitting)
+
+                    let data = cloneDeep(values)
+                    console.log('Data values:', values)
 
                     if (Array.isArray(data.carPlateNumber)) {
-                        data.carPlateNumber = data.carPlateNumber.join('');
+                        data.carPlateNumber = data.carPlateNumber.join('')
                     }
 
                     // تحويل servicePrice إلى رقم قبل المعالجة
-                    data = convertServicePricesToNumbers(data);
+                    data = convertServicePricesToNumbers(data)
 
                     // تحويل تواريخ الضمان
                     data.services = data.services?.map((service: any) => {
                         if (service.guarantee?.startDate) {
                             service.guarantee.startDate = new Date(
                                 service.guarantee.startDate
-                            ).toISOString();
+                            ).toISOString()
                         }
                         if (service.guarantee?.endDate) {
                             service.guarantee.endDate = new Date(
                                 service.guarantee.endDate
-                            ).toISOString();
+                            ).toISOString()
                         }
 
                         // حذف الضمان إذا كان فارغًا
@@ -639,20 +711,20 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                             !service.guarantee.startDate &&
                             !service.guarantee.endDate
                         ) {
-                            delete service.guarantee;
+                            delete service.guarantee
                         }
 
-                        return service;
-                    });
+                        return service
+                    })
 
                     // حذف كل الحقول الفارغة
-                    data = removeEmptyFields(data);
+                    data = removeEmptyFields(data)
 
                     if (data.services && data.services.length === 0) {
-                        delete data.services;
+                        delete data.services
                     }
 
-                    onFormSubmit?.(data, setSubmitting);
+                    onFormSubmit?.(data, setSubmitting)
                 }}
             >
                 {({ values, touched, errors, isSubmitting, ...form }) => {
@@ -1670,7 +1742,7 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                     )}
                                                 </>
                                             )}
-                                        
+
                                             <FormItem
                                                 label="سعر الخدمة"
                                                 invalid={
@@ -1688,25 +1760,42 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                                                     <Field
                                                         name={`services[${index}].servicePrice`}
                                                     >
-                                                        {({ field, form }: FieldProps) => (
+                                                        {({
+                                                            field,
+                                                            form,
+                                                        }: FieldProps) => (
                                                             <Input
                                                                 {...field}
                                                                 type="number"
                                                                 size="sm"
                                                                 placeholder="أدخل سعر الخدمة"
-                                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                                                    const value = parseFloat(e.target.value) || 0;
+                                                                onChange={(
+                                                                    e: React.ChangeEvent<HTMLInputElement>
+                                                                ) => {
+                                                                    const value =
+                                                                        parseFloat(
+                                                                            e
+                                                                                .target
+                                                                                .value
+                                                                        ) || 0
                                                                     form.setFieldValue(
                                                                         `services[${index}].servicePrice`,
                                                                         value
-                                                                    );
+                                                                    )
                                                                 }}
-                                                                onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
-                                                                    const value = parseFloat(e.target.value) || 0;
+                                                                onBlur={(
+                                                                    e: React.FocusEvent<HTMLInputElement>
+                                                                ) => {
+                                                                    const value =
+                                                                        parseFloat(
+                                                                            e
+                                                                                .target
+                                                                                .value
+                                                                        ) || 0
                                                                     form.setFieldValue(
                                                                         `services[${index}].servicePrice`,
                                                                         value
-                                                                    );
+                                                                    )
                                                                 }}
                                                             />
                                                         )}
@@ -2143,6 +2232,35 @@ const ClientForm = forwardRef<FormikRef, ClientFormProps>((props, ref) => {
                     )
                 }}
             </Formik>
+            <ConfirmationDialog
+                isOpen={confirmationDialog.isOpen}
+                onClose={() =>
+                    setConfirmationDialog({
+                        isOpen: false,
+                        clientData: null,
+                        formData: null,
+                    })
+                }
+                onConfirm={async () => {
+                    try {
+                        // إرسال الطلب مع تأكيد
+                        const response = await apiCreateClient(
+                            confirmationDialog.formData,
+                            true
+                        )
+                        // معالجة النجاح هنا
+                        setConfirmationDialog({
+                            isOpen: false,
+                            clientData: null,
+                            formData: null,
+                        })
+                        onFormSubmit?.(confirmationDialog.formData, () => {})
+                    } catch (error) {
+                        // معالجة الأخطاء هنا
+                    }
+                }}
+                clientData={confirmationDialog.clientData}
+            />
         </>
     )
 })

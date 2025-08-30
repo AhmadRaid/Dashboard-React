@@ -65,11 +65,11 @@ const initialData: InitialData = {
 }
 
 export const validationSchema = Yup.object().shape({
-    orderId: Yup.string().required('يجب اختيار طلب'),
+    orderId: Yup.string(),
     services: Yup.array().of(
         Yup.object().shape({
             serviceType: Yup.string()
-                .required('نوع الخدمة مطلوب')
+                
                 .oneOf(
                     ['polish', 'protection', 'insulator', 'additions'],
                     'اختر نوع خدمة صالح'
@@ -277,11 +277,11 @@ const OrderServiceForm = forwardRef<FormikRef, OrderServiceFormProps>(
                             }
                         } catch (error) {
                             console.error('Failed to update services:', error)
-                            toast.push(
-                                <Notification title="خطأ" type="danger">
-                                    فشل في تحميل الفاتورة
-                                </Notification>
-                            )
+                            // toast.push(
+                            //     <Notification title="خطأ" type="danger">
+                            //         فشل في تحميل الفاتورة
+                            //     </Notification>
+                            // )
                         }
                     }}
                 >
