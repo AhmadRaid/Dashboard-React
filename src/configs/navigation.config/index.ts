@@ -290,8 +290,44 @@ const navigationConfig: NavigationTree[] = [
             },
         ],
     },
+    
+       // 6. إدارة المهام (Tasks Management)
+    {
+        key: 'TaskManagement',
+        path: '',
+        title: 'المهام',
+        icon: 'officeBuilding', // أيقونة مبنى المكاتب
+        translateKey: 'nav.branchesManagement.branchesManagement',
+        type: NAV_ITEM_TYPE_COLLAPSE,
+        authority: [userRoles.ADMIN],
+        subMenu: [
+            {
+                key: 'taskMenu.TaskList',
+                path: '/tasks',
+                title: 'عرض المهام مهمة',
+                translateKey: 'nav.tasks.showTasks',
+                icon: 'documentReport', // أيقونة تقرير
+                type: NAV_ITEM_TYPE_COLLAPSE,
+                authority: [userRoles.ADMIN],
+                subMenu: [
+                ],
+            },
+             {
+                key: 'taskMenu.AddTask',
+                path: '/tasks/add',
+                title: 'اضافة مهمة جديدة',
+                translateKey: 'nav.tasks.addNewTask',
+                icon: 'documentReport', // أيقونة تقرير
+                type: NAV_ITEM_TYPE_COLLAPSE,
+                authority: [userRoles.ADMIN],
+                subMenu: [
+                ],
+            },
+       
+        ],
+    },
 
-    // 6. إدارة فروع (Branches Management)
+    // 7. إدارة فروع (Branches Management)
     {
         key: 'branchesManagement',
         path: '',
@@ -375,6 +411,9 @@ const navigationConfig: NavigationTree[] = [
             },
         ],
     },
+
+  
+
 
 ]
 

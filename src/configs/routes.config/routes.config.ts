@@ -86,10 +86,15 @@ export const protectedRoutes = [
         authority: [],
     },
 
-        {
+    {
         key: 'users.clientsCommunication',
         path: '/clients-communication',
-        component: lazy(() => import('@/views/clientsCommunication/components/clientsCommunicationList')),
+        component: lazy(
+            () =>
+                import(
+                    '@/views/clientsCommunication/components/clientsCommunicationList'
+                )
+        ),
         authority: [],
     },
 
@@ -178,6 +183,22 @@ export const protectedRoutes = [
         key: 'carsMenu.EditCar',
         path: '/cars/edit/:carId',
         component: lazy(() => import('@/views/cars/EditCar')),
+        authority: [],
+    },
+
+    ///////////////////////////////////// Task Route /////////////////////////////////////
+
+    {
+        key: 'taskMenu.TaskList',
+        path: '/tasks',
+        component: lazy(() => import('@/views/tasks/TaskForm/TaskForm')),
+        authority: [],
+    },
+
+    {
+        key: 'taskMenu.AddTask',
+        path: '/tasks/add',
+        component: lazy(() => import('@/views/tasks/TaskForm/TaskForm')),
         authority: [],
     },
 ]
