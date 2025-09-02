@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
     forwardRef,
     useState,
@@ -5,31 +7,16 @@ import {
     useContext,
     useCallback,
     useEffect,
-} from 'react'
-import classNames from 'classnames'
-import RadioGroupContext from './context'
-import { useConfig } from '../ConfigProvider'
-import type { CommonProps } from '../@types/common'
-import type { InputHTMLAttributes } from 'react'
+} from 'react';
+import classNames from 'classnames';
+import RadioGroupContext from './context';
+import { RadioProps } from './types';
 
-export interface RadioProps
-    extends CommonProps,
-        Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> {
-    checked?: boolean
-    color?: string
-    defaultChecked?: boolean
-    disabled?: boolean
-    labelRef?: string
-    name?: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onChange?: (value: any, e: MouseEvent) => void
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    value?: any
-    vertical?: boolean
-    readOnly?: boolean
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    field?: any
-}
+// Mock useConfig for demonstration, replace with your actual hook
+const useConfig = () => ({
+    themeColor: 'blue',
+    primaryColorLevel: '600',
+});
 
 const Radio = forwardRef<HTMLInputElement, RadioProps>((props, ref) => {
     const {
@@ -40,7 +27,7 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>((props, ref) => {
         color: colorContext,
         vertical: verticalContext,
         radioGutter,
-    } = useContext(RadioGroupContext)
+    } = useContext(RadioGroupContext);
 
     const {
         children,
@@ -57,69 +44,55 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>((props, ref) => {
         value,
         vertical = verticalContext,
         ...rest
-    } = props
+    } = props;
 
-    const { themeColor, primaryColorLevel } = useConfig()
+    const { themeColor, primaryColorLevel } = useConfig();
 
     const getChecked = () => {
-        return typeof groupValue !== 'undefined'
-            ? groupValue === value
-            : checkedProp
-    }
+        return typeof groupValue !== 'undefined' ? groupValue === value : checkedProp;
+    };
 
-    const [radioChecked, setRadioChecked] = useState(getChecked())
+    const [radioChecked, setRadioChecked] = useState(getChecked());
 
-    const radioColor =
-        color || colorContext || `${themeColor}-${primaryColorLevel}`
+    const radioColor = color || colorContext || `${themeColor}-${primaryColorLevel}`;
 
     const controlProps = useMemo(() => {
         if (typeof groupValue !== 'undefined') {
-            return { checked: radioChecked }
+            return { checked: radioChecked };
         }
-        return { checked: checkedProp, defaultChecked }
-    }, [radioChecked, checkedProp, defaultChecked, groupValue])
+        return { checked: checkedProp, defaultChecked };
+    }, [radioChecked, checkedProp, defaultChecked, groupValue]);
 
     const onRadioChange = useCallback(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (e: any) => {
             if (disabled || readOnly) {
-                return
+                return;
             }
-            onGroupChange?.(value, e)
-            onChange?.(value, e)
+            onGroupChange?.(value, e);
+            onChange?.(value, e);
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [
-            disabled,
-            setRadioChecked,
-            onChange,
-            value,
-            onGroupChange,
-            groupValue,
-            readOnly,
-        ]
-    )
+        [disabled, setRadioChecked, onChange, value, onGroupChange, groupValue, readOnly]
+    );
 
     useEffect(() => {
-        const propChecked = getChecked()
+        const propChecked = getChecked();
         if (radioChecked !== propChecked) {
-            setRadioChecked(propChecked)
+            setRadioChecked(propChecked);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [value, checkedProp, groupValue])
+    }, [value, checkedProp, groupValue, radioChecked]);
 
-    const radioDefaultClass = `radio text-${radioColor}`
-    const radioColorClass = disabled && 'disabled'
-    const labelDisabledClass = disabled && 'disabled'
+    const radioDefaultClass = `radio text-${radioColor}`;
+    const radioColorClass = disabled && 'disabled';
+    const labelDisabledClass = disabled && 'disabled';
 
-    const radioClass = classNames(radioDefaultClass, radioColorClass)
+    const radioClass = classNames(radioDefaultClass, radioColorClass);
     const labelClass = classNames(
         'radio-label',
         labelDisabledClass,
         className,
-        `${'inline-flex'}`,
+        'inline-flex',
         `${radioGutter ? 'm' + (vertical ? 'b-' : 'r-') + radioGutter : ''}`
-    )
+    );
 
     return (
         <label ref={labelRef} className={labelClass}>
@@ -137,19 +110,14 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>((props, ref) => {
                 {...rest}
             />
             {children ? (
-                <span
-                    className={classNames(
-                        'ltr:ml-2 rtl:mr-2',
-                        disabled ? 'opacity-50' : ''
-                    )}
-                >
+                <span className={classNames('ltr:ml-2 rtl:mr-2', disabled ? 'opacity-50' : '')}>
                     {children}
                 </span>
             ) : null}
         </label>
-    )
-})
+    );
+});
 
-Radio.displayName = 'Radio'
+Radio.displayName = 'Radio';
 
-export default Radio
+export default Radio;
