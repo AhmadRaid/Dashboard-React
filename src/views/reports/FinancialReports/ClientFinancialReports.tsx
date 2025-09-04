@@ -33,7 +33,8 @@ const ClientFinancialReports = () => {
                     // تجميع الاسم الكامل والتحقق من وجود الأجزاء لتجنب 'null' أو 'undefined'
                     const fullName = [
                         clientData.firstName,
-                        clientData.middleName,
+                        clientData.secondName,
+                        clientData.thirdName,
                         clientData.lastName
                     ].filter(Boolean).join(' '); // يقوم بتصفية القيم الفارغة ودمج الباقي بمسافة
                     

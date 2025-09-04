@@ -55,7 +55,8 @@ interface Order {
 
 interface Client {
     firstName: string
-    middleName: string
+    secondName: string
+    thirdName: string
     lastName: string
     clientNumber: string
     phone: string
@@ -538,7 +539,7 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                         <View style={styles.clientInfoItem}>
                             <Text style={styles.label}>اسم العميل:</Text>
                             <Text style={styles.value}>
-                                {`${guaranteeDoc.clientId.firstName} ${guaranteeDoc.clientId.middleName} ${guaranteeDoc.clientId.lastName}`}
+                                {`${guaranteeDoc.clientId.firstName} ${guaranteeDoc.clientId.secondName} ${guaranteeDoc.clientId.thirdName} ${guaranteeDoc.clientId.lastName}`}
                             </Text>
 
                             <Text style={[styles.label, { marginTop: 2 }]}>
@@ -590,10 +591,6 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                             {
                                 label: 'رقم اللوحة',
                                 value: guaranteeDoc.carPlateNumber,
-                            },
-                            {
-                                label: 'الشركة المصنعة',
-                                value: guaranteeDoc.carManufacturer,
                             },
                             {
                                 label: 'حجم السيارة',

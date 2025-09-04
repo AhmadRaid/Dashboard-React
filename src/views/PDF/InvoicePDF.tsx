@@ -40,7 +40,8 @@ interface Order {
 
 interface Client {
     firstName: string
-    middleName: string
+    secondName: string
+    thirdName: string
     lastName: string
     clientNumber: string
     phone: string
@@ -454,7 +455,7 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => {
                         <View style={styles.clientInfoItem}>
                             <Text style={styles.label}>اسم العميل:</Text>
                             <Text style={styles.value}>
-                                {`${invoice.client.firstName} ${invoice.client.middleName} ${invoice.client.lastName}`}
+                                {`${invoice.client.firstName} ${invoice.client.secondName} ${invoice.client.thirdName} ${invoice.client.lastName}`}
                             </Text>
 
                             <Text style={[styles.label, { marginTop: 2 }]}>
@@ -497,10 +498,6 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => {
                             {
                                 label: 'رقم اللوحة',
                                 value: invoice.order.carPlateNumber,
-                            },
-                            {
-                                label: 'الشركة المصنعة',
-                                value: invoice.order.carManufacturer,
                             },
                             { label: 'حجم السيارة', value: invoice.order.carSize },
                         ].map((item, index) => (

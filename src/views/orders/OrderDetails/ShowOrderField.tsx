@@ -309,35 +309,6 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                             )}
                         </FormItem>
 
-                        {/* Manufacturer */}
-                        <FormItem
-                            label={
-                                <span className="flex items-center text-gray-700 dark:text-gray-200">
-                                    <FaBuilding className="ml-2 text-lg text-gray-500" />{' '}
-                                    الشركة المصنعة
-                                </span>
-                            }
-                            invalid={
-                                !!errors.carManufacturer &&
-                                !!touched.carManufacturer
-                            }
-                            errorMessage={errors.carManufacturer}
-                            className="mb-0"
-                        >
-                            {readOnly ? (
-                                renderReadOnlyValue(values.carManufacturer)
-                            ) : (
-                                <Field
-                                    name="carManufacturer"
-                                    type="text"
-                                    size="sm"
-                                    placeholder="مثال: تويوتا، نيسان"
-                                    component={Input}
-                                    className="w-full border-gray-300 focus:border-gray-500 focus:ring-gray-500 transition duration-200"
-                                />
-                            )}
-                        </FormItem>
-
                         {/* Car Size */}
                         <FormItem
                             label={

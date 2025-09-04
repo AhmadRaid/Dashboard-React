@@ -55,7 +55,12 @@ const ClientsTable = () => {
             },
             {
                 header: 'الاسم الثاني',
-                accessorKey: 'middleName',
+                accessorKey: 'secondName',
+                sortable: false,
+            },
+            {
+                header: 'الاسم الثالث',
+                accessorKey: 'thirdName',
                 sortable: false,
             },
             {
@@ -70,11 +75,7 @@ const ClientsTable = () => {
                     const clientType = props.row.original.clientType
                     return (
                         <span>
-                            {clientType === 'individual'
-                                ? 'فردي'
-                                : clientType === 'company'
-                                ? 'شركة'
-                                : clientType}
+                            {clientType}
                         </span>
                     )
                 },

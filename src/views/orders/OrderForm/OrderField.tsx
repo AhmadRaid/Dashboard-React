@@ -8,7 +8,8 @@ import { apiGetAllServices } from '@/services/ClientsService'
 
 type FormFieldsName = {
     firstName: string
-    middleName: string
+    secondName: string
+    thirdName: string
     lastName: string
     email: string
     phone: string
@@ -47,11 +48,6 @@ const OrderFields = (props: ClientFieldsProps) => {
         { label: string; value: string }[]
     >([])
     const [loadingServices, setLoadingServices] = useState<boolean>(false)
-
-    const clientTypes = [
-        { label: 'فردي', value: 'individual' },
-        { label: 'شركة', value: 'company' },
-    ]
 
     const getServices = async () => {
         setLoadingServices(true)
@@ -163,22 +159,6 @@ const OrderFields = (props: ClientFieldsProps) => {
         )}
     </Field>
 </FormItem>
-
-                <FormItem
-                    label="الشركة المصنعة"
-                    invalid={
-                        !!errors.carManufacturer && !!touched.carManufacturer
-                    }
-                    errorMessage={errors.carManufacturer}
-                >
-                    <Field
-                        name="carManufacturer"
-                        type="text"
-                        size="sm"
-                        placeholder="ادخل الشركة المصنعة"
-                        component={Input}
-                    />
-                </FormItem>
 
                 <FormItem
                     label="حجم السيارة"

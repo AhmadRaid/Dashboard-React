@@ -44,12 +44,22 @@ export async function apiUpdateClient(clientId: string, data: any) {
     })
 }
 
-export async function apiCreateClient(
-    data: any,
-    confirm: boolean = false
-) {
+export async function apiCreateClient(data: any, confirm: boolean = false) {
     return ApiService.fetchData({
         url: `/clients/create-with-confirmation?confirm=${confirm}`,
+        method: 'post',
+        data,
+    })
+}
+
+export async function apiCheckNameIsExist(data: {
+    firstName: string
+    secondName: string
+    thirdName: string
+    lastName: string
+}) {
+    return ApiService.fetchData({
+        url: `/clients/check-name`,
         method: 'post',
         data,
     })

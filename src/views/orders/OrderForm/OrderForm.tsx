@@ -188,28 +188,6 @@ export const validationSchema = Yup.object().shape({
             }
         ),
 
-    carManufacturer: Yup.string().test(
-        'require-if-car-fields-exist',
-        'الشركة المصنعة للسيارة مطلوبة عند إدخال أي بيانات للسيارة',
-        function (value) {
-            const {
-                carType,
-                carModel,
-                carColor,
-                carPlateNumber,
-                carSize,
-                services,
-            } = this.parent
-            const anyCarFieldFilled =
-                !!carType ||
-                !!carModel ||
-                !!carColor ||
-                !!carPlateNumber ||
-                !!carSize
-            return anyCarFieldFilled ? !!value : true
-        }
-    ),
-
     carPlateNumber: Yup.string()
         .matches(
             /^[أ-يa-zA-Z0-9]{7,8}$/, // تم تعديل التعبير النمطي هنا

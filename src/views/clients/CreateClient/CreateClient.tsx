@@ -2,7 +2,7 @@ import toast from '@/components/ui/toast'
 import Notification from '@/components/ui/Notification'
 import { useNavigate } from 'react-router-dom'
 
-import ClientForm, { SetSubmitting } from '../ClientForm/ClientForm'
+import ClientForm, { SetSubmitting } from '../ClientForm/ClientForm2'
 import { apiCreateClient } from '@/services/ClientsService'
 
 const CreateClient = () => {

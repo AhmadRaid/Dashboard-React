@@ -49,7 +49,7 @@ const OrdersTable = () => {
             return orderData.map((item) => ({
                 ...item,
                 clientName: item.client
-                    ? `${item.client.firstName} ${item.client.middleName} ${item.client.lastName}`
+                    ? `${item.client.firstName} ${item.client.secondName} ${item.client.thirdName} ${item.client.lastName}`
                     : 'غير محدد',
             }))
         }

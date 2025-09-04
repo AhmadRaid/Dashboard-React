@@ -9,8 +9,9 @@ import { toast, Notification } from '@/components/ui'
 import * as Yup from 'yup'
 
 const clientTypes = [
-    { label: 'فردي', value: 'individual' },
-    { label: 'شركة', value: 'company' },
+    { label: 'فرد', value: 'فرد' },
+    { label: 'شركة', value: 'شركة' },
+    { label: 'مسوق', value: 'مسوق' },
 ]
 
 const branchOptions = [
@@ -27,7 +28,8 @@ const UpdateDataClient = () => {
 
     const validationSchema = Yup.object().shape({
         firstName: Yup.string().required('الاسم الأول مطلوب'),
-        middleName: Yup.string(),
+        secondName: Yup.string().required('الاسم الثاني مطلوب'),
+        thirdName: Yup.string().required('الاسم الثالث مطلوب'),
         lastName: Yup.string().required('اسم العائلة مطلوب'),
         email: Yup.string().email('بريد إلكتروني غير صالح'),
         phone: Yup.string()
@@ -40,8 +42,8 @@ const UpdateDataClient = () => {
             .max(10, 'يجب أن يتكون رقم الهاتف من 10 أرقام'),
         clientType: Yup.string()
             .oneOf(
-                ['individual', 'company'],
-                'نوع العميل يجب أن يكون "فردي" أو "شركة"'
+                ['فرد', 'شركة', 'مسوق'],
+                'نوع العميل يجب أن يكون "فرد" أو "شركة" أو "مسوق"'
             )
             .required('نوع العميل مطلوب'),
 
@@ -151,11 +153,12 @@ const UpdateDataClient = () => {
                     <Formik
                         initialValues={{
                             firstName: clientData.firstName || '',
-                            middleName: clientData.middleName || '',
+                            secondName: clientData.secondName || '',
+                            thirdName: clientData.thirdName || '',
                             lastName: clientData.lastName || '',
                             email: clientData.email || '',
                             phone: clientData.phone || '',
-                            clientType: clientData.clientType || 'individual',
+                            clientType: clientData.clientType ,
                             branch: clientData.branch || '',
                         }}
                         validationSchema={validationSchema}
@@ -186,17 +189,31 @@ const UpdateDataClient = () => {
                                             </FormItem>
 
                                             <FormItem
-                                                label="الاسم الأوسط"
+                                                label="الاسم الثاني"
                                                 invalid={
-                                                    !!errors.middleName &&
-                                                    !!touched.middleName
+                                                    !!errors.secondName &&
+                                                    !!touched.secondName
                                                 }
-                                                errorMessage={errors.middleName}
+                                                errorMessage={errors.secondName}
                                             >
                                                 <Field
-                                                    name="middleName"
+                                                    name="secondName"
                                                     as={Input}
                                                     placeholder="أدخل الاسم الأوسط"
+                                                />
+                                            </FormItem>
+                                            <FormItem
+                                                label="الاسم الثالث"
+                                                invalid={
+                                                    !!errors.thirdName &&
+                                                    !!touched.thirdName
+                                                }
+                                                errorMessage={errors.thirdName}
+                                            >
+                                                <Field
+                                                    name="thirdName"
+                                                    as={Input}
+                                                    placeholder="أدخل الاسم الثالث"
                                                 />
                                             </FormItem>
 

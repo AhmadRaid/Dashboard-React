@@ -88,7 +88,8 @@ export type ClientWithOrdersData = {
     _id?: string
     clientNumber: string // تأكد من وجود هذا الحقل
     firstName: string
-    middleName: string
+    secondName: string
+    thirdName: string
     lastName: string
     email: string
     phone: string
@@ -98,7 +99,7 @@ export type ClientWithOrdersData = {
         totalOrders: number
         activeGuarantees: number
     }
-    clientType: 'individual' | 'company'
+    clientType: 'فرد' | 'شركة' | 'مسوق'
     isDeleted: boolean
     createdAt?: string
     updatedAt?: string

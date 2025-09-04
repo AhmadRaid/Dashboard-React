@@ -25,7 +25,7 @@ export const protectedRoutes = [
         key: 'clientsMenu.createClient',
         path: '/clients/create-client',
         component: lazy(
-            () => import('@/views/clients/CreateClient/CreateClient')
+            () => import('@/views/clients/ClientForm/CreateClient')
         ),
         authority: [],
     },

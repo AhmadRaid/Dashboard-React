@@ -27,7 +27,8 @@ export interface Order {
     client: {
         _id: string
         firstName: string
-        middleName: string
+        secondName: string
+        thirdName: string
         lastName: string
         email: string
         phone: string

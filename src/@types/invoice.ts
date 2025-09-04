@@ -21,7 +21,8 @@ export interface FinancialReportData {
     client: {
         _id: string;
         firstName: string;
-        middleName: string;
+        secondName: string;
+        thirdName: string;
         lastName: string;
         clientNumber: string;
         email?: string;

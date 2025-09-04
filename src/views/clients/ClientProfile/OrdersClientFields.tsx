@@ -101,11 +101,12 @@ const transformOrderToGuaranteeDoc = (order: any, client: any): any => {
         issueDate: new Date(),
         client: {
             firstName: client.firstName,
-            middleName: client.middleName || '',
+            secondName: client.secondName || '',
+            thirdName: client.thirdName || '',
             lastName: client.lastName,
             clientNumber: client.clientNumber || `CL-${client._id}`,
             phone: client.phone,
-            email: client.email
+            email: client.email,
         },
         order: {
             orderNumber: order.orderNumber,
@@ -132,7 +133,8 @@ const transformOrderToGuaranteeDoc = (order: any, client: any): any => {
                 polishSubType: service.polishSubType,
                 externalPolishLevel: service.externalPolishLevel,
                 internalPolishLevel: service.internalPolishLevel,
-                internalAndExternalPolishLevel: service.internalAndExternalPolishLevel,
+                internalAndExternalPolishLevel:
+                    service.internalAndExternalPolishLevel,
                 additionType: service.additionType,
                 washScope: service.washScope,
                 servicePrice: service.servicePrice,
@@ -141,14 +143,16 @@ const transformOrderToGuaranteeDoc = (order: any, client: any): any => {
                     id: service.guarantee?._id || `GUA-${Date.now()}-${index}`,
                     typeGuarantee: service.guarantee?.typeGuarantee || '1 سنة',
                     startDate: service.guarantee?.startDate || new Date(),
-                    endDate: service.guarantee?.endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+                    endDate:
+                        service.guarantee?.endDate ||
+                        new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
                     terms: service.guarantee?.terms,
-                    Notes: service.guarantee?.Notes
-                }
-            }))
-        }
-    };
-};
+                    Notes: service.guarantee?.Notes,
+                },
+            })),
+        },
+    }
+}
 
 // --- Main Component ---
 const OrdersClientFields = (props: OrdersClientFieldsProps) => {
@@ -171,39 +175,41 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
         navigate(`/orders/${row.original._id}`)
     }
 
-const handleStartDownload = async (
-    event: React.MouseEvent,
-    orderId: string,
-    type: 'invoice' | 'guarantee' | 'receipt'
-) => {
-    if (downloadLoadingOrderId === orderId) return
+    const handleStartDownload = async (
+        event: React.MouseEvent,
+        orderId: string,
+        type: 'invoice' | 'guarantee' | 'receipt'
+    ) => {
+        if (downloadLoadingOrderId === orderId) return
 
-    setDownloadLoadingOrderId(orderId)
-    setDownloadType(type)
+        setDownloadLoadingOrderId(orderId)
+        setDownloadType(type)
 
-    try {
-        let responseData: any
-        let fileName: string = ''
-        let pdfComponent: JSX.Element | null = null
+        try {
+            let responseData: any
+            let fileName: string = ''
+            let pdfComponent: JSX.Element | null = null
 
-        if (type === 'invoice') {
-            const response = await apiGetInvoiceByOrderId(orderId)
-            responseData = response.data.data
-            if (!responseData) throw new Error('Invoice data not found.')
-            fileName = `فاتورة_${responseData.invoiceNumber}.pdf`
-            pdfComponent = <InvoicePDF invoice={responseData} />
-        } else {
-            const response = await apiGetOrdersDetails(orderId)
-            responseData = response.data.data
-            if (!responseData) throw new Error('Order data not found.')
-            
-            if (type === 'guarantee') {
-                fileName = `ضمان_${responseData.orderNumber}.pdf`
-                pdfComponent = <GuaranteePDF guaranteeDoc={responseData} />
-            } else if (type === 'receipt') {
-                throw new Error('Receipt PDF generation not implemented yet.')
+            if (type === 'invoice') {
+                const response = await apiGetInvoiceByOrderId(orderId)
+                responseData = response.data.data
+                if (!responseData) throw new Error('Invoice data not found.')
+                fileName = `فاتورة_${responseData.invoiceNumber}.pdf`
+                pdfComponent = <InvoicePDF invoice={responseData} />
+            } else {
+                const response = await apiGetOrdersDetails(orderId)
+                responseData = response.data.data
+                if (!responseData) throw new Error('Order data not found.')
+
+                if (type === 'guarantee') {
+                    fileName = `ضمان_${responseData.orderNumber}.pdf`
+                    pdfComponent = <GuaranteePDF guaranteeDoc={responseData} />
+                } else if (type === 'receipt') {
+                    throw new Error(
+                        'Receipt PDF generation not implemented yet.'
+                    )
+                }
             }
-        }
 
             if (!pdfComponent) {
                 throw new Error('Failed to create PDF component.')
@@ -238,8 +244,8 @@ const handleStartDownload = async (
                             setDownloadType(null)
                         }
                         if (error) {
-                            console.log('erreeeeeeeeeeeeeeeeeeeeor', error);
-                            
+                            console.log('erreeeeeeeeeeeeeeeeeeeeor', error)
+
                             toast.push(
                                 <Notification title="خطأ" type="danger">
                                     حدث خطأ أثناء إنشاء ملف PDF: {error.message}
@@ -325,10 +331,14 @@ const handleStartDownload = async (
             id: 'exportActions',
             cell: (props) => {
                 const order = props.row.original
-                const isLoadingCurrentOrder = downloadLoadingOrderId === order._id
+                const isLoadingCurrentOrder =
+                    downloadLoadingOrderId === order._id
 
                 return (
-                    <div onClick={(e) => e.stopPropagation()} className="relative">
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="relative"
+                    >
                         <Dropdown
                             placement="bottom-end"
                             renderTitle={
@@ -345,7 +355,9 @@ const handleStartDownload = async (
                                     disabled={isLoadingCurrentOrder}
                                     className="bg-blue-600 hover:bg-blue-700 text-white"
                                 >
-                                    {isLoadingCurrentOrder ? 'جاري التنزيل...' : 'تصدير'}
+                                    {isLoadingCurrentOrder
+                                        ? 'جاري التنزيل...'
+                                        : 'تصدير'}
                                 </Button>
                             }
                         >
@@ -353,9 +365,16 @@ const handleStartDownload = async (
                                 <div className="max-h-[300px] overflow-y-auto">
                                     <Menu.MenuItem
                                         onSelect={(event) =>
-                                            handleStartDownload(event, order._id, 'invoice')
+                                            handleStartDownload(
+                                                event,
+                                                order._id,
+                                                'invoice'
+                                            )
                                         }
-                                        disabled={isLoadingCurrentOrder && downloadType !== 'invoice'}
+                                        disabled={
+                                            isLoadingCurrentOrder &&
+                                            downloadType !== 'invoice'
+                                        }
                                     >
                                         <span className="flex items-center gap-2">
                                             <FiFileText /> فاتورة
@@ -363,9 +382,16 @@ const handleStartDownload = async (
                                     </Menu.MenuItem>
                                     <Menu.MenuItem
                                         onSelect={(event) =>
-                                            handleStartDownload(event, order._id, 'guarantee')
+                                            handleStartDownload(
+                                                event,
+                                                order._id,
+                                                'guarantee'
+                                            )
                                         }
-                                        disabled={isLoadingCurrentOrder && downloadType !== 'guarantee'}
+                                        disabled={
+                                            isLoadingCurrentOrder &&
+                                            downloadType !== 'guarantee'
+                                        }
                                     >
                                         <span className="flex items-center gap-2">
                                             <FiBookOpen /> ضمان
@@ -373,9 +399,16 @@ const handleStartDownload = async (
                                     </Menu.MenuItem>
                                     <Menu.MenuItem
                                         onSelect={(event) =>
-                                            handleStartDownload(event, order._id, 'receipt')
+                                            handleStartDownload(
+                                                event,
+                                                order._id,
+                                                'receipt'
+                                            )
                                         }
-                                        disabled={isLoadingCurrentOrder && downloadType !== 'receipt'}
+                                        disabled={
+                                            isLoadingCurrentOrder &&
+                                            downloadType !== 'receipt'
+                                        }
                                     >
                                         <span className="flex items-center gap-2">
                                             <FiPrinter /> استلام سيارة
@@ -453,8 +486,8 @@ const handleStartDownload = async (
                             الاسم الكامل
                         </h6>
                         <p className="text-gray-800 dark:text-gray-100">
-                            {values.firstName} {values.middleName}{' '}
-                            {values.lastName}
+                            {values.firstName} {values.secondName}{' '}
+                            {values.thirdName} {values.lastName}
                         </p>
                     </div>
                     <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
@@ -486,9 +519,7 @@ const handleStartDownload = async (
                             نوع العميل
                         </h6>
                         <p className="text-gray-800 dark:text-gray-100">
-                            {values.clientType === 'individual'
-                                ? 'فردي'
-                                : 'شركة'}
+                            {values.clientType}
                         </p>
                     </div>
                     <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
