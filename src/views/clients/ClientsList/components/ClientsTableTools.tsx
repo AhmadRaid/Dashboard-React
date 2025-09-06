@@ -64,26 +64,6 @@ export const ClientsTableTools = () => {
                     onChange={(option) => handleSortChange(option?.value || '')}
                     className="min-w-[150px]"
                 />
-                      <Link to="/clients/add-service" className="w-full lg:w-auto">
-                    <Button
-                        block
-                        variant="solid"
-                        size="sm"
-                        icon={<HiPlusCircle />}
-                    >
-                        اضافة خدمة
-                    </Button>
-                </Link>
-                <Link to="/clients/create-client" className="w-full lg:w-auto">
-                    <Button
-                        block
-                        variant="solid"
-                        size="sm"
-                        icon={<HiPlusCircle />}
-                    >
-                        اضافة سيارة لعميل
-                    </Button>
-                </Link>
             </div>
         </div>
     )
