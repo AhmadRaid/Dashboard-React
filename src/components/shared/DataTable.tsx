@@ -35,6 +35,7 @@ type DataTableProps<T> = {
     columns: ColumnDef<T>[]
     data?: unknown[]
     loading?: boolean
+        wrapperClass?: string
     onCheckBoxChange?: (checked: boolean, row: T) => void
     onIndeterminateCheckBoxChange?: (checked: boolean, rows: Row<T>[]) => void
     onPaginationChange?: (page: number) => void
@@ -124,6 +125,7 @@ function _DataTable<T>(
             pageIndex: 1,
             pageSize: 10,
         },
+        wrapperClass
     } = props
 
     const { pageSize, pageIndex, total } = pagingData
@@ -249,6 +251,7 @@ function _DataTable<T>(
     return (
         <Loading loading={loading && data.length !== 0} type="cover">
             <Table>
+                <Table wrapperClass={wrapperClass}></Table>
                 <THead>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <Tr key={headerGroup.id}>

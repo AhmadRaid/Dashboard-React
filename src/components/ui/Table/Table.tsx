@@ -8,6 +8,7 @@ export interface TableProps extends ComponentPropsWithRef<'table'> {
     compact?: boolean
     hoverable?: boolean
     overflow?: boolean
+    wrapperClass?: string
 }
 
 const Table = forwardRef<HTMLElement, TableProps>((props, ref) => {
@@ -19,6 +20,7 @@ const Table = forwardRef<HTMLElement, TableProps>((props, ref) => {
         compact = false,
         hoverable = true,
         overflow = true,
+        wrapperClass,
         ...rest
     } = props
 
@@ -31,7 +33,10 @@ const Table = forwardRef<HTMLElement, TableProps>((props, ref) => {
     )
 
     return (
-        <div className={classNames(overflow && 'overflow-x-auto')}>
+        <div
+            className={classNames(overflow && 'overflow-x-auto', wrapperClass)}
+        >
+            {' '}
             <Component className={tableClass} {...rest} ref={ref}>
                 {children}
             </Component>

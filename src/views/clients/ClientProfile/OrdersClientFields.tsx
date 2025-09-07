@@ -4,7 +4,12 @@ import { useState, useMemo } from 'react'
 import DataTable from '@/components/shared/DataTable'
 import type { ColumnDef } from '@/components/shared/DataTable'
 import { Notification, toast } from '@/components/ui'
-import { Button, Spinner, Dropdown, Menu } from '@/components/ui'
+import { Button, Spinner } from '@/components/ui'
+import {
+    Popover,
+    PopoverTrigger,
+    PopoverContent,
+} from '@/components/ui/Popover'
 import {
     FiDownload,
     FiTrash,
@@ -25,7 +30,6 @@ import type { FormikErrors, FormikTouched } from 'formik'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import { HiOutlineTrash } from 'react-icons/hi'
 import GuaranteePDF from '@/views/PDF/GuarantePDF'
-import { apiGetOrdersDetails } from '@/services/OrdersService'
 
 // --- Helper Functions ---
 const formatDate = (isoString?: string) => {
@@ -95,14 +99,14 @@ const DeleteOrderButton = ({
     )
 }
 
+// Helper function to transform order data to GuaranteeDocument format
 const transformOrderToGuaranteeDoc = (order: any, client: any): any => {
     return {
         documentNumber: `G-${order.orderNumber}`,
         issueDate: new Date(),
         client: {
             firstName: client.firstName,
-            secondName: client.secondName || '',
-            thirdName: client.thirdName || '',
+            middleName: client.middleName || '',
             lastName: client.lastName,
             clientNumber: client.clientNumber || `CL-${client._id}`,
             phone: client.phone,
@@ -118,8 +122,8 @@ const transformOrderToGuaranteeDoc = (order: any, client: any): any => {
             carSize: order.carSize,
             orderStatus: order.orderStatus,
             createdAt: order.createdAt,
-            services: order.services.map((service: any, index: number) => ({
-                id: service._id || `SVC-${Date.now()}-${index}`,
+            services: order.services.map((service: any) => ({
+                id: service._id || `SVC-${Date.now()}`,
                 serviceType: service.serviceType,
                 dealDetails: service.dealDetails,
                 protectionFinish: service.protectionFinish,
@@ -140,7 +144,7 @@ const transformOrderToGuaranteeDoc = (order: any, client: any): any => {
                 servicePrice: service.servicePrice,
                 serviceDate: service.serviceDate,
                 guarantee: {
-                    id: service.guarantee?._id || `GUA-${Date.now()}-${index}`,
+                    id: service.guarantee?._id || `GUA-${Date.now()}`,
                     typeGuarantee: service.guarantee?.typeGuarantee || '1 سنة',
                     startDate: service.guarantee?.startDate || new Date(),
                     endDate:
@@ -175,6 +179,7 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
         navigate(`/orders/${row.original._id}`)
     }
 
+    // --- Document Download Handlers ---
     const handleStartDownload = async (
         event: React.MouseEvent,
         orderId: string,
@@ -184,6 +189,18 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
 
         setDownloadLoadingOrderId(orderId)
         setDownloadType(type)
+
+        toast.push(
+            <Notification title="تصدير" type="info">
+                جارٍ إعداد ملف{' '}
+                {type === 'invoice'
+                    ? 'الفاتورة'
+                    : type === 'guarantee'
+                    ? 'الضمان'
+                    : 'إيصال السيارة'}{' '}
+                للتنزيل...
+            </Notification>
+        )
 
         try {
             let responseData: any
@@ -197,14 +214,23 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                 fileName = `فاتورة_${responseData.invoiceNumber}.pdf`
                 pdfComponent = <InvoicePDF invoice={responseData} />
             } else {
-                const response = await apiGetOrdersDetails(orderId)
-                responseData = response.data.data
-                if (!responseData) throw new Error('Order data not found.')
+                // Find the order in the client's orders
+                const order = values.orders?.find((o: any) => o._id === orderId)
+                if (!order) throw new Error('Order not found.')
 
                 if (type === 'guarantee') {
-                    fileName = `ضمان_${responseData.orderNumber}.pdf`
+                    responseData = transformOrderToGuaranteeDoc(order, values)
+                    fileName = `ضمان_${order.orderNumber}.pdf`
                     pdfComponent = <GuaranteePDF guaranteeDoc={responseData} />
                 } else if (type === 'receipt') {
+                    responseData = {
+                        orderId,
+                        clientName: values.firstName + ' ' + values.lastName,
+                        carDetails: order,
+                    }
+                    fileName = `إيصال_سيارة_${order.orderNumber}.pdf`
+                    // You'll need to create a ReceiptPDF component similar to GuaranteePDF
+                    // pdfComponent = <ReceiptPDF receiptData={responseData} />
                     throw new Error(
                         'Receipt PDF generation not implemented yet.'
                     )
@@ -244,8 +270,6 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                             setDownloadType(null)
                         }
                         if (error) {
-                            console.log('erreeeeeeeeeeeeeeeeeeeeor', error)
-
                             toast.push(
                                 <Notification title="خطأ" type="danger">
                                     حدث خطأ أثناء إنشاء ملف PDF: {error.message}
@@ -331,6 +355,7 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
             id: 'exportActions',
             cell: (props) => {
                 const order = props.row.original
+                const [isOpen, setIsOpen] = useState(false)
                 const isLoadingCurrentOrder =
                     downloadLoadingOrderId === order._id
 
@@ -339,84 +364,68 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                         onClick={(e) => e.stopPropagation()}
                         className="relative"
                     >
-                        <Dropdown
-                            placement="bottom-end"
-                            renderTitle={
-                                <Button
-                                    size="xs"
-                                    variant="solid"
-                                    icon={
-                                        isLoadingCurrentOrder ? (
-                                            <Spinner size={20} />
-                                        ) : (
-                                            <FiDownload />
-                                        )
-                                    }
-                                    disabled={isLoadingCurrentOrder}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                                >
-                                    {isLoadingCurrentOrder
-                                        ? 'جاري التنزيل...'
-                                        : 'تصدير'}
-                                </Button>
-                            }
-                        >
-                            <Menu className="min-w-[200px]">
-                                <div className="max-h-[300px] overflow-y-auto">
-                                    <Menu.MenuItem
-                                        onSelect={(event) =>
+                        <Popover open={isOpen} onOpenChange={setIsOpen}>
+                            <PopoverTrigger size="xs" variant="solid">
+                                {isLoadingCurrentOrder
+                                    ? 'جاري التنزيل...'
+                                    : 'تصدير'}
+                            </PopoverTrigger>
+                            <PopoverContent className="w-48 p-2">
+                                <div className="space-y-1">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
                                             handleStartDownload(
-                                                event,
+                                                e as any,
                                                 order._id,
                                                 'invoice'
                                             )
-                                        }
+                                        }}
                                         disabled={
                                             isLoadingCurrentOrder &&
                                             downloadType !== 'invoice'
                                         }
+                                        className="w-full text-right px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2"
                                     >
-                                        <span className="flex items-center gap-2">
-                                            <FiFileText /> فاتورة
-                                        </span>
-                                    </Menu.MenuItem>
-                                    <Menu.MenuItem
-                                        onSelect={(event) =>
+                                        <FiFileText /> فاتورة
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
                                             handleStartDownload(
-                                                event,
+                                                e as any,
                                                 order._id,
                                                 'guarantee'
                                             )
-                                        }
+                                        }}
                                         disabled={
                                             isLoadingCurrentOrder &&
                                             downloadType !== 'guarantee'
                                         }
+                                        className="w-full text-right px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2"
                                     >
-                                        <span className="flex items-center gap-2">
-                                            <FiBookOpen /> ضمان
-                                        </span>
-                                    </Menu.MenuItem>
-                                    <Menu.MenuItem
-                                        onSelect={(event) =>
+                                        <FiBookOpen /> ضمان
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
                                             handleStartDownload(
-                                                event,
+                                                e as any,
                                                 order._id,
                                                 'receipt'
                                             )
-                                        }
+                                        }}
                                         disabled={
                                             isLoadingCurrentOrder &&
                                             downloadType !== 'receipt'
                                         }
+                                        className="w-full text-right px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2"
                                     >
-                                        <span className="flex items-center gap-2">
-                                            <FiPrinter /> استلام سيارة
-                                        </span>
-                                    </Menu.MenuItem>
+                                        <FiPrinter /> استلام سيارة
+                                    </button>
                                 </div>
-                            </Menu>
-                        </Dropdown>
+                            </PopoverContent>
+                        </Popover>
                     </div>
                 )
             },
@@ -486,8 +495,8 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                             الاسم الكامل
                         </h6>
                         <p className="text-gray-800 dark:text-gray-100">
-                            {values.firstName} {values.secondName}{' '}
-                            {values.thirdName} {values.lastName}
+                            {values.firstName} {values.middleName}{' '}
+                            {values.lastName}
                         </p>
                     </div>
                     <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
@@ -519,7 +528,9 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                             نوع العميل
                         </h6>
                         <p className="text-gray-800 dark:text-gray-100">
-                            {values.clientType}
+                            {values.clientType === 'individual'
+                                ? 'فردي'
+                                : 'شركة'}
                         </p>
                     </div>
                     <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
@@ -552,6 +563,7 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                     onRowClick={handleRowClick}
                     skeletonAvatarColumns={[0]}
                     skeletonRowCount={pageSize}
+                    // wrapperClass="pb-28"
                     loading={false}
                     totalData={totalOrdersCount}
                     currentPage={currentPage}

@@ -6,6 +6,38 @@ import type { NavigationTree } from '@/@types/navigation'
 import { userRoles } from '@/@types/roles'
 
 const navigationConfig: NavigationTree[] = [
+    // الوصول السريع (Quick Access)
+    {
+        key: 'quickAccess',
+        path: '',
+        title: 'الوصول السريع',
+        translateKey: 'nav.quickAccess.quickAccess',
+        icon: 'users',
+        type: NAV_ITEM_TYPE_COLLAPSE,
+        authority: [],
+        subMenu: [
+            {
+                key: 'quickAccess.addService',
+                path: '/clients/add-service',
+                title: 'اضافة خدمة',
+                translateKey: 'nav.quickAccess.addService',
+                icon: 'plusCircle',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [],
+                subMenu: [],
+            },
+            {
+                key: 'quickAccess.addCar',
+                path: '/clients/create-client',
+                title: 'اضافة سيارة',
+                translateKey: 'nav.quickAccess.addCar',
+                icon: 'plusCircle',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [],
+                subMenu: [],
+            },
+        ],
+    },
     {
         key: 'clientsMenu',
         path: '',
@@ -57,6 +89,8 @@ const navigationConfig: NavigationTree[] = [
             },
         ],
     },
+
+    
 
     // 2. الخدمات والمبيعات (Services & Sales)
     {
