@@ -62,7 +62,6 @@ const carValidationSchema = Yup.object().shape({
     carColor: Yup.string()
         .required('لون السيارة مطلوب')
         .max(30, 'يجب ألا يتجاوز لون السيارة 30 حرفًا'),
-    carManufacturer: Yup.string().required('الشركة المصنعة مطلوبة'),
     carPlateNumber: Yup.string()
         .required('رقم لوحة السيارة مطلوب')
         .matches(
@@ -83,7 +82,9 @@ const servicesValidationSchema = Yup.object().shape({
         .of(
             Yup.object().shape({
                 serviceType: Yup.string().required('نوع الخدمة مطلوب'),
-                dealDetails: Yup.string().required('تفاصيل الصفقة مطلوبة'),
+                dealDetails: Yup.string(),
+                servicePrice: Yup.number()
+                    .typeError('سعر الخدمة يجب أن يكون رقمًا')
             })
         ),
 })
@@ -102,7 +103,6 @@ type FormData = {
     carModel: string
     carColor: string
     carPlateNumber: string
-    carManufacturer: string
     carSize: string
     carType: string
     // Services
@@ -146,7 +146,6 @@ const initialData: FormData = {
     carModel: '',
     carColor: '',
     carPlateNumber: '',
-    carManufacturer: '',
     carSize: '',
     carType: '',
     services: [
@@ -185,6 +184,8 @@ const MultiStepClientForm = ({
     const [isLoading, setIsLoading] = useState(false)
     const [showNameExistsDialog, setShowNameExistsDialog] = useState(false)
     const [pendingClientData, setPendingClientData] = useState<any>(null)
+    const [nameExistsMessage, setNameExistsMessage] = useState<string>('هذا الاسم موجود بالفعل لعميل آخر. هل ترغب في الاستمرار باستخدام نفس الاسم؟')
+    const [pendingAction, setPendingAction] = useState<'next' | 'save' | null>(null)
 
     const steps = [
         {
@@ -219,16 +220,26 @@ const MultiStepClientForm = ({
 
     const checkNameAndMaybeConfirm = async (clientData: any): Promise<boolean> => {
         // returns true if allowed to proceed
-        const { firstName, secondName, thirdName, lastName } = clientData
+        const { firstName, secondName, thirdName, lastName, phone } = clientData
+        console.log('222222222222222222222222222222',phone);
+        
         try {
             const res: any = await apiCheckNameIsExist({
                 firstName,
                 secondName,
                 thirdName,
                 lastName,
+                phone
             })
             const exists: boolean = !!res?.data?.data?.exists
             if (exists) {
+                const apiMessage: string =
+                    (res?.data?.message as string) ??
+                    (res?.data?.data?.message as string) ??
+                    ''
+                if (apiMessage) {
+                    setNameExistsMessage(apiMessage)
+                }
                 setPendingClientData(clientData)
                 setShowNameExistsDialog(true)
                 return false
@@ -243,17 +254,25 @@ const MultiStepClientForm = ({
     const proceedAfterConfirm = async () => {
         if (!pendingClientData) return
         setShowNameExistsDialog(false)
-        if (onClientSave) {
-            await onClientSave(pendingClientData, true)
+        if (pendingAction === 'save') {
+            if (onClientSave) {
+                await onClientSave(pendingClientData, true)
+            }
+            setSavedClientData(pendingClientData)
+            // do not advance step on save; user stays to continue or navigate manually
+        } else if (pendingAction === 'next') {
+            // Stage locally only for Next
+            setSavedClientData(pendingClientData)
+            setCurrentStep(2)
         }
-        setSavedClientData(pendingClientData)
         setPendingClientData(null)
-        setCurrentStep(2)
+        setPendingAction(null)
     }
 
     const cancelAfterConfirm = () => {
         setShowNameExistsDialog(false)
         setPendingClientData(null)
+        setPendingAction(null)
         // stay on step 1 so user can change name
     }
 
@@ -278,12 +297,11 @@ const MultiStepClientForm = ({
                     delete (clientData as any).email
                 }
 
+                setPendingAction('next')
                 const okToProceed = await checkNameAndMaybeConfirm(clientData)
                 if (!okToProceed) return
 
-                if (onClientSave) {
-                    await onClientSave(clientData)
-                }
+                // For Next: stage locally only (no API)
                 setSavedClientData(clientData)
                 setCurrentStep(2)
             } else if (currentStep === 2) {
@@ -291,7 +309,7 @@ const MultiStepClientForm = ({
                     carModel: values.carModel,
                     carColor: values.carColor,
                     carPlateNumber: values.carPlateNumber,
-                    carManufacturer: values.carManufacturer,
+                    
                     carSize: values.carSize,
                     carType: values.carType,
                 }
@@ -332,24 +350,34 @@ const MultiStepClientForm = ({
                     delete (clientData as any).email
                 }
 
+                setPendingAction('save')
                 const okToProceed = await checkNameAndMaybeConfirm(clientData)
                 if (!okToProceed) return
 
+                // For Save: persist immediately (no duplicate)
                 if (onClientSave) {
-                    await onClientSave(clientData)
+                    await onClientSave(clientData, true)
                 }
+                setSavedClientData(clientData)
             } else if (currentStep === 2) {
                 const carData = {
                     carModel: values.carModel,
                     carColor: values.carColor,
                     carPlateNumber: values.carPlateNumber,
-                    carManufacturer: values.carManufacturer,
                     carSize: values.carSize,
                     carType: values.carType,
                 }
-
+                // Stage locally for car
                 if (onCarSave) {
                     await onCarSave(carData)
+                }
+                // Also persist full client + car info immediately
+                const fullDataStep2 = {
+                    ...savedClientData,
+                    ...carData,
+                }
+                if (onFinalSave) {
+                    await onFinalSave(fullDataStep2)
                 }
             } else if (currentStep === 3) {
                 const fullData = {
@@ -380,7 +408,9 @@ const MultiStepClientForm = ({
         values: FormData,
         touched: any,
         errors: any,
-        setFieldValue: any
+        setFieldValue: any,
+        setFieldTouched: any // أضفنا setFieldTouched
+
     ) => {
         switch (currentStep) {
             case 1:
@@ -399,6 +429,7 @@ const MultiStepClientForm = ({
                         touched={touched}
                         errors={errors}
                         setFieldValue={setFieldValue}
+                        setFieldTouched={setFieldTouched}
                     />
                 )
             case 3:
@@ -416,7 +447,7 @@ const MultiStepClientForm = ({
     }
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
             <StepIndicator steps={steps} currentStep={currentStep} />
 
             <Formik
@@ -431,6 +462,7 @@ const MultiStepClientForm = ({
                     errors,
                     setSubmitting,
                     setFieldValue,
+                    setFieldTouched,
                     isValid,
                 }) => (
                     <Form>
@@ -439,7 +471,9 @@ const MultiStepClientForm = ({
                                 values,
                                 touched,
                                 errors,
-                                setFieldValue
+                                setFieldValue,
+                                setFieldTouched // أضفنا setFieldTouched
+
                             )}
 
                             {/* Navigation Buttons */}
@@ -512,9 +546,7 @@ const MultiStepClientForm = ({
                             cancelText="تغيير الاسم"
                             confirmText="متابعة بنفس الاسم"
                         >
-                            <p className="text-gray-600 dark:text-gray-300">
-                                هذا الاسم موجود بالفعل لعميل آخر. هل ترغب في الاستمرار باستخدام نفس الاسم؟
-                            </p>
+                            <p className="text-gray-600 dark:text-gray-300">{nameExistsMessage}</p>
                         </ConfirmDialog>
                     </Form>
                 )}

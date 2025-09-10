@@ -12,6 +12,7 @@ import { HiOutlineTrash } from 'react-icons/hi'
 import { apiSendServiceForOrder } from '@/services/OrdersService'
 import { toast, Notification } from '@/components/ui'
 import { useNavigate, useParams } from 'react-router-dom'
+import { apiAddService } from '@/services/ServiceAPI'
 
 type FormikRef = FormikProps<any>
 
@@ -69,11 +70,10 @@ export const validationSchema = Yup.object().shape({
     services: Yup.array().of(
         Yup.object().shape({
             serviceType: Yup.string()
-                
-                .oneOf(
-                    ['polish', 'protection', 'insulator', 'additions'],
-                    'اختر نوع خدمة صالح'
-                ),
+            .oneOf(
+                ['polish', 'protection', 'insulator', 'additions'],
+                'اختر نوع خدمة صالح'
+            ),
             dealDetails: Yup.string(),
             protectionFinish: Yup.string(),
             protectionSize: Yup.string(),
@@ -219,8 +219,14 @@ const OrderServiceForm = forwardRef<FormikRef, OrderServiceFormProps>(
                             // إنشاء نسخة عميقة من القيم
                             let data = cloneDeep(values)
 
+                            const { clientSearch, ...dataWithoutClientSearch } =
+                                data
+
+                            // استخدام البيانات بدون حقل clientSearch
+                            let data_with_empty_fields = dataWithoutClientSearch
+
                             // تنظيف البيانات من الحقول الفارغة
-                            data = removeEmptyFields(data)
+                            data = removeEmptyFields(data_with_empty_fields)
 
                             // تحويل التواريخ إلى ISOString
                             if (data.services) {
@@ -253,10 +259,8 @@ const OrderServiceForm = forwardRef<FormikRef, OrderServiceFormProps>(
                                 )
                             }
 
-                            console.log('Data being sent:', data)
-
                             // إرسال البيانات إلى API
-                            const response = await apiSendServiceForOrder({
+                            const response = await apiAddService(data.orderId, {
                                 ...data,
                             })
 
@@ -269,7 +273,7 @@ const OrderServiceForm = forwardRef<FormikRef, OrderServiceFormProps>(
                                         تم اضافة الخدمة بنجاح
                                     </Notification>
                                 )
-                                navigate(`/clients/${clientId}`)
+                                navigate(`home-page`)
 
                                 if (onFormSubmit) {
                                     onFormSubmit(values, setSubmitting)

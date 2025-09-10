@@ -44,9 +44,9 @@ export async function apiUpdateClient(clientId: string, data: any) {
     })
 }
 
-export async function apiCreateClient(data: any, confirm: boolean = false) {
+export async function apiCreateClient(data: any) {
     return ApiService.fetchData({
-        url: `/clients/create-with-confirmation?confirm=${confirm}`,
+        url: `/clients/create-client`,
         method: 'post',
         data,
     })
@@ -57,9 +57,10 @@ export async function apiCheckNameIsExist(data: {
     secondName: string
     thirdName: string
     lastName: string
+    phone:number
 }) {
     return ApiService.fetchData({
-        url: `/clients/check-name`,
+        url: `/clients/check-user-exists`,
         method: 'post',
         data,
     })
@@ -112,13 +113,5 @@ export async function apiGetAllServices() {
     return ApiService.fetchData({
         url: '/services',
         method: 'get',
-    })
-}
-
-export async function apiCreateService(data: CreateService) {
-    return ApiService.fetchData({
-        url: '/services',
-        method: 'post',
-        data,
     })
 }

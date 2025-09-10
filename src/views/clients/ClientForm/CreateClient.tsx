@@ -1,31 +1,60 @@
 import { apiCreateClient } from "@/services/ClientsService"
 import MultiStepClientForm from "./multi-step-client-form"
+import { useNavigate } from "react-router-dom"
 
 const NewClientPage = () => {
-  const handleClientSave = async (clientData: any, confirm: boolean = false) => {
+
+  const navigate = useNavigate()
+
+  
+  const handleClientSave = async (clientData: any, confirm?: boolean) => {
     try {
-      const response = await apiCreateClient({ ...clientData }, confirm)
-      console.log("Client saved:", response.data)
+      if (confirm) {
+        const response = await apiCreateClient({ ...clientData })
+        console.log("Client created after confirmation:", response.data)
+      } else {
+        // Local-only staging when just saving step 1 without confirmation
+        console.log("Client data staged locally:", clientData)
+      }
     } catch (error) {
-      console.error("Error saving client:", error)
+      console.error("Error staging client data:", error)
       throw error
     }
   }
 
   const handleCarSave = async (carData: any) => {
     try {
-      const response = await apiCreateClient({ ...carData, step: "car" })
-      console.log("Car saved:", response.data)
+      // Local-only persistence on Next; no API call here
+      console.log("Car data staged locally:", carData)
     } catch (error) {
-      console.error("Error saving car:", error)
+      console.error("Error staging car data:", error)
       throw error
     }
   }
 
   const handleFinalSave = async (fullData: any) => {
     try {
-      const response = await apiCreateClient({ ...fullData, step: "complete" })
+      // Normalize payload similar to ClientForm2 logic
+      const payload = { ...fullData }
+
+      if (Array.isArray(payload.services)) {
+        payload.services = payload.services.map((service: any) => {
+          const normalized = { ...service }
+          if (normalized.guarantee) {
+            if (normalized.guarantee.startDate) {
+              normalized.guarantee.startDate = new Date(normalized.guarantee.startDate).toISOString()
+            }
+            if (normalized.guarantee.endDate) {
+              normalized.guarantee.endDate = new Date(normalized.guarantee.endDate).toISOString()
+            }
+          }
+          return normalized
+        })
+      }
+
+      const response = await apiCreateClient(payload)
       console.log("Complete data saved:", response.data)
+      navigate('/')
     } catch (error) {
       console.error("Error saving complete data:", error)
       throw error
@@ -41,7 +70,7 @@ const NewClientPage = () => {
       {/* Subtle background patterns */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gray-200/20 to-transparent dark:from-gray-700/10"></div>
       
-      <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Page Header */}
         <div className="text-center mb-2">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 mb-4">

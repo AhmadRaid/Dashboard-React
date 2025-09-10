@@ -1,12 +1,13 @@
-"use client"
+// في CarInfoStep.tsx
+'use client'
 
 import AdaptableCard from "@/components/shared/AdaptableCard"
 import Input from "@/components/ui/Input"
 import Button from "@/components/ui/Button"
 import { FormItem } from "@/components/ui/Form"
 import { Field, type FormikErrors, type FormikTouched, type FieldProps } from "formik"
-import { useState } from "react"
-import { HiPlus, HiMinus } from "react-icons/hi" // أضفنا أيقونة الناقص
+import { useState, useEffect } from "react" // أضفنا useEffect
+import { HiPlus, HiMinus } from "react-icons/hi"
 
 type FormFieldsName = {
   carModel: string
@@ -22,6 +23,7 @@ type CarInfoStepProps = {
   errors: FormikErrors<FormFieldsName>
   values: any
   setFieldValue: (field: string, value: any) => void
+  setFieldTouched: (field: string, isTouched?: boolean) => void // أضفنا setFieldTouched
 }
 
 const carSizeOptions = [
@@ -32,19 +34,46 @@ const carSizeOptions = [
   { label: "XX-Large", value: "XX-large" },
 ]
 
-const CarInfoStep = ({ touched, errors, values, setFieldValue }: CarInfoStepProps) => {
+const CarInfoStep = ({ touched, errors, values, setFieldValue, setFieldTouched }: CarInfoStepProps) => {
   const [showEighthBox, setShowEighthBox] = useState(false)
+
+  // تأثير لتحديد عدد المربعات بناءً على طول رقم اللوحة
+  useEffect(() => {
+    if (values.carPlateNumber && values.carPlateNumber.length === 8) {
+      setShowEighthBox(true)
+    } else if (values.carPlateNumber && values.carPlateNumber.length === 7) {
+      setShowEighthBox(false)
+    }
+  }, [values.carPlateNumber])
 
   const handleAddBox = () => {
     setShowEighthBox(true)
+    // اجعل القيمة بطول 8 دون الاقتصاص، مع استخدام شرطات سفلية كحروف مؤقتة قابلة للكتابة
+    const current = String(values.carPlateNumber || '')
+    if (current.length < 8) {
+      setFieldValue('carPlateNumber', current.padEnd(8, '_'))
+    }
   }
 
   const handleRemoveBox = () => {
     setShowEighthBox(false)
     // إزالة الحرف الثامن من قيمة رقم اللوحة
-    if (values.carPlateNumber && values.carPlateNumber.length > 7) {
-      setFieldValue('carPlateNumber', values.carPlateNumber.substring(0, 7))
+    const current = String(values.carPlateNumber || '')
+    if (current.length > 7) {
+      setFieldValue('carPlateNumber', current.substring(0, 7))
     }
+  }
+
+  // دالة للتحقق إذا كانت جميع الحقول مملوءة
+  const areAllFieldsFilled = () => {
+    return (
+      values.carType &&
+      values.carModel &&
+      values.carColor &&
+      values.carPlateNumber &&
+      values.carManufacturer &&
+      values.carSize
+    )
   }
 
   return (
@@ -54,11 +83,33 @@ const CarInfoStep = ({ touched, errors, values, setFieldValue }: CarInfoStepProp
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormItem
+          label="الشركة المصنعة"
+          invalid={!!errors.carManufacturer && !!touched.carManufacturer}
+          errorMessage={errors.carManufacturer as string}
+        >
+          <Field 
+            name="carManufacturer" 
+            type="text" 
+            size="sm" 
+            placeholder="الشركة المصنعة" 
+            component={Input} 
+            onBlur={() => setFieldTouched('carManufacturer', true)}
+          />
+        </FormItem>
+
+        <FormItem
           label="نوع السيارة"
           invalid={!!errors.carType && !!touched.carType}
           errorMessage={errors.carType as string}
         >
-          <Field name="carType" type="text" size="sm" placeholder="نوع السيارة" component={Input} />
+          <Field 
+            name="carType" 
+            type="text" 
+            size="sm" 
+            placeholder="نوع السيارة" 
+            component={Input} 
+            onBlur={() => setFieldTouched('carType', true)}
+          />
         </FormItem>
 
         <FormItem
@@ -66,11 +117,29 @@ const CarInfoStep = ({ touched, errors, values, setFieldValue }: CarInfoStepProp
           invalid={!!errors.carModel && !!touched.carModel}
           errorMessage={errors.carModel}
         >
-          <Field name="carModel" type="text" size="sm" placeholder="موديل السيارة" component={Input} />
+          <Field 
+            name="carModel" 
+            type="text" 
+            size="sm" 
+            placeholder="موديل السيارة" 
+            component={Input} 
+            onBlur={() => setFieldTouched('carModel', true)}
+          />
         </FormItem>
 
-        <FormItem label="لون السيارة" invalid={!!errors.carColor && !!touched.carColor} errorMessage={errors.carColor}>
-          <Field name="carColor" type="text" size="sm" placeholder="لون السيارة" component={Input} />
+        <FormItem 
+          label="لون السيارة" 
+          invalid={!!errors.carColor && !!touched.carColor} 
+          errorMessage={errors.carColor}
+        >
+          <Field 
+            name="carColor" 
+            type="text" 
+            size="sm" 
+            placeholder="لون السيارة" 
+            component={Input} 
+            onBlur={() => setFieldTouched('carColor', true)}
+          />
         </FormItem>
 
         <FormItem
@@ -89,15 +158,17 @@ const CarInfoStep = ({ touched, errors, values, setFieldValue }: CarInfoStepProp
                       size="sm"
                       maxLength={1}
                       className="text-center w-10"
-                      value={field.value?.[i] || ""}
+                      value={(field.value?.[i] === '_' ? '' : field.value?.[i]) || ""}
                       onChange={(e) => {
                         const value = e.target.value.toUpperCase()
                         let newValue = field.value || ""
 
-                        newValue = newValue.padEnd(showEighthBox ? 8 : 7, " ")
-                        newValue = newValue.substring(0, i) + value + newValue.substring(i + 1)
+                        // حافظ على الطول المطلوب باستخدام '_' كمكان شاغر
+                        newValue = String(newValue || '').padEnd(showEighthBox ? 8 : 7, "_")
+                        newValue = newValue.substring(0, i) + (value || '_') + newValue.substring(i + 1)
 
-                        form.setFieldValue(field.name, newValue.trim())
+                        form.setFieldValue(field.name, newValue)
+                        form.setFieldTouched(field.name, true)
 
                         if (value && i < (showEighthBox ? 7 : 6)) {
                           const nextInput = document.querySelector(
@@ -106,6 +177,7 @@ const CarInfoStep = ({ touched, errors, values, setFieldValue }: CarInfoStepProp
                           nextInput?.focus()
                         }
                       }}
+                      onBlur={() => form.setFieldTouched(field.name, true)}
                       name={`${field.name}-${i}`}
                     />
                   ))}
@@ -134,6 +206,9 @@ const CarInfoStep = ({ touched, errors, values, setFieldValue }: CarInfoStepProp
                     )}
                   </div>
                 </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {showEighthBox ? '8 أرقام' : '7 أرقام'}
+                </div>
               </div>
             )}
           </Field>
@@ -149,19 +224,27 @@ const CarInfoStep = ({ touched, errors, values, setFieldValue }: CarInfoStepProp
               <label
                 key={option.value}
                 className={`relative p-2 border rounded-md cursor-pointer transition-all text-sm
-                                    ${
-                                      values.carSize === option.value
-                                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                                        : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
-                                    }
-                                `}
+                  ${
+                    values.carSize === option.value
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                      : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+                  }
+                `}
+                onClick={() => {
+                  setFieldValue('carSize', option.value)
+                  setFieldTouched('carSize', true)
+                }}
               >
-                <Field
+                <input
                   type="radio"
                   name="carSize"
                   value={option.value}
                   className="absolute opacity-0"
                   checked={values.carSize === option.value}
+                  onChange={() => {
+                    setFieldValue('carSize', option.value)
+                    setFieldTouched('carSize', true)
+                  }}
                 />
                 <div className="flex flex-col items-center text-center">
                   <span className="block font-medium">{option.label}</span>
@@ -170,6 +253,13 @@ const CarInfoStep = ({ touched, errors, values, setFieldValue }: CarInfoStepProp
             ))}
           </div>
         </FormItem>
+      </div>
+
+      {/* زر للتحقق من الحقول (لأغراض التصحيح) */}
+      <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
+        <div>الحقول المملوءة: {areAllFieldsFilled() ? 'نعم' : 'لا'}</div>
+        <div>رقم اللوحة: "{values.carPlateNumber}" (الطول: {values.carPlateNumber?.length})</div>
+        <div>الأخطاء: {JSON.stringify(errors)}</div>
       </div>
     </AdaptableCard>
   )

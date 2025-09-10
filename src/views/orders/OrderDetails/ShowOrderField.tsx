@@ -422,18 +422,7 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                                             )}
                                         </h6>
                                     </div>
-                                    {service.serviceDate && (
-                                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 px-3 py-1 rounded-full shadow-sm">
-                                            <FaCalendarAlt className="ml-2 text-base text-gray-500" />{' '}
-                                            {/* Icon color adjusted */}
-                                            <span className="font-medium">
-                                                تاريخ الخدمة:{' '}
-                                                {new Date(
-                                                    service.serviceDate
-                                                ).toLocaleDateString('ar-SA')}
-                                            </span>
-                                        </div>
-                                    )}
+                              
                                 </div>
 
                                 {/* Service Content */}

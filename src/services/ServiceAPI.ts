@@ -14,9 +14,9 @@ export async function apiGetAllServices() {
     })
 }
 
-export async function apiCreateService(data: CreateService) {
+export async function apiAddService(orderId: string, data: CreateService) {
     return ApiService.fetchData({
-        url: '/services',
+        url: `/orders/${orderId}/add-service`,
         method: 'post',
         data,
     })
