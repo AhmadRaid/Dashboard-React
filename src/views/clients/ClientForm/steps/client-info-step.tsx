@@ -7,7 +7,7 @@ import { FormItem } from "@/components/ui/Form"
 import { Field, type FormikErrors, type FormikTouched, type FieldProps } from "formik"
 import { Select } from "@/components/ui"
 import { useState } from "react"
-import { HiPlus, HiMinus } from "react-icons/hi"
+import { HiPlus, HiMinus, HiUser, HiShoppingBag, HiMail, HiPhone } from "react-icons/hi"
 
 type FormFieldsName = {
   firstName: string
@@ -26,9 +26,34 @@ type ClientInfoStepProps = {
   errors: FormikErrors<FormFieldsName>
   values: any
   setFieldValue: (field: string, value: any) => void
+  ordersCount?: number // عدد طلبات العميل
 }
 
-const ClientInfoStep = ({ touched, errors, values, setFieldValue }: ClientInfoStepProps) => {
+// دالة للتحقق من أن النص عربي فقط
+const isArabicText = (text: string): boolean => {
+  // النمط يتطابق مع الأحرف العربية والمسافات
+  const arabicPattern = /^[\u0600-\u06FF\s]+$/
+  return arabicPattern.test(text)
+}
+
+// دالة لمعالجة المدخلات والسماح فقط بالأحرف العربية
+const handleArabicInput = (e: React.ChangeEvent<HTMLInputElement>, field: any, form: any) => {
+  const value = e.target.value
+  // السماح فقط بالأحرف العربية والمسافات
+  const arabicValue = value.replace(/[^\u0600-\u06FF\s]/g, '')
+  form.setFieldValue(field.name, arabicValue)
+}
+
+// دالة لعرض اسم العميل بشكل منسق
+const displayClientName = (values: any) => {
+  const { firstName, secondName, thirdName, lastName } = values;
+  if (firstName || secondName || thirdName || lastName) {
+    return `${firstName || ''} ${secondName || ''} ${thirdName || ''} ${lastName || ''}`.trim();
+  }
+  return null;
+}
+
+const ClientInfoStep = ({ touched, errors, values, setFieldValue, ordersCount = 0 }: ClientInfoStepProps) => {
   const [showSecondPhone, setShowSecondPhone] = useState(false)
   const clientTypes = [
     { label: "فرد", value: "فرد" },
@@ -42,10 +67,64 @@ const ClientInfoStep = ({ touched, errors, values, setFieldValue }: ClientInfoSt
     { label: "اخرى", value: "اخرى" },
   ]
 
+  const clientName = displayClientName(values);
+
   return (
     <AdaptableCard divider className="mb-4">
-      <h5 className="text-lg font-semibold">معلومات العميل</h5>
-      <p className="mb-6 text-sm text-gray-500">قسم لإعداد معلومات العميل الأساسية</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+          <h5 className="text-lg font-semibold text-gray-800">معلومات العميل</h5>
+          <p className="text-sm text-gray-500">قسم لإعداد معلومات العميل الأساسية</p>
+        </div>
+        
+        {clientName && (
+          <div className="flex flex-col md:flex-row items-center gap-4 bg-blue-50 px-4 py-3 rounded-lg border border-blue-200 shadow-sm">
+            <div className="flex items-center">
+              <div className="bg-blue-100 p-2 rounded-full">
+                <HiUser className="text-blue-600 text-xl" />
+              </div>
+              <div className="mr-2">
+                <p className="text-xs text-blue-700 font-medium">اسم العميل</p>
+                <p className="font-semibold text-blue-900 text-sm">{clientName}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center">
+              <div className="bg-green-100 p-2 rounded-full">
+                <HiShoppingBag className="text-green-600 text-xl" />
+              </div>
+              <div className="mr-2">
+                <p className="text-xs text-green-700 font-medium">عدد الطلبات</p>
+                <p className="font-semibold text-green-900 text-sm">{ordersCount} طلب</p>
+              </div>
+            </div>
+            
+            {values.email && (
+              <div className="flex items-center">
+                <div className="bg-purple-100 p-2 rounded-full">
+                  <HiMail className="text-purple-600 text-xl" />
+                </div>
+                <div className="mr-2">
+                  <p className="text-xs text-purple-700 font-medium">البريد الإلكتروني</p>
+                  <p className="font-semibold text-purple-900 text-sm truncate max-w-[120px]">{values.email}</p>
+                </div>
+              </div>
+            )}
+            
+            {values.phone && (
+              <div className="flex items-center">
+                <div className="bg-orange-100 p-2 rounded-full">
+                  <HiPhone className="text-orange-600 text-xl" />
+                </div>
+                <div className="mr-2">
+                  <p className="text-xs text-orange-700 font-medium">رقم الهاتف</p>
+                  <p className="font-semibold text-orange-900 text-sm">{values.phone}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormItem
@@ -92,49 +171,88 @@ const ClientInfoStep = ({ touched, errors, values, setFieldValue }: ClientInfoSt
           label="الاسم الأول"
           invalid={!!errors.firstName && !!touched.firstName}
           errorMessage={errors.firstName}
+          extra={values.firstName && !isArabicText(values.firstName) && (
+            <p className="text-red-500 text-xs mt-1">يجب إدخال الأحرف العربية فقط</p>
+          )}
         >
-          <Field
-            name="firstName"
-            size="sm"
-            autoComplete="off"
-            type="text"
-            placeholder="الاسم الأول"
-            component={Input}
-          />
+          <Field name="firstName">
+            {({ field, form }: FieldProps) => (
+              <Input
+                {...field}
+                size="sm"
+                autoComplete="off"
+                type="text"
+                placeholder="الاسم الأول"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleArabicInput(e, field, form)}
+              />
+            )}
+          </Field>
         </FormItem>
 
         <FormItem
           label="الاسم الاب"
           invalid={!!errors.secondName && !!touched.secondName}
           errorMessage={errors.secondName}
+          extra={values.secondName && !isArabicText(values.secondName) && (
+            <p className="text-red-500 text-xs mt-1">يجب إدخال الأحرف العربية فقط</p>
+          )}
         >
-          <Field
-            name="secondName"
-            size="sm"
-            autoComplete="off"
-            type="text"
-            placeholder="الاسم الاب"
-            component={Input}
-          />
+          <Field name="secondName">
+            {({ field, form }: FieldProps) => (
+              <Input
+                {...field}
+                size="sm"
+                autoComplete="off"
+                type="text"
+                placeholder="الاسم الاب"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleArabicInput(e, field, form)}
+              />
+            )}
+          </Field>
         </FormItem>
 
         <FormItem
           label="الاسم الجد"
           invalid={!!errors.thirdName && !!touched.thirdName}
           errorMessage={errors.thirdName}
+          extra={values.thirdName && !isArabicText(values.thirdName) && (
+            <p className="text-red-500 text-xs mt-1">يجب إدخال الأحرف العربية فقط</p>
+          )}
         >
-          <Field
-            name="thirdName"
-            size="sm"
-            autoComplete="off"
-            type="text"
-            placeholder="الاسم الجد"
-            component={Input}
-          />
+          <Field name="thirdName">
+            {({ field, form }: FieldProps) => (
+              <Input
+                {...field}
+                size="sm"
+                autoComplete="off"
+                type="text"
+                placeholder="الاسم الجد"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleArabicInput(e, field, form)}
+              />
+            )}
+          </Field>
         </FormItem>
 
-        <FormItem label="اسم العائلة" invalid={!!errors.lastName && !!touched.lastName} errorMessage={errors.lastName}>
-          <Field name="lastName" size="sm" autoComplete="off" type="text" placeholder="اسم العائلة" component={Input} />
+        <FormItem 
+          label="اسم العائلة" 
+          invalid={!!errors.lastName && !!touched.lastName} 
+          errorMessage={errors.lastName}
+          extra={values.lastName && !isArabicText(values.lastName) && (
+            <p className="text-red-500 text-xs mt-1">يجب إدخال الأحرف العربية فقط</p>
+          )}
+        >
+          <Field name="lastName">
+            {({ field, form }: FieldProps) => (
+              <Input
+                {...field}
+                size="sm"
+                autoComplete="off"
+                type="text"
+                placeholder="اسم العائلة"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleArabicInput(e, field, form)}
+              />
+            )}
+          </Field>
         </FormItem>
 
         <FormItem label="البريد الإلكتروني" invalid={!!errors.email && !!touched.email} errorMessage={errors.email}>

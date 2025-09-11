@@ -11,7 +11,7 @@ import {
 import { Select } from '@/components/ui'
 import { useEffect, useState } from 'react'
 import Button from '@/components/ui/Button'
-import { HiOutlineTrash, HiPlus, HiSearch } from 'react-icons/hi'
+import { HiOutlineTrash, HiPlus, HiSearch, HiUser, HiPhone, HiMail } from 'react-icons/hi'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { apiGetClientOrders, apiSearchClients } from '@/services/ClientsService'
 import { useParams, Link } from 'react-router-dom'
@@ -58,8 +58,11 @@ type OrderServiceFieldsProps = {
 interface ClientInfo {
     _id: string
     firstName: string
+    secondName: string
+    thirdName: string
     lastName: string
     phone: string
+    secondName: string
     email?: string
     carType?: string
     carModel?: string
@@ -81,7 +84,9 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
     const [orderTouched, setOrderTouched] = useState<boolean>(false)
     const [ordersLoaded, setOrdersLoaded] = useState<boolean>(false)
     const [searchTriggered, setSearchTriggered] = useState<boolean>(false)
-    const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null) // حالة جديدة لتخزين معلومات العميل
+    const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null)
+    const [searchResults, setSearchResults] = useState<ClientInfo[]>([]) // تخزين نتائج البحث
+    const [showResults, setShowResults] = useState<boolean>(false) // التحكم في عرض النتائج
 
     const shouldShowError = (fieldName: string) => {
         if (fieldName === 'orderId') {
@@ -137,7 +142,9 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
             setOrderSelected(false)
             setOrdersLoaded(false)
             setSearchTriggered(false)
-            setClientInfo(null) // مسح معلومات العميل
+            setClientInfo(null)
+            setSearchResults([])
+            setShowResults(false)
             return
         }
 
@@ -146,7 +153,9 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
         setOrderSelected(false)
         setOrdersLoaded(false)
         setSearchTriggered(true)
-        setClientInfo(null) // مسح معلومات العميل السابقة
+        setClientInfo(null)
+        setSearchResults([])
+        setShowResults(true)
 
         try {
             const res = await apiSearchClients(clientIdentifier)
@@ -159,15 +168,13 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                 res.data.data.clients.length > 0
             ) {
                 setClientExists(true)
-                const client = res.data.data.clients[0]
-                setSearchedClientId(client._id)
-                setClientInfo(client) // حفظ معلومات العميل
-                getOrders(client._id)
+                setSearchResults(res.data.data.clients) // تخزين جميع النتائج
             } else {
                 setClientExists(false)
                 setOrders([])
                 form.setFieldValue('orderId', '')
                 setOrdersLoaded(false)
+                setSearchResults([])
             }
         } catch (error) {
             console.error('Error searching for client:', error)
@@ -175,9 +182,20 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
             setOrders([])
             form.setFieldValue('orderId', '')
             setOrdersLoaded(false)
+            setSearchResults([])
         } finally {
             setLoadingClient(false)
         }
+    }
+
+    const selectClient = async (client: ClientInfo) => {
+        const fullName = `${client.firstName} ${client.secondName} ${client.thirdName} ${client.lastName}`;
+        form.setFieldValue('clientSearch', fullName);
+    
+        setClientInfo(client)
+        setSearchedClientId(client._id)
+        setShowResults(false)
+        getOrders(client._id)
     }
 
     const getOrders = async (clientId: string) => {
@@ -254,26 +272,61 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                 errorMessage={errors.clientSearch as string}
             >
                 <div className="flex gap-2 items-start">
-                    <div className="flex-1">
+                    <div className="flex-1 relative">
                         <Field name="clientSearch">
                             {({ field, form }: FieldProps) => (
-                                <Input
-                                    {...field}
-                                    size="sm"
-                                    placeholder="الرجاء أدخل رقم هاتف العميل"
-                                    onChange={(e) => {
-                                        field.onChange(e)
-                                        if (!e.target.value) {
-                                            setClientExists(true)
-                                            setHasSearched(false)
-                                            setOrders([])
-                                            form.setFieldValue('orderId', '')
-                                            setOrdersLoaded(false)
-                                            setSearchTriggered(false)
-                                            setClientInfo(null) // مسح معلومات العميل
-                                        }
-                                    }}
-                                />
+                                <>
+                                    <Input
+                                        {...field}
+                                        size="sm"
+                                        placeholder="الرجاء أدخل رقم هاتف العميل أو اسمه"
+                                        onChange={(e) => {
+                                            field.onChange(e)
+                                            if (!e.target.value) {
+                                                setClientExists(true)
+                                                setHasSearched(false)
+                                                setOrders([])
+                                                form.setFieldValue('orderId', '')
+                                                setOrdersLoaded(false)
+                                                setSearchTriggered(false)
+                                                setClientInfo(null)
+                                                setSearchResults([])
+                                                setShowResults(false)
+                                            }
+                                        }}
+                                        onFocus={() => {
+                                            if (searchResults.length > 0) {
+                                                setShowResults(true)
+                                            }
+                                        }}
+                                    />
+                                    {/* عرض قائمة النتائج */}
+                                    {showResults && searchResults.length > 0 && (
+                                        <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                                            {searchResults.map((client) => (
+                                                <div
+                                                    key={client._id}
+                                                    className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                                                    onClick={() => selectClient(client)}
+                                                >
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="font-medium">
+                                                            {client.firstName} {client.secondName} {client.thirdName} {client.lastName}
+                                                        </span>
+                                                        <span className="text-sm text-gray-500">
+                                                            {client.phone} 
+                                                        </span>
+                                                    </div>
+                                                    {client.carType && client.carModel && (
+                                                        <div className="text-sm text-gray-600">
+                                                            {client.carType} {client.carModel} {client.carYear && ` - ${client.carYear}`}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </Field>
                     </div>
@@ -288,54 +341,71 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                 </div>
             </FormItem>
 
-            {/* عرض تفاصيل العميل عند العثور عليه */}
-            {clientInfo && (
-                <div className="my-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                    <h6 className="text-lg font-semibold text-blue-800 mb-3">تفاصيل العميل</h6>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex flex-col">
-                            <span className="text-sm text-blue-600 font-medium">الاسم الكامل</span>
-                            <span className="text-base font-semibold text-blue-800">
+            {/* عرض تفاصيل العميل عند العثور عليه - تصميم محسن */}
+            {/* {clientInfo && (
+                <div className="my-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl shadow-sm">
+                    <h6 className="text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">
+                        <HiUser className="text-blue-600" />
+                        معلومات العميل
+                    </h6>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="bg-white p-4 rounded-lg border border-blue-100 shadow-xs">
+                            <div className="flex items-center gap-2 mb-2">
+                                <HiUser className="text-blue-500" />
+                                <span className="text-sm font-medium text-blue-700">الاسم الكامل</span>
+                            </div>
+                            <span className="text-base font-semibold text-gray-900">
                                 {clientInfo.firstName} {clientInfo.lastName}
                             </span>
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-sm text-blue-600 font-medium">رقم الهاتف</span>
-                            <span className="text-base font-semibold text-blue-800">
+                        
+                        <div className="bg-white p-4 rounded-lg border border-blue-100 shadow-xs">
+                            <div className="flex items-center gap-2 mb-2">
+                                <HiPhone className="text-blue-500" />
+                                <span className="text-sm font-medium text-blue-700">رقم الهاتف</span>
+                            </div>
+                            <span className="text-base font-semibold text-gray-900">
                                 {clientInfo.phone}
                             </span>
                         </div>
+                        
                         {clientInfo.email && (
-                            <div className="flex flex-col">
-                                <span className="text-sm text-blue-600 font-medium">البريد الإلكتروني</span>
-                                <span className="text-base font-semibold text-blue-800">
+                            <div className="bg-white p-4 rounded-lg border border-blue-100 shadow-xs">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <HiMail className="text-blue-500" />
+                                    <span className="text-sm font-medium text-blue-700">البريد الإلكتروني</span>
+                                </div>
+                                <span className="text-base font-semibold text-gray-900">
                                     {clientInfo.email}
                                 </span>
                             </div>
                         )}
-                        {(clientInfo.carType || clientInfo.carModel) && (
-                            <div className="flex flex-col">
-                                <span className="text-sm text-blue-600 font-medium">السيارة</span>
-                                <span className="text-base font-semibold text-blue-800">
+                        
+                        {(clientInfo.carType || clientInfo.carModel || clientInfo.carYear) && (
+                            <div className="bg-white p-4 rounded-lg border border-blue-100 shadow-xs">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-sm font-medium text-blue-700">السيارة</span>
+                                </div>
+                                <span className="text-base font-semibold text-gray-900">
                                     {clientInfo.carType} {clientInfo.carModel} {clientInfo.carYear && ` - ${clientInfo.carYear}`}
                                 </span>
                             </div>
                         )}
                     </div>
                 </div>
-            )}
+            )} */}
 
             {/* عرض رسالة عندما لا يوجد عميل */}
             {hasSearched && !clientExists && (
-                <div className="my-6 p-4 bg-red-50 border border-red-200 rounded-md">
-                    <p className="text-red-700 font-medium">العميل غير موجود</p>
-                    <p className="text-red-600 mt-2">
+                <div className="my-6 p-6 bg-red-50 border border-red-200 rounded-xl">
+                    <p className="text-red-700 font-bold text-lg mb-2">العميل غير موجود</p>
+                    <p className="text-red-600">
                         لم يتم العثور على عميل بهذه البيانات. يرجى التحقق من
                         المعلومات أو إضافة عميل جديد.
                     </p>
                     <Link
                         to="/clients/create-client"
-                        className="mt-3 inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
+                        className="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
                     >
                         إضافة عميل جديد
                     </Link>
@@ -651,8 +721,16 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                             value: '10',
                                                         },
                                                         {
+                                                            label: '8 مل',
+                                                            value: '8',
+                                                        },
+                                                        {
                                                             label: '7.5 مل',
                                                             value: '7.5',
+                                                        },
+                                                        {
+                                                            label: '6.5 مل',
+                                                            value: '6.5',
                                                         },
                                                     ]}
                                                     value={
