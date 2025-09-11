@@ -20,11 +20,11 @@ const clientValidationSchema = Yup.object().shape({
         .min(2, 'يجب أن يكون الاسم على الأقل 2 حروف')
         .max(100, 'يجب ألا يتجاوز الاسم 100 حرف'),
     secondName: Yup.string()
-        .required('الاسم الثاني مطلوب')
+        .required('الاسم الاب مطلوب')
         .min(2, 'يجب أن يكون الاسم على الأقل 2 حروف')
         .max(100, 'يجب ألا يتجاوز الاسم 100 حرف'),
     thirdName: Yup.string()
-        .required('الاسم الثالث مطلوب')
+        .required('الاسم الجد مطلوب')
         .min(2, 'يجب أن يكون الاسم على الأقل 2 حروف')
         .max(100, 'يجب ألا يتجاوز الاسم 100 حرف'),
     lastName: Yup.string()
@@ -38,9 +38,13 @@ const clientValidationSchema = Yup.object().shape({
             /^05\d{8}$/,
             'يجب أن يبدأ رقم الهاتف بـ 05 ويتكون من 10 أرقام'
         ),
+    secondPhone: Yup.string().matches(
+        /^05\d{8}$/,
+        'يجب أن يبدأ رقم الهاتف بـ 05 ويتكون من 10 أرقام'
+    ),
     clientType: Yup.string()
         .oneOf(
-            ['فرد', 'شركة', 'مسوق'],
+            ['فرد', 'شركة', 'مسوق بعمولة'],
             'نوع العميل يجب أن يكون "فرد" أو "شركة" أو "مسوق"'
         )
         .required('نوع العميل مطلوب'),
@@ -83,8 +87,9 @@ const servicesValidationSchema = Yup.object().shape({
             Yup.object().shape({
                 serviceType: Yup.string().required('نوع الخدمة مطلوب'),
                 dealDetails: Yup.string(),
-                servicePrice: Yup.number()
-                    .typeError('سعر الخدمة يجب أن يكون رقمًا')
+                servicePrice: Yup.number().typeError(
+                    'سعر الخدمة يجب أن يكون رقمًا'
+                ),
             })
         ),
 })
@@ -97,6 +102,7 @@ type FormData = {
     lastName: string
     email?: string
     phone: string
+    secondPhone: string
     clientType: string
     branch: string
     // Car info
@@ -141,6 +147,7 @@ const initialData: FormData = {
     lastName: '',
     email: '',
     phone: '',
+    secondPhone: '',
     clientType: '',
     branch: '',
     carModel: '',
@@ -184,8 +191,12 @@ const MultiStepClientForm = ({
     const [isLoading, setIsLoading] = useState(false)
     const [showNameExistsDialog, setShowNameExistsDialog] = useState(false)
     const [pendingClientData, setPendingClientData] = useState<any>(null)
-    const [nameExistsMessage, setNameExistsMessage] = useState<string>('هذا الاسم موجود بالفعل لعميل آخر. هل ترغب في الاستمرار باستخدام نفس الاسم؟')
-    const [pendingAction, setPendingAction] = useState<'next' | 'save' | null>(null)
+    const [nameExistsMessage, setNameExistsMessage] = useState<string>(
+        'هذا الاسم موجود بالفعل لعميل آخر. هل ترغب في الاستمرار باستخدام نفس الاسم؟'
+    )
+    const [pendingAction, setPendingAction] = useState<'next' | 'save' | null>(
+        null
+    )
 
     const steps = [
         {
@@ -218,18 +229,27 @@ const MultiStepClientForm = ({
         }
     }
 
-    const checkNameAndMaybeConfirm = async (clientData: any): Promise<boolean> => {
+    const checkNameAndMaybeConfirm = async (
+        clientData: any
+    ): Promise<boolean> => {
         // returns true if allowed to proceed
-        const { firstName, secondName, thirdName, lastName, phone } = clientData
-        console.log('222222222222222222222222222222',phone);
-        
+        const {
+            firstName,
+            secondName,
+            thirdName,
+            lastName,
+            phone,
+            secondPhone,
+        } = clientData
+
         try {
             const res: any = await apiCheckNameIsExist({
                 firstName,
                 secondName,
                 thirdName,
                 lastName,
-                phone
+                phone,
+                secondPhone,
             })
             const exists: boolean = !!res?.data?.data?.exists
             if (exists) {
@@ -290,6 +310,7 @@ const MultiStepClientForm = ({
                     lastName: values.lastName,
                     email: values.email,
                     phone: values.phone,
+                    secondPhone: values?.secondPhone,
                     clientType: values.clientType,
                     branch: values.branch,
                 }
@@ -309,7 +330,7 @@ const MultiStepClientForm = ({
                     carModel: values.carModel,
                     carColor: values.carColor,
                     carPlateNumber: values.carPlateNumber,
-                    
+
                     carSize: values.carSize,
                     carType: values.carType,
                 }
@@ -342,6 +363,7 @@ const MultiStepClientForm = ({
                     lastName: values.lastName,
                     email: values.email,
                     phone: values.phone,
+                    secondPhone: values.secondPhone,
                     clientType: values.clientType,
                     branch: values.branch,
                 }
@@ -410,7 +432,6 @@ const MultiStepClientForm = ({
         errors: any,
         setFieldValue: any,
         setFieldTouched: any // أضفنا setFieldTouched
-
     ) => {
         switch (currentStep) {
             case 1:
@@ -473,7 +494,6 @@ const MultiStepClientForm = ({
                                 errors,
                                 setFieldValue,
                                 setFieldTouched // أضفنا setFieldTouched
-
                             )}
 
                             {/* Navigation Buttons */}
@@ -529,7 +549,7 @@ const MultiStepClientForm = ({
                                             }
                                             disabled={!isValid}
                                         >
-                                            التالي
+                                            ادراج سيارة العميل
                                         </Button>
                                     )}
                                 </div>
@@ -546,7 +566,9 @@ const MultiStepClientForm = ({
                             cancelText="تغيير الاسم"
                             confirmText="متابعة بنفس الاسم"
                         >
-                            <p className="text-gray-600 dark:text-gray-300">{nameExistsMessage}</p>
+                            <p className="text-gray-600 dark:text-gray-300">
+                                {nameExistsMessage}
+                            </p>
                         </ConfirmDialog>
                     </Form>
                 )}

@@ -28,7 +28,7 @@ export const validationSchema = Yup.object().shape({
     phone: Yup.string()
         .required('Phone is required')
         .matches(/^\+?[0-9]{7,15}$/, 'Phone must be a valid number'),
-    clientType: Yup.string().oneOf(['فرد', 'شركة', 'مسوق']).required(),
+    clientType: Yup.string().oneOf(['فرد', 'شركة', 'مسوق بعمولة']).required(),
     rating: Yup.number()
         .min(1, 'التقييم يجب أن يكون بين 1 و 5')
         .max(5, 'التقييم يجب أن يكون بين 1 و 5')

@@ -54,7 +54,7 @@ type InitialData = {
   lastName: string
   email: string
   phone: string
-  clientType: "فرد" | "شركة" | "مسوق"
+  clientType: "فرد" | "شركة" | "مسوق بعمولة"
   carModel: string
   carColor: string
   branch: string
@@ -129,11 +129,11 @@ export const validationSchema = Yup.object().shape({
     .max(100, "يجب ألا يتجاوز الاسم الكامل 100 حرف"),
 
   secondName: Yup.string()
-    .required("الاسم الثاني مطلوب")
+    .required("الاسم الاب مطلوب")
     .min(2, "يجب أن يكون الاسم الكامل على الأقل 2 حروف")
     .max(100, "يجب ألا يتجاوز الاسم الكامل 100 حرف"),
   thirdName: Yup.string()
-    .required("الاسم الثالث مطلوب")
+    .required("الاسم الجد مطلوب")
     .min(2, "يجب أن يكون الاسم على الأقل 2 حروف")
     .max(100, "يجب ألا يتجاوز الاسم الكامل 100 حرف"),
 
@@ -151,7 +151,7 @@ export const validationSchema = Yup.object().shape({
     .max(10, "يجب أن يتكون رقم الهاتف من 10 أرقام"),
 
   clientType: Yup.string()
-    .oneOf(["فرد", "شركة", "مسوق"], 'نوع العميل يجب أن يكون "فرد" أو "شركة" أو "مسوق"')
+    .oneOf(["فرد", "شركة", "مسوق بعمولة"], 'نوع العميل يجب أن يكون "فرد" أو "شركة" أو "مسوق بعمولة"')
     .required("نوع العميل مطلوب"),
 
   branch: Yup.string()

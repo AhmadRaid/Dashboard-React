@@ -58,6 +58,7 @@ export async function apiCheckNameIsExist(data: {
     thirdName: string
     lastName: string
     phone:number
+    secondPhone?:number
 }) {
     return ApiService.fetchData({
         url: `/clients/check-user-exists`,

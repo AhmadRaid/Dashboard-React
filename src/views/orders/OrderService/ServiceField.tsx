@@ -115,25 +115,27 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
     }, [])
 
     const addServiceWithGuarantee = () => {
-        const newServiceId = `service-${serviceCounter}`
-        const newGuaranteeId = `guarantee-${serviceCounter}`
+        const newIndex = (values.services?.length ?? 0)
+        const newServiceId = `service-${Date.now()}-${newIndex}`
+        const newGuaranteeId = `guarantee-${Date.now()}-${newIndex}`
 
-        form.setFieldValue(`services[${serviceCounter}]`, {
+        const newService = {
             id: newServiceId,
             serviceType: '',
             dealDetails: '',
-        })
+            guarantee: {
+                id: newGuaranteeId,
+                typeGuarantee: '',
+                startDate: '',
+                endDate: '',
+                terms: '',
+                Notes: '',
+            },
+        }
 
-        form.setFieldValue(`services[${serviceCounter}].guarantee`, {
-            id: newGuaranteeId,
-            typeGuarantee: '',
-            startDate: '',
-            endDate: '',
-            terms: '',
-            Notes: '',
-        })
-
-        setServiceCounter(serviceCounter + 1)
+        const nextServices = [...(values.services || []), newService]
+        form.setFieldValue('services', nextServices)
+        setServiceCounter((prev) => prev + 1)
     }
 
     const removeService = (index: number) => {
@@ -234,7 +236,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                         form={form}
                                         options={[
                                             {
-                                                label: 'تلميع',
+                                                label: 'تلم2يع',
                                                 value: 'polish',
                                             },
                                             {
@@ -305,6 +307,30 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                 `services[${index}].washScope`,
                                                 ''
                                             )
+                                            // التحكم في الضمان حسب نوع الخدمة
+                                            if (option?.value === 'polish' || option?.value === 'تلميع') {
+                                                // إزالة الضمان لخدمة التلميع
+                                                form.setFieldValue(
+                                                    `services[${index}].guarantee`,
+                                                    undefined
+                                                )
+                                            } else {
+                                                // إنشاء كائن ضمان فارغ إذا لم يكن موجوداً عند اختيار خدمة غير التلميع
+                                                const hasGuarantee = (form.values as any).services?.[index]?.guarantee
+                                                if (!hasGuarantee) {
+                                                    form.setFieldValue(
+                                                        `services[${index}].guarantee`,
+                                                        {
+                                                            id: `guarantee-${index}`,
+                                                            typeGuarantee: '',
+                                                            startDate: '',
+                                                            endDate: '',
+                                                            terms: '',
+                                                            Notes: '',
+                                                        }
+                                                    )
+                                                }
+                                            }
                                             form.setFieldValue(
                                                 field.name,
                                                 option?.value || ''
@@ -693,6 +719,10 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                         value: 'internal',
                                                     },
                                                     {
+                                                        label: 'داخلي وخارجي',
+                                                        value: 'internalAndExternal',
+                                                    },
+                                                    {
                                                         label: 'كراسي',
                                                         value: 'seats',
                                                     },
@@ -715,6 +745,9 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                                       : field.value ===
                                                                         'internal'
                                                                       ? 'داخلي'
+                                                                      : field.value ===
+                                                                        'internalAndExternal'
+                                                                      ? 'داخلي وخارجي'
                                                                       : field.value ===
                                                                         'seats'
                                                                       ? 'كراسي'
@@ -742,8 +775,8 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                     </Field>
                                 </FormItem>
 
-                                {/* يظهر فقط عند اختيار خارجي */}
-                                {service.polishType === 'external' && (
+                                {/* يظهر فقط عند اختيار خارجي أو داخلي وخارجي */}
+                                {(service.polishType === 'external' || service.polishType === 'internalAndExternal') && (
                                     <FormItem
                                         label="مستوى التلميع"
                                         invalid={
@@ -985,7 +1018,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                     </div>
 
                     {/* Guarantee Fields */}
-                    {service.guarantee && (
+                    {service.serviceType && service.serviceType !== 'polish' && service.serviceType !== 'تلميع' && service.guarantee && (
                         <div className="mt-6">
                             <h5 className="text-md font-semibold mb-4">
                                 ضمان الخدمة {index + 1}

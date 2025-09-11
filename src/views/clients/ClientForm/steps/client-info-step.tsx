@@ -2,9 +2,12 @@
 
 import AdaptableCard from "@/components/shared/AdaptableCard"
 import Input from "@/components/ui/Input"
+import Button from "@/components/ui/Button"
 import { FormItem } from "@/components/ui/Form"
 import { Field, type FormikErrors, type FormikTouched, type FieldProps } from "formik"
 import { Select } from "@/components/ui"
+import { useState } from "react"
+import { HiPlus, HiMinus } from "react-icons/hi"
 
 type FormFieldsName = {
   firstName: string
@@ -13,6 +16,7 @@ type FormFieldsName = {
   lastName: string
   email: string
   phone: string
+  secondPhone: string
   clientType: string
   branch: string
 }
@@ -25,10 +29,11 @@ type ClientInfoStepProps = {
 }
 
 const ClientInfoStep = ({ touched, errors, values, setFieldValue }: ClientInfoStepProps) => {
+  const [showSecondPhone, setShowSecondPhone] = useState(false)
   const clientTypes = [
     { label: "فرد", value: "فرد" },
     { label: "شركة", value: "شركة" },
-    { label: "مسوق", value: "مسوق" },
+    { label: "مسوق بعمولة", value: "مسوق بعمولة" },
   ]
 
   const branchOptions = [
@@ -99,7 +104,7 @@ const ClientInfoStep = ({ touched, errors, values, setFieldValue }: ClientInfoSt
         </FormItem>
 
         <FormItem
-          label="الاسم الثاني"
+          label="الاسم الاب"
           invalid={!!errors.secondName && !!touched.secondName}
           errorMessage={errors.secondName}
         >
@@ -108,13 +113,13 @@ const ClientInfoStep = ({ touched, errors, values, setFieldValue }: ClientInfoSt
             size="sm"
             autoComplete="off"
             type="text"
-            placeholder="الاسم الثاني"
+            placeholder="الاسم الاب"
             component={Input}
           />
         </FormItem>
 
         <FormItem
-          label="الاسم الثالث"
+          label="الاسم الجد"
           invalid={!!errors.thirdName && !!touched.thirdName}
           errorMessage={errors.thirdName}
         >
@@ -123,7 +128,7 @@ const ClientInfoStep = ({ touched, errors, values, setFieldValue }: ClientInfoSt
             size="sm"
             autoComplete="off"
             type="text"
-            placeholder="الاسم الثالث"
+            placeholder="الاسم الجد"
             component={Input}
           />
         </FormItem>
@@ -139,32 +144,91 @@ const ClientInfoStep = ({ touched, errors, values, setFieldValue }: ClientInfoSt
         <FormItem label="رقم الهاتف" invalid={!!errors.phone && !!touched.phone} errorMessage={errors.phone}>
           <Field name="phone">
             {({ field, form }: FieldProps) => (
-              <div className="relative">
-                <span className="absolute inset-y-0 left-3 rtl:left-auto rtl:right-3 flex items-center text-gray-400 select-none pointer-events-none">+ </span>
-                <Input
-                  {...field}
-                  type="text"
-                  size="sm"
-                  className="pl-6 rtl:pl-0 rtl:pr-6"
-                  placeholder="05xxxxxxxx"
-                  onChange={(e) => {
-                    // Keep only digits
-                    let digits = e.target.value.replace(/\D/g, "")
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute inset-y-0 left-3 rtl:left-auto rtl:right-3 flex items-center text-gray-400 select-none pointer-events-none">+ </span>
+                  <Input
+                    {...field}
+                    type="text"
+                    size="sm"
+                    className="pl-6 rtl:pl-0 rtl:pr-6"
+                    placeholder="05xxxxxxxx"
+                    onChange={(e) => {
+                      // Keep only digits
+                      let digits = e.target.value.replace(/\D/g, "")
 
-                    // Build as '05' + rest, ensuring user's first typed digit isn't swallowed
-                    const rest = digits.startsWith("05") ? digits.slice(2) : digits.replace(/^0?5?/, "")
-                    let normalized = "05" + rest
+                      // Build as '05' + rest, ensuring user's first typed digit isn't swallowed
+                      const rest = digits.startsWith("05") ? digits.slice(2) : digits.replace(/^0?5?/, "")
+                      let normalized = "05" + rest
 
-                    // Cap to 10 digits total
-                    normalized = normalized.slice(0, 10)
+                      // Cap to 10 digits total
+                      normalized = normalized.slice(0, 10)
 
-                    form.setFieldValue(field.name, normalized)
-                  }}
-                />
+                      form.setFieldValue(field.name, normalized)
+                    }}
+                  />
+                </div>
+                {!showSecondPhone && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="solid"
+                    icon={<HiPlus />}
+                    onClick={() => setShowSecondPhone(true)}
+                    className="h-9 w-9 p-0"
+                    title="إضافة رقم هاتف ثاني"
+                  />
+                )}
               </div>
             )}
           </Field>
         </FormItem>
+
+        {showSecondPhone && (
+          <FormItem
+            label="رقم الهاتف الثاني"
+            invalid={!!errors.secondPhone && !!touched.secondPhone}
+            errorMessage={errors.secondPhone as string}
+          >
+            <div className="flex items-center gap-2">
+              <div className="flex-1">
+                <Field name="secondPhone">
+                  {({ field, form }: FieldProps) => (
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-3 rtl:left-auto rtl:right-3 flex items-center text-gray-400 select-none pointer-events-none">+ </span>
+                      <Input
+                        {...field}
+                        type="text"
+                        size="sm"
+                        className="pl-6 rtl:pl-0 rtl:pr-6"
+                        placeholder="05xxxxxxxx"
+                        onChange={(e) => {
+                          let digits = e.target.value.replace(/\D/g, "")
+                          const rest = digits.startsWith("05") ? digits.slice(2) : digits.replace(/^0?5?/, "")
+                          let normalized = "05" + rest
+                          normalized = normalized.slice(0, 10)
+                          form.setFieldValue(field.name, normalized)
+                        }}
+                      />
+                    </div>
+                  )}
+                </Field>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="solid"
+                icon={<HiMinus />}
+                onClick={() => {
+                  setShowSecondPhone(false)
+                  setFieldValue('secondPhone', '')
+                }}
+                className="h-9 w-9 p-0 bg-red-500 hover:bg-red-600"
+                title="إزالة الرقم الثاني"
+              />
+            </div>
+          </FormItem>
+        )}
       </div>
     </AdaptableCard>
   )

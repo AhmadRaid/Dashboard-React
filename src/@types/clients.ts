@@ -99,7 +99,7 @@ export type ClientWithOrdersData = {
         totalOrders: number
         activeGuarantees: number
     }
-    clientType: 'فرد' | 'شركة' | 'مسوق'
+    clientType: 'فرد' | 'شركة' | 'مسوق بعمولة'
     isDeleted: boolean
     createdAt?: string
     updatedAt?: string

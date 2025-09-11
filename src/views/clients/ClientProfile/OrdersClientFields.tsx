@@ -248,26 +248,30 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
 
             root.render(
                 <BlobProvider document={pdfComponent}>
-                    {({ blob, url, loading, error }) => {
+                    {({ blob, loading, error }) => {
                         if (blob && !loading) {
-                            const downloadLink = document.createElement('a')
-                            downloadLink.href = url || ''
-                            downloadLink.download = fileName
-                            document.body.appendChild(downloadLink)
-                            downloadLink.click()
-
-                            setTimeout(() => {
+                            try {
+                                const objectUrl = URL.createObjectURL(blob)
+                                const downloadLink = document.createElement('a')
+                                downloadLink.href = objectUrl
+                                downloadLink.download = fileName
+                                downloadLink.style.display = 'none'
+                                downloadLink.rel = 'noopener'
+                                document.body.appendChild(downloadLink)
+                                downloadLink.click()
+                                URL.revokeObjectURL(objectUrl)
                                 document.body.removeChild(downloadLink)
+                                toast.push(
+                                    <Notification title="تصدير" type="success">
+                                        تم تنزيل الملف بنجاح.
+                                    </Notification>
+                                )
+                            } finally {
+                                setDownloadLoadingOrderId(null)
+                                setDownloadType(null)
                                 root.unmount()
                                 document.body.removeChild(container)
-                            }, 100)
-                            toast.push(
-                                <Notification title="تصدير" type="success">
-                                    تم تنزيل الملف بنجاح.
-                                </Notification>
-                            )
-                            setDownloadLoadingOrderId(null)
-                            setDownloadType(null)
+                            }
                         }
                         if (error) {
                             toast.push(
@@ -277,6 +281,8 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                             )
                             setDownloadLoadingOrderId(null)
                             setDownloadType(null)
+                            root.unmount()
+                            document.body.removeChild(container)
                         }
                         return null
                     }}

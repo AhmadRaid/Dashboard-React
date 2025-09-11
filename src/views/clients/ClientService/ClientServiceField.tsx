@@ -54,6 +54,18 @@ type OrderServiceFieldsProps = {
     form: FormikProps<any>
 }
 
+// نوع بيانات العميل
+interface ClientInfo {
+    _id: string
+    firstName: string
+    lastName: string
+    phone: string
+    email?: string
+    carType?: string
+    carModel?: string
+    carYear?: string
+}
+
 const OrderServiceFields = (props: OrderServiceFieldsProps) => {
     const { values, touched, errors, form } = props
     const [serviceCounter, setServiceCounter] = useState(1)
@@ -68,7 +80,8 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
     const [orderSelected, setOrderSelected] = useState<boolean>(false)
     const [orderTouched, setOrderTouched] = useState<boolean>(false)
     const [ordersLoaded, setOrdersLoaded] = useState<boolean>(false)
-    const [searchTriggered, setSearchTriggered] = useState<boolean>(false) // حالة جديدة لتتبع إذا كان البحث تم تشغيله
+    const [searchTriggered, setSearchTriggered] = useState<boolean>(false)
+    const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null) // حالة جديدة لتخزين معلومات العميل
 
     const shouldShowError = (fieldName: string) => {
         if (fieldName === 'orderId') {
@@ -123,7 +136,8 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
             setHasSearched(false)
             setOrderSelected(false)
             setOrdersLoaded(false)
-            setSearchTriggered(false) // إعادة تعيين حالة البحث
+            setSearchTriggered(false)
+            setClientInfo(null) // مسح معلومات العميل
             return
         }
 
@@ -131,7 +145,8 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
         setHasSearched(true)
         setOrderSelected(false)
         setOrdersLoaded(false)
-        setSearchTriggered(true) // تم تشغيل البحث
+        setSearchTriggered(true)
+        setClientInfo(null) // مسح معلومات العميل السابقة
 
         try {
             const res = await apiSearchClients(clientIdentifier)
@@ -146,6 +161,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                 setClientExists(true)
                 const client = res.data.data.clients[0]
                 setSearchedClientId(client._id)
+                setClientInfo(client) // حفظ معلومات العميل
                 getOrders(client._id)
             } else {
                 setClientExists(false)
@@ -185,26 +201,28 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
     }
 
     const addServiceWithGuarantee = () => {
-        const newServiceId = `service-${serviceCounter}`
-        const newGuaranteeId = `guarantee-${serviceCounter}`
+        const newIndex = (values.services?.length ?? 0)
+        const newServiceId = `service-${Date.now()}-${newIndex}`
+        const newGuaranteeId = `guarantee-${Date.now()}-${newIndex}`
 
-        form.setFieldValue(`services[${serviceCounter}]`, {
+        const newService = {
             id: newServiceId,
             serviceType: '',
             dealDetails: '',
-        })
+            guarantee: {
+                id: newGuaranteeId,
+                typeGuarantee: '',
+                startDate: '',
+                endDate: '',
+                terms: '',
+                Notes: '',
+            },
+        }
 
-        form.setFieldValue(`services[${serviceCounter}].guarantee`, {
-            id: newGuaranteeId,
-            typeGuarantee: '',
-            startDate: '',
-            endDate: '',
-            terms: '',
-            Notes: '',
-        })
-
-        setServiceCounter(serviceCounter + 1)
-        setSearchTriggered(false) // إعادة تعيين حالة البحث بعد إضافة خدمة
+        const nextServices = [...(values.services || []), newService]
+        form.setFieldValue('services', nextServices)
+        setServiceCounter((prev) => prev + 1)
+        setSearchTriggered(false)
     }
 
     const removeService = (index: number) => {
@@ -252,6 +270,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                             form.setFieldValue('orderId', '')
                                             setOrdersLoaded(false)
                                             setSearchTriggered(false)
+                                            setClientInfo(null) // مسح معلومات العميل
                                         }
                                     }}
                                 />
@@ -268,6 +287,43 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                     </Button>
                 </div>
             </FormItem>
+
+            {/* عرض تفاصيل العميل عند العثور عليه */}
+            {clientInfo && (
+                <div className="my-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                    <h6 className="text-lg font-semibold text-blue-800 mb-3">تفاصيل العميل</h6>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex flex-col">
+                            <span className="text-sm text-blue-600 font-medium">الاسم الكامل</span>
+                            <span className="text-base font-semibold text-blue-800">
+                                {clientInfo.firstName} {clientInfo.lastName}
+                            </span>
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-sm text-blue-600 font-medium">رقم الهاتف</span>
+                            <span className="text-base font-semibold text-blue-800">
+                                {clientInfo.phone}
+                            </span>
+                        </div>
+                        {clientInfo.email && (
+                            <div className="flex flex-col">
+                                <span className="text-sm text-blue-600 font-medium">البريد الإلكتروني</span>
+                                <span className="text-base font-semibold text-blue-800">
+                                    {clientInfo.email}
+                                </span>
+                            </div>
+                        )}
+                        {(clientInfo.carType || clientInfo.carModel) && (
+                            <div className="flex flex-col">
+                                <span className="text-sm text-blue-600 font-medium">السيارة</span>
+                                <span className="text-base font-semibold text-blue-800">
+                                    {clientInfo.carType} {clientInfo.carModel} {clientInfo.carYear && ` - ${clientInfo.carYear}`}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* عرض رسالة عندما لا يوجد عميل */}
             {hasSearched && !clientExists && (
@@ -460,6 +516,28 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                 `services[${index}].washScope`,
                                                 ''
                                             )
+                                            // التحكم في الضمان حسب نوع الخدمة
+                                            if (option?.value === 'polish') {
+                                                form.setFieldValue(
+                                                    `services[${index}].guarantee`,
+                                                    undefined
+                                                )
+                                            } else {
+                                                const hasGuarantee = (form.values as any).services?.[index]?.guarantee
+                                                if (!hasGuarantee) {
+                                                    form.setFieldValue(
+                                                        `services[${index}].guarantee`,
+                                                        {
+                                                            id: `guarantee-${index}`,
+                                                            typeGuarantee: '',
+                                                            startDate: '',
+                                                            endDate: '',
+                                                            terms: '',
+                                                            Notes: '',
+                                                        }
+                                                    )
+                                                }
+                                            }
                                             handleServiceFieldChange(
                                                 field.name,
                                                 option?.value || '',
@@ -860,6 +938,10 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                         value: 'internal',
                                                     },
                                                     {
+                                                        label: 'داخلي وخارجي',
+                                                        value: 'internalAndExternal',
+                                                    },
+                                                    {
                                                         label: 'كراسي',
                                                         value: 'seats',
                                                     },
@@ -882,6 +964,9 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                                       : field.value ===
                                                                         'internal'
                                                                       ? 'داخلي'
+                                                                      : field.value ===
+                                                                        'internalAndExternal'
+                                                                      ? 'داخلي وخارجي'
                                                                       : field.value ===
                                                                         'seats'
                                                                       ? 'كراسي'
@@ -910,8 +995,8 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                     </Field>
                                 </FormItem>
 
-                                {/* يظهر فقط عند اختيار خارجي */}
-                                {service.polishType === 'external' && (
+                                {/* يظهر فقط عند اختيار خارجي أو داخلي وخارجي */}
+                                {(service.polishType === 'external' || service.polishType === 'internalAndExternal') && (
                                     <FormItem
                                         label="مستوى التلميع"
                                         invalid={

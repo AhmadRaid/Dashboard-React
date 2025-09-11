@@ -52,7 +52,7 @@ const ClientFields = (props: ClientFieldsProps) => {
   const clientTypes = [
     { label: "فرد", value: "فرد" },
     { label: "شركة", value: "شركة" },
-    { label: "مسوق", value: "مسوق" },
+    { label: "مسوق بعمولة", value: "مسوق بعمولة" },
   ]
 
   const getServices = async () => {
@@ -138,7 +138,7 @@ const ClientFields = (props: ClientFieldsProps) => {
         </FormItem>
 
         <FormItem
-          label="الاسم الثاني"
+          label="الاسم الاب"
           invalid={!!errors.secondName && !!touched.secondName}
           errorMessage={errors.secondName}
         >
@@ -147,13 +147,13 @@ const ClientFields = (props: ClientFieldsProps) => {
             size="sm"
             autoComplete="off"
             type="text"
-            placeholder="الاسم الثاني"
+            placeholder="الاسم الاب"
             component={Input}
           />
         </FormItem>
 
         <FormItem
-          label="الاسم الثالث"
+          label="الاسم الجد"
           invalid={!!errors.thirdName && !!touched.thirdName}
           errorMessage={errors.thirdName}
         >
@@ -162,7 +162,7 @@ const ClientFields = (props: ClientFieldsProps) => {
             size="sm"
             autoComplete="off"
             type="text"
-            placeholder="الاسم الثالث"
+            placeholder="الاسم الجد"
             component={Input}
           />
         </FormItem>

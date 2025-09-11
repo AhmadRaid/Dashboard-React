@@ -11,7 +11,7 @@ import * as Yup from 'yup'
 const clientTypes = [
     { label: 'فرد', value: 'فرد' },
     { label: 'شركة', value: 'شركة' },
-    { label: 'مسوق', value: 'مسوق' },
+    { label: 'مسوق بعمولة', value: 'مسوق بعمولة' },
 ]
 
 const branchOptions = [
@@ -28,8 +28,8 @@ const UpdateDataClient = () => {
 
     const validationSchema = Yup.object().shape({
         firstName: Yup.string().required('الاسم الأول مطلوب'),
-        secondName: Yup.string().required('الاسم الثاني مطلوب'),
-        thirdName: Yup.string().required('الاسم الثالث مطلوب'),
+        secondName: Yup.string().required('الاسم الاب مطلوب'),
+        thirdName: Yup.string().required('الاسم الجد مطلوب'),
         lastName: Yup.string().required('اسم العائلة مطلوب'),
         email: Yup.string().email('بريد إلكتروني غير صالح'),
         phone: Yup.string()
@@ -42,8 +42,8 @@ const UpdateDataClient = () => {
             .max(10, 'يجب أن يتكون رقم الهاتف من 10 أرقام'),
         clientType: Yup.string()
             .oneOf(
-                ['فرد', 'شركة', 'مسوق'],
-                'نوع العميل يجب أن يكون "فرد" أو "شركة" أو "مسوق"'
+                ['فرد', 'شركة', 'مسوق بعمولة'],
+                'نوع العميل يجب أن يكون "فرد" أو "شركة" أو "مسوق بعمولة"'
             )
             .required('نوع العميل مطلوب'),
 
@@ -189,7 +189,7 @@ const UpdateDataClient = () => {
                                             </FormItem>
 
                                             <FormItem
-                                                label="الاسم الثاني"
+                                                label="الاسم الاب"
                                                 invalid={
                                                     !!errors.secondName &&
                                                     !!touched.secondName
@@ -203,7 +203,7 @@ const UpdateDataClient = () => {
                                                 />
                                             </FormItem>
                                             <FormItem
-                                                label="الاسم الثالث"
+                                                label="الاسم الجد"
                                                 invalid={
                                                     !!errors.thirdName &&
                                                     !!touched.thirdName

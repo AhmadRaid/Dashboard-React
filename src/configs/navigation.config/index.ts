@@ -10,12 +10,22 @@ const navigationConfig: NavigationTree[] = [
     {
         key: 'quickAccess',
         path: '',
-        title: 'الوصول السريع',
+        title: 'الخدمات',
         translateKey: 'nav.quickAccess.quickAccess',
         icon: 'users',
         type: NAV_ITEM_TYPE_COLLAPSE,
         authority: [],
         subMenu: [
+            {
+                key: 'quickAccess.addCar',
+                path: '/clients/create-client',
+                title: 'اضافة سيارة',
+                translateKey: 'nav.quickAccess.addCar',
+                icon: 'plusCircle',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [],
+                subMenu: [],
+            },
             {
                 key: 'quickAccess.addService',
                 path: '/clients/add-service',
@@ -27,13 +37,23 @@ const navigationConfig: NavigationTree[] = [
                 subMenu: [],
             },
             {
-                key: 'quickAccess.addCar',
+                key: 'clientsMenu.addClient',
                 path: '/clients/create-client',
-                title: 'اضافة سيارة',
-                translateKey: 'nav.quickAccess.addCar',
-                icon: 'plusCircle',
+                title: 'إضافة عميل',
+                translateKey: 'nav.clientsMenu.addClient',
+                icon: 'userAdd', // أيقونة إضافة مستخدم
                 type: NAV_ITEM_TYPE_ITEM,
-                authority: [],
+                authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
+                subMenu: [],
+            },
+            {
+                key: 'clientsMenu.workOrder',
+                path: '/clients/work-order',
+                title: 'امر عمل',
+                translateKey: 'nav.clientsMenu.workOrder',
+                icon: 'documentText', // أيقونة مستند نصي
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [],
             },
         ],
@@ -90,13 +110,11 @@ const navigationConfig: NavigationTree[] = [
         ],
     },
 
-    
-
     // 2. الخدمات والمبيعات (Services & Sales)
     {
         key: 'servicesSales',
         path: '',
-        title: 'الخدمات والمبيعات',
+        title: 'المبيعات',
         icon: 'shoppingCart', // تغيير من 'sales' إلى 'shoppingCart'
         translateKey: 'nav.servicesSales.servicesSales',
         type: NAV_ITEM_TYPE_COLLAPSE,
@@ -105,7 +123,7 @@ const navigationConfig: NavigationTree[] = [
             {
                 key: 'order.orderList',
                 path: '/orders',
-                title: 'قائمة الخدمات والمبيعات',
+                title: 'قائمة المبيعات',
                 translateKey: 'nav.servicesSales.createInvoice',
                 icon: 'listBullet', // أيقونة قائمة
                 type: NAV_ITEM_TYPE_ITEM,
@@ -196,7 +214,7 @@ const navigationConfig: NavigationTree[] = [
         type: NAV_ITEM_TYPE_COLLAPSE,
         authority: [],
         subMenu: [
-                        {
+            {
                 key: 'users.clientsCommunication',
                 path: '/clients-communication',
                 title: 'اتصالات العملاء',
@@ -324,8 +342,8 @@ const navigationConfig: NavigationTree[] = [
             },
         ],
     },
-    
-       // 6. إدارة المهام (Tasks Management)
+
+    // 6. إدارة المهام (Tasks Management)
     {
         key: 'TaskManagement',
         path: '',
@@ -343,10 +361,9 @@ const navigationConfig: NavigationTree[] = [
                 icon: 'documentReport', // أيقونة تقرير
                 type: NAV_ITEM_TYPE_COLLAPSE,
                 authority: [userRoles.ADMIN],
-                subMenu: [
-                ],
+                subMenu: [],
             },
-             {
+            {
                 key: 'taskMenu.AddTask',
                 path: '/tasks/add',
                 title: 'اضافة مهمة جديدة',
@@ -354,10 +371,8 @@ const navigationConfig: NavigationTree[] = [
                 icon: 'documentReport', // أيقونة تقرير
                 type: NAV_ITEM_TYPE_COLLAPSE,
                 authority: [userRoles.ADMIN],
-                subMenu: [
-                ],
+                subMenu: [],
             },
-       
         ],
     },
 
@@ -384,7 +399,8 @@ const navigationConfig: NavigationTree[] = [
                         key: 'branchesManagement.dailyServicesReport',
                         path: '/reports/daily-services',
                         title: 'تقرير خدمات مقدمة في نفس اليوم',
-                        translateKey: 'nav.branchesManagement.dailyServicesReport',
+                        translateKey:
+                            'nav.branchesManagement.dailyServicesReport',
                         icon: 'clock', // أيقونة الساعة (للتقارير اليومية)
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
@@ -404,7 +420,8 @@ const navigationConfig: NavigationTree[] = [
                         key: 'branchesManagement.serviceTypeReport',
                         path: '/reports/service-type',
                         title: 'تقرير لنوع الخدمة',
-                        translateKey: 'nav.branchesManagement.serviceTypeReport',
+                        translateKey:
+                            'nav.branchesManagement.serviceTypeReport',
                         icon: 'tag', // أيقونة الوسم (لأنواع الخدمات)
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
@@ -445,10 +462,6 @@ const navigationConfig: NavigationTree[] = [
             },
         ],
     },
-
-  
-
-
 ]
 
 export default navigationConfig

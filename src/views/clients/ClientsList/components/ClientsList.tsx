@@ -54,12 +54,12 @@ const ClientsTable = () => {
                 sortable: false,
             },
             {
-                header: 'الاسم الثاني',
+                header: 'الاسم الاب',
                 accessorKey: 'secondName',
                 sortable: false,
             },
             {
-                header: 'الاسم الثالث',
+                header: 'الاسم الجد',
                 accessorKey: 'thirdName',
                 sortable: false,
             },
