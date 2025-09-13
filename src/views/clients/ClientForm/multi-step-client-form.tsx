@@ -57,9 +57,7 @@ const clientValidationSchema = Yup.object().shape({
 })
 
 const carValidationSchema = Yup.object().shape({
-    carType: Yup.string()
-        .required('نوع السيارة مطلوب')
-        .max(50, 'يجب ألا يتجاوز نوع السيارة 50 حرفًا'),
+
     carModel: Yup.string()
         .required('موديل السيارة مطلوب')
         .max(50, 'يجب ألا يتجاوز موديل السيارة 50 حرفًا'),
@@ -110,7 +108,6 @@ type FormData = {
     carColor: string
     carPlateNumber: string
     carSize: string
-    carType: string
     // Services
     services: Array<{
         id: string
@@ -154,7 +151,6 @@ const initialData: FormData = {
     carColor: '',
     carPlateNumber: '',
     carSize: '',
-    carType: '',
     services: [
         {
             id: 'service-0',
@@ -332,7 +328,6 @@ const MultiStepClientForm = ({
                     carPlateNumber: values.carPlateNumber,
 
                     carSize: values.carSize,
-                    carType: values.carType,
                 }
 
                 if (onCarSave) {
@@ -387,7 +382,6 @@ const MultiStepClientForm = ({
                     carColor: values.carColor,
                     carPlateNumber: values.carPlateNumber,
                     carSize: values.carSize,
-                    carType: values.carType,
                 }
                 // Stage locally for car
                 if (onCarSave) {

@@ -1074,7 +1074,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 }}
                             />
                         </FormItem>
-                        <FormItem
+                             <FormItem
                                 label="سعر الخدمة"
                                 invalid={
                                     !!(errors.services as any)?.[index]

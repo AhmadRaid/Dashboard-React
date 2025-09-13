@@ -6,7 +6,7 @@ import Input from "@/components/ui/Input"
 import Button from "@/components/ui/Button"
 import { FormItem } from "@/components/ui/Form"
 import { Field, type FormikErrors, type FormikTouched, type FieldProps } from "formik"
-import { useState, useEffect } from "react" // أضفنا useEffect
+import { useState, useEffect } from "react"
 import { HiPlus, HiMinus } from "react-icons/hi"
 
 type FormFieldsName = {
@@ -15,7 +15,6 @@ type FormFieldsName = {
   carPlateNumber: string
   carManufacturer: string
   carSize: string
-  carType: string
 }
 
 type CarInfoStepProps = {
@@ -23,7 +22,10 @@ type CarInfoStepProps = {
   errors: FormikErrors<FormFieldsName>
   values: any
   setFieldValue: (field: string, value: any) => void
-  setFieldTouched: (field: string, isTouched?: boolean) => void // أضفنا setFieldTouched
+  setFieldTouched: (field: string, isTouched?: boolean) => void
+  onNext?: () => void
+  onPrevious?: () => void
+  isNextDisabled?: boolean
 }
 
 const carSizeOptions = [
@@ -34,10 +36,18 @@ const carSizeOptions = [
   { label: "XX-Large", value: "XX-large" },
 ]
 
-const CarInfoStep = ({ touched, errors, values, setFieldValue, setFieldTouched }: CarInfoStepProps) => {
+const CarInfoStep = ({ 
+  touched, 
+  errors, 
+  values, 
+  setFieldValue, 
+  setFieldTouched, 
+  onNext, 
+  onPrevious, 
+  isNextDisabled 
+}: CarInfoStepProps) => {
   const [showEighthBox, setShowEighthBox] = useState(false)
 
-  // تأثير لتحديد عدد المربعات بناءً على طول رقم اللوحة
   useEffect(() => {
     if (values.carPlateNumber && values.carPlateNumber.length === 8) {
       setShowEighthBox(true)
@@ -48,7 +58,6 @@ const CarInfoStep = ({ touched, errors, values, setFieldValue, setFieldTouched }
 
   const handleAddBox = () => {
     setShowEighthBox(true)
-    // اجعل القيمة بطول 8 دون الاقتصاص، مع استخدام شرطات سفلية كحروف مؤقتة قابلة للكتابة
     const current = String(values.carPlateNumber || '')
     if (current.length < 8) {
       setFieldValue('carPlateNumber', current.padEnd(8, '_'))
@@ -57,22 +66,36 @@ const CarInfoStep = ({ touched, errors, values, setFieldValue, setFieldTouched }
 
   const handleRemoveBox = () => {
     setShowEighthBox(false)
-    // إزالة الحرف الثامن من قيمة رقم اللوحة
     const current = String(values.carPlateNumber || '')
     if (current.length > 7) {
       setFieldValue('carPlateNumber', current.substring(0, 7))
     }
   }
 
-  // دالة للتحقق إذا كانت جميع الحقول مملوءة
+  // دالة محسنة للتحقق إذا كانت جميع الحقول مملوءة بشكل صحيح
   const areAllFieldsFilled = () => {
+    const plateNumber = String(values.carPlateNumber || '')
+    
+    // تحقق من أن رقم اللوحة لا يحتوي على شرطات سفلية (محارف فارغة)
+    const isPlateNumberValid = plateNumber.length > 0 && !plateNumber.includes('_')
+    
     return (
-      values.carType &&
       values.carModel &&
       values.carColor &&
-      values.carPlateNumber &&
+      isPlateNumberValid &&
       values.carManufacturer &&
       values.carSize
+    )
+  }
+
+  // دالة للتحقق من الأخطاء
+  const hasErrors = () => {
+    return (
+      !!errors.carModel ||
+      !!errors.carColor ||
+      !!errors.carPlateNumber ||
+      !!errors.carManufacturer ||
+      !!errors.carSize
     )
   }
 
@@ -83,7 +106,7 @@ const CarInfoStep = ({ touched, errors, values, setFieldValue, setFieldTouched }
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormItem
-          label="الشركة المصنعة"
+          label="الشركة المصنعة نوع السيارة"
           invalid={!!errors.carManufacturer && !!touched.carManufacturer}
           errorMessage={errors.carManufacturer as string}
         >
@@ -148,7 +171,6 @@ const CarInfoStep = ({ touched, errors, values, setFieldValue, setFieldTouched }
                         const value = e.target.value.toUpperCase()
                         let newValue = field.value || ""
 
-                        // حافظ على الطول المطلوب باستخدام '_' كمكان شاغر
                         newValue = String(newValue || '').padEnd(showEighthBox ? 8 : 7, "_")
                         newValue = newValue.substring(0, i) + (value || '_') + newValue.substring(i + 1)
 
@@ -240,12 +262,7 @@ const CarInfoStep = ({ touched, errors, values, setFieldValue, setFieldTouched }
         </FormItem>
       </div>
 
-      {/* زر للتحقق من الحقول (لأغراض التصحيح) */}
-      <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
-        <div>الحقول المملوءة: {areAllFieldsFilled() ? 'نعم' : 'لا'}</div>
-        <div>رقم اللوحة: "{values.carPlateNumber}" (الطول: {values.carPlateNumber?.length})</div>
-        <div>الأخطاء: {JSON.stringify(errors)}</div>
-      </div>
+
     </AdaptableCard>
   )
 }
