@@ -5,6 +5,8 @@ import { Field, FormikErrors, FormikTouched, FieldProps } from 'formik'
 import { Select } from '@/components/ui'
 import { useEffect, useState } from 'react'
 import { apiGetAllServices } from '@/services/ClientsService'
+import Button from '@/components/ui/Button' // Make sure to import Button
+import { HiPlus, HiMinus } from 'react-icons/hi' // Import the icons
 
 type FormFieldsName = {
     firstName: string
@@ -48,6 +50,7 @@ const OrderFields = (props: ClientFieldsProps) => {
         { label: string; value: string }[]
     >([])
     const [loadingServices, setLoadingServices] = useState<boolean>(false)
+    const [showEighthBox, setShowEighthBox] = useState<boolean>(false) // Add this state
 
     const getServices = async () => {
         setLoadingServices(true)
@@ -64,6 +67,14 @@ const OrderFields = (props: ClientFieldsProps) => {
         setLoadingServices(false)
     }
 
+    const handleAddBox = () => {
+        setShowEighthBox(true)
+    }
+
+    const handleRemoveBox = () => {
+        setShowEighthBox(false)
+    }
+
     useEffect(() => {
         getServices()
     }, [])
@@ -78,12 +89,12 @@ const OrderFields = (props: ClientFieldsProps) => {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormItem
-                    label="نوع السيارة"
+                    label="الشركة المصنعة ونوع السيارة"
                     invalid={!!errors.carType && !!touched.carType}
                     errorMessage={errors.carType as string}
                 >
                     <Field
-                        name="carType"
+                        name="carManufacturer"
                         type="text"
                         size="sm"
                         placeholder="نوع السيارة"
@@ -119,46 +130,121 @@ const OrderFields = (props: ClientFieldsProps) => {
                     />
                 </FormItem>
 
-         <FormItem
-    label="رقم لوحة السيارة"
-    invalid={!!errors.carPlateNumber && !!touched.carPlateNumber}
-    errorMessage={errors.carPlateNumber as string}
->
-    <Field name="carPlateNumber">
-        {({ field, form }: FieldProps) => (
-            <div className="flex gap-2">
-                {[...Array(8)].map((_, i) => (
-                    <Input
-                        key={i}
-                        type="text"
-                        size="sm"
-                        maxLength={1}
-                        className="text-center w-10"
-                        value={field.value?.[i] || ''}
-                        onChange={(e) => {
-                            const value = e.target.value.toUpperCase();
-                            let newValue = field.value || '';
-                            
-                            // إنشاء نسخة من القيمة الحالية مع حرف واحد محدث
-                            newValue = newValue.padEnd(8, ' '); // تأكد من طول 8 أحرف
-                            newValue = newValue.substring(0, i) + value + newValue.substring(i + 1);
-                            
-                            form.setFieldValue(field.name, newValue.trim());
-                            
-                            if (value && i < 7) {
-                                const nextInput = document.querySelector(
-                                    `input[name="${field.name}-${i + 1}"]`
-                                ) as HTMLInputElement;
-                                nextInput?.focus();
-                            }
-                        }}
-                        name={`${field.name}-${i}`}
-                    />
-                ))}
-            </div>
-        )}
-    </Field>
-</FormItem>
+                <FormItem
+                    label="رقم لوحة السيارة"
+                    invalid={
+                        !!errors.carPlateNumber && !!touched.carPlateNumber
+                    }
+                    errorMessage={errors.carPlateNumber as string}
+                >
+                    <Field name="carPlateNumber">
+                        {({ field, form }: FieldProps) => (
+                            <div className="flex flex-col gap-3">
+                                <div className="flex gap-2 items-center">
+                                    {[...Array(showEighthBox ? 8 : 7)].map(
+                                        (_, i) => (
+                                            <Input
+                                                key={i} // Add key here
+                                                type="text"
+                                                size="sm"
+                                                maxLength={1}
+                                                className="text-center w-10"
+                                                value={
+                                                    (field.value?.[i] === '_'
+                                                        ? ''
+                                                        : field.value?.[i]) ||
+                                                    ''
+                                                }
+                                                onChange={(e) => {
+                                                    const value =
+                                                        e.target.value.toUpperCase()
+                                                    let newValue =
+                                                        field.value || ''
+
+                                                    // حافظ على الطول المطلوب باستخدام '_' كمكان شاغر
+                                                    newValue = String(
+                                                        newValue || ''
+                                                    ).padEnd(
+                                                        showEighthBox ? 8 : 7,
+                                                        '_'
+                                                    )
+                                                    newValue =
+                                                        newValue.substring(
+                                                            0,
+                                                            i
+                                                        ) +
+                                                        (value || '_') +
+                                                        newValue.substring(
+                                                            i + 1
+                                                        )
+
+                                                    form.setFieldValue(
+                                                        field.name,
+                                                        newValue
+                                                    )
+                                                    form.setFieldTouched(
+                                                        field.name,
+                                                        true
+                                                    )
+
+                                                    if (
+                                                        value &&
+                                                        i <
+                                                            (showEighthBox
+                                                                ? 7
+                                                                : 6)
+                                                    ) {
+                                                        const nextInput =
+                                                            document.querySelector(
+                                                                `input[name="${
+                                                                    field.name
+                                                                }-${i + 1}"]`
+                                                            ) as HTMLInputElement
+                                                        nextInput?.focus()
+                                                    }
+                                                }}
+                                                onBlur={() =>
+                                                    form.setFieldTouched(
+                                                        field.name,
+                                                        true
+                                                    )
+                                                }
+                                                name={`${field.name}-${i}`}
+                                            />
+                                        )
+                                    )}
+
+                                    <div className="flex gap-1">
+                                        {!showEighthBox ? (
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                variant="solid"
+                                                icon={<HiPlus />}
+                                                onClick={handleAddBox}
+                                                className="h-9 w-9 p-0"
+                                                title="إضافة خانة إضافية"
+                                            />
+                                        ) : (
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                variant="solid"
+                                                icon={<HiMinus />}
+                                                onClick={handleRemoveBox}
+                                                className="h-9 w-9 p-0 bg-red-500 hover:bg-red-600"
+                                                title="إزالة الخانة الإضافية"
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="text-xs text-gray-500 mt-1">
+                                    {showEighthBox ? '8 أرقام' : '7 أرقام'}
+                                </div>
+                            </div>
+                        )}
+                    </Field>
+                </FormItem>
 
                 <FormItem
                     label="حجم السيارة"
@@ -168,7 +254,7 @@ const OrderFields = (props: ClientFieldsProps) => {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         {carSizeOptions.map((option) => (
                             <label
-                                key={option.value}
+                                key={option.value} // Add key here
                                 className={`relative p-2 border rounded-md cursor-pointer transition-all text-sm
                                     ${
                                         values.carSize === option.value

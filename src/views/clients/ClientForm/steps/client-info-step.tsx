@@ -76,54 +76,6 @@ const ClientInfoStep = ({ touched, errors, values, setFieldValue, ordersCount = 
           <h5 className="text-lg font-semibold text-gray-800">معلومات العميل</h5>
           <p className="text-sm text-gray-500">قسم لإعداد معلومات العميل الأساسية</p>
         </div>
-        
-        {clientName && (
-          <div className="flex flex-col md:flex-row items-center gap-4 bg-blue-50 px-4 py-3 rounded-lg border border-blue-200 shadow-sm">
-            <div className="flex items-center">
-              <div className="bg-blue-100 p-2 rounded-full">
-                <HiUser className="text-blue-600 text-xl" />
-              </div>
-              <div className="mr-2">
-                <p className="text-xs text-blue-700 font-medium">اسم العميل</p>
-                <p className="font-semibold text-blue-900 text-sm">{clientName}</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center">
-              <div className="bg-green-100 p-2 rounded-full">
-                <HiShoppingBag className="text-green-600 text-xl" />
-              </div>
-              <div className="mr-2">
-                <p className="text-xs text-green-700 font-medium">عدد الطلبات</p>
-                <p className="font-semibold text-green-900 text-sm">{ordersCount} طلب</p>
-              </div>
-            </div>
-            
-            {values.email && (
-              <div className="flex items-center">
-                <div className="bg-purple-100 p-2 rounded-full">
-                  <HiMail className="text-purple-600 text-xl" />
-                </div>
-                <div className="mr-2">
-                  <p className="text-xs text-purple-700 font-medium">البريد الإلكتروني</p>
-                  <p className="font-semibold text-purple-900 text-sm truncate max-w-[120px]">{values.email}</p>
-                </div>
-              </div>
-            )}
-            
-            {values.phone && (
-              <div className="flex items-center">
-                <div className="bg-orange-100 p-2 rounded-full">
-                  <HiPhone className="text-orange-600 text-xl" />
-                </div>
-                <div className="mr-2">
-                  <p className="text-xs text-orange-700 font-medium">رقم الهاتف</p>
-                  <p className="font-semibold text-orange-900 text-sm">{values.phone}</p>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

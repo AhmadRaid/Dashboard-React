@@ -91,24 +91,9 @@ const CarInfoStep = ({ touched, errors, values, setFieldValue, setFieldTouched }
             name="carManufacturer" 
             type="text" 
             size="sm" 
-            placeholder="الشركة المصنعة" 
+            placeholder="الشركة المصنعة ونوع السيارة" 
             component={Input} 
             onBlur={() => setFieldTouched('carManufacturer', true)}
-          />
-        </FormItem>
-
-        <FormItem
-          label="نوع السيارة"
-          invalid={!!errors.carType && !!touched.carType}
-          errorMessage={errors.carType as string}
-        >
-          <Field 
-            name="carType" 
-            type="text" 
-            size="sm" 
-            placeholder="نوع السيارة" 
-            component={Input} 
-            onBlur={() => setFieldTouched('carType', true)}
           />
         </FormItem>
 

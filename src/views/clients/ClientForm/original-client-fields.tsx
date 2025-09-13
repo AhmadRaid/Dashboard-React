@@ -223,7 +223,7 @@ const ClientFields = (props: ClientFieldsProps) => {
         </FormItem>
 
         <FormItem
-          label="رقم لوحة السيارة"
+          label="رقم لوحة2 السيارة"
           invalid={!!errors.carPlateNumber && !!touched.carPlateNumber}
           errorMessage={errors.carPlateNumber as string}
         >
