@@ -44,7 +44,7 @@ type Service = {
 
 type FormFieldsName = {
     services: Service[]
-    orderId: string // أضفنا هذا الحقل
+    orderId: string
 }
 
 type OrderServiceFieldsProps = {
@@ -60,6 +60,33 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
     const [orders, setOrders] = useState<{ label: string; value: string }[]>([])
     const [loadingOrders, setLoadingOrders] = useState<boolean>(false)
     const { clientId } = useParams<{ clientId: string }>()
+    const [clientExists, setClientExists] = useState<boolean>(true)
+    const [hasSearched, setHasSearched] = useState<boolean>(false)
+    const [orderTouched, setOrderTouched] = useState<boolean>(false)
+    const [searchTriggered, setSearchTriggered] = useState<boolean>(false)
+
+    // دالة معالجة تغيير حقول الخدمة
+    const handleServiceFieldChange = (fieldName: string, value: any, form: FormikProps<any>) => {
+        form.setFieldValue(fieldName, value)
+    }
+
+    const shouldShowError = (fieldName: string) => {
+        if (fieldName === 'orderId') {
+            return (
+                (form.submitCount > 0 || orderTouched) &&
+                clientExists &&
+                hasSearched &&
+                !values.orderId
+            )
+        }
+
+        if (fieldName.includes('services') && searchTriggered) {
+            return false
+        }
+
+        return form.submitCount > 0 || !!touched[fieldName]
+    }
+
     const calculateEndDate = (
         startDate: string,
         guaranteePeriod: string
@@ -72,7 +99,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
         if (isNaN(years)) return ''
 
         date.setFullYear(date.getFullYear() + years)
-        date.setDate(date.getDate() - 1) // ناقص يوم واحد
+        date.setDate(date.getDate() - 1)
 
         return date.toISOString().split('T')[0]
     }
@@ -80,8 +107,6 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
     const toHijriDate = (gregorianDate: string): string => {
         if (!gregorianDate) return ''
 
-        // يمكنك استخدام مكتبة مثل ummalqura أو كتابة الدالة الخاصة بك
-        // هذا مثال مبسط:
         const date = new Date(gregorianDate)
         const hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
             day: 'numeric',
@@ -93,26 +118,29 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
     }
 
     const getServices = async () => {
+        if (!clientId) return
+        
         setLoadingOrders(true)
         try {
             const res = await apiGetClientOrders(clientId)
 
             const allOrders = res.data.data.orders.map((order: any) => ({
-                label: `${order.carType} - ${order.carModel}`, // يمكنك تعديل التنسيق حسب احتياجك
-                value: order._id, // هنا نستخدم الـ _id كقيمة
-                orderData: order, // نحتفظ ببيانات الطلب الكاملة للاستخدام لاحقاً
+                label: `${order.carType} - ${order.carModel}`,
+                value: order._id,
+                orderData: order,
             }))
 
             setOrders(allOrders)
         } catch (error) {
-            setOrders([]) // empty on error
+            console.error("Error fetching orders:", error)
+            setOrders([])
         }
         setLoadingOrders(false)
     }
 
     useEffect(() => {
         getServices()
-    }, [])
+    }, [clientId])
 
     const addServiceWithGuarantee = () => {
         const newIndex = (values.services?.length ?? 0)
@@ -186,7 +214,6 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 (order) => order.value === field.value
                             )}
                             onChange={(option) => {
-                                // عند تغيير الاختيار
                                 form.setFieldValue(
                                     field.name,
                                     option?.value || ''
@@ -197,6 +224,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                 </Field>
             </FormItem>
 
+            {/* حقول الخدمات والضمانات */}
             {values.services?.map((service, index) => (
                 <div key={service.id} className="mt-6 border-t pt-6">
                     <div className="flex justify-between items-center mb-4">
@@ -221,11 +249,17 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                         <FormItem
                             label="نوع الخدمة"
                             invalid={
-                                !!errors.services?.[index]?.serviceType &&
-                                !!touched.services?.[index]?.serviceType
+                                shouldShowError(
+                                    `services[${index}].serviceType`
+                                ) && !!errors.services?.[index]?.serviceType
                             }
                             errorMessage={
-                                errors.services?.[index]?.serviceType as string
+                                shouldShowError(
+                                    `services[${index}].serviceType`
+                                )
+                                    ? (errors.services?.[index]
+                                          ?.serviceType as string)
+                                    : ''
                             }
                         >
                             <Field name={`services[${index}].serviceType`}>
@@ -236,7 +270,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                         form={form}
                                         options={[
                                             {
-                                                label: 'تلم2يع',
+                                                label: 'تلميع',
                                                 value: 'polish',
                                             },
                                             {
@@ -271,6 +305,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                 : null
                                         }
                                         onChange={(option) => {
+                                            // تنظيف الحقول القديمة عند تغيير نوع الخدمة
                                             form.setFieldValue(
                                                 `services[${index}].protectionFinish`,
                                                 ''
@@ -307,15 +342,14 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                 `services[${index}].washScope`,
                                                 ''
                                             )
+                                            
                                             // التحكم في الضمان حسب نوع الخدمة
-                                            if (option?.value === 'polish' || option?.value === 'تلميع') {
-                                                // إزالة الضمان لخدمة التلميع
+                                            if (option?.value === 'polish') {
                                                 form.setFieldValue(
                                                     `services[${index}].guarantee`,
                                                     undefined
                                                 )
                                             } else {
-                                                // إنشاء كائن ضمان فارغ إذا لم يكن موجوداً عند اختيار خدمة غير التلميع
                                                 const hasGuarantee = (form.values as any).services?.[index]?.guarantee
                                                 if (!hasGuarantee) {
                                                     form.setFieldValue(
@@ -331,6 +365,8 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                     )
                                                 }
                                             }
+                                            
+                                            // تحديث قيمة نوع الخدمة
                                             form.setFieldValue(
                                                 field.name,
                                                 option?.value || ''
@@ -348,9 +384,10 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 <FormItem
                                     label="اللمعان"
                                     invalid={
+                                        shouldShowError(
+                                            `services[${index}].protectionFinish`
+                                        ) &&
                                         !!errors.services?.[index]
-                                            ?.protectionFinish &&
-                                        !!touched.services?.[index]
                                             ?.protectionFinish
                                     }
                                     errorMessage={
@@ -416,9 +453,10 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                     <FormItem
                                         label="الحجم"
                                         invalid={
+                                            shouldShowError(
+                                                `services[${index}].protectionSize`
+                                            ) &&
                                             !!errors.services?.[index]
-                                                ?.protectionSize &&
-                                            !!touched.services?.[index]
                                                 ?.protectionSize
                                         }
                                         errorMessage={
@@ -440,8 +478,16 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                             value: '10',
                                                         },
                                                         {
+                                                            label: '8 مل',
+                                                            value: '8',
+                                                        },
+                                                        {
                                                             label: '7.5 مل',
                                                             value: '7.5',
+                                                        },
+                                                        {
+                                                            label: '6.5 مل',
+                                                            value: '6.5',
                                                         },
                                                     ]}
                                                     value={
@@ -468,9 +514,10 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 <FormItem
                                     label="التغطية"
                                     invalid={
+                                        shouldShowError(
+                                            `services[${index}].protectionCoverage`
+                                        ) &&
                                         !!errors.services?.[index]
-                                            ?.protectionCoverage &&
-                                        !!touched.services?.[index]
                                             ?.protectionCoverage
                                     }
                                     errorMessage={
@@ -549,9 +596,10 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 <FormItem
                                     label="نوع العازل"
                                     invalid={
+                                        shouldShowError(
+                                            `services[${index}].insulatorType`
+                                        ) &&
                                         !!errors.services?.[index]
-                                            ?.insulatorType &&
-                                        !!touched.services?.[index]
                                             ?.insulatorType
                                     }
                                     errorMessage={
@@ -611,9 +659,10 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 <FormItem
                                     label="نطاق التغطية"
                                     invalid={
+                                        shouldShowError(
+                                            `services[${index}].insulatorCoverage`
+                                        ) &&
                                         !!errors.services?.[index]
-                                            ?.insulatorCoverage &&
-                                        !!touched.services?.[index]
                                             ?.insulatorCoverage
                                     }
                                     errorMessage={
@@ -692,9 +741,10 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 <FormItem
                                     label="نوع التلميع"
                                     invalid={
-                                        !!errors.services?.[index]
-                                            ?.polishType &&
-                                        !!touched.services?.[index]?.polishType
+                                        shouldShowError(
+                                            `services[${index}].polishType`
+                                        ) &&
+                                        !!errors.services?.[index]?.polishType
                                     }
                                     errorMessage={
                                         errors.services?.[index]
@@ -780,9 +830,10 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                     <FormItem
                                         label="مستوى التلميع"
                                         invalid={
+                                            shouldShowError(
+                                                `services[${index}].polishSubType`
+                                            ) &&
                                             !!errors.services?.[index]
-                                                ?.polishSubType &&
-                                            !!touched.services?.[index]
                                                 ?.polishSubType
                                         }
                                         errorMessage={
@@ -841,9 +892,10 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 <FormItem
                                     label="نوع الإضافة"
                                     invalid={
+                                        shouldShowError(
+                                            `services[${index}].additionType`
+                                        ) &&
                                         !!errors.services?.[index]
-                                            ?.additionType &&
-                                        !!touched.services?.[index]
                                             ?.additionType
                                     }
                                     errorMessage={
@@ -928,9 +980,10 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                     <FormItem
                                         label="نطاق الغسيل"
                                         invalid={
+                                            shouldShowError(
+                                                `services[${index}].washScope`
+                                            ) &&
                                             !!errors.services?.[index]
-                                                ?.washScope &&
-                                            !!touched.services?.[index]
                                                 ?.washScope
                                         }
                                         errorMessage={
@@ -1000,8 +1053,10 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                         <FormItem
                             label="تفاصيل الاتفاق"
                             invalid={
-                                !!errors.services?.[index]?.dealDetails &&
-                                !!touched.services?.[index]?.dealDetails
+                                shouldShowError(
+                                    `services[${index}].dealDetails`
+                                ) &&
+                                !!errors.services?.[index]?.dealDetails
                             }
                             errorMessage={
                                 errors.services?.[index]?.dealDetails as string
@@ -1013,12 +1068,16 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 size="sm"
                                 placeholder="أدخل تفاصيل الاتفاق"
                                 component={Input}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                    form.setFieldValue(`services[${index}].dealDetails`, e.target.value)
+                                    setSearchTriggered(false)
+                                }}
                             />
                         </FormItem>
                     </div>
 
                     {/* Guarantee Fields */}
-                    {service.serviceType && service.serviceType !== 'polish' && service.serviceType !== 'تلميع' && service.guarantee && (
+                    {service.guarantee && (
                         <div className="mt-6">
                             <h5 className="text-md font-semibold mb-4">
                                 ضمان الخدمة {index + 1}
@@ -1027,9 +1086,10 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 <FormItem
                                     label="مدة الضمان"
                                     invalid={
+                                        shouldShowError(
+                                            `services[${index}].guarantee.typeGuarantee`
+                                        ) &&
                                         !!errors.services?.[index]?.guarantee
-                                            ?.typeGuarantee &&
-                                        !!touched.services?.[index]?.guarantee
                                             ?.typeGuarantee
                                     }
                                     errorMessage={
@@ -1078,8 +1138,18 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                 onChange={(option) => {
                                                     form.setFieldValue(
                                                         field.name,
-                                                        option?.value
+                                                        option?.value || ''
                                                     )
+                                                    
+                                                    // إذا كان هناك تاريخ بدء، نقوم بحساب تاريخ الانتهاء تلقائياً
+                                                    const startDate = form.values.services[index].guarantee.startDate
+                                                    if (startDate && option?.value) {
+                                                        const endDate = calculateEndDate(startDate, option.value.split(' ')[0])
+                                                        form.setFieldValue(
+                                                            `services[${index}].guarantee.endDate`,
+                                                            endDate
+                                                        )
+                                                    }
                                                 }}
                                                 placeholder="اختر مدة الضمان"
                                             />
@@ -1090,9 +1160,10 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 <FormItem
                                     label="تاريخ البدء"
                                     invalid={
+                                        shouldShowError(
+                                            `services[${index}].guarantee.startDate`
+                                        ) &&
                                         !!errors.services?.[index]?.guarantee
-                                            ?.startDate &&
-                                        !!touched.services?.[index]?.guarantee
                                             ?.startDate
                                     }
                                     errorMessage={
@@ -1111,6 +1182,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                     {...field}
                                                     onChange={(e) => {
                                                         field.onChange(e)
+                                                        setSearchTriggered(false)
 
                                                         // حساب تاريخ الانتهاء تلقائياً
                                                         const guaranteePeriod =
@@ -1126,7 +1198,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                                 calculateEndDate(
                                                                     e.target
                                                                         .value,
-                                                                    guaranteePeriod
+                                                                    guaranteePeriod.split(' ')[0]
                                                                 )
                                                             form.setFieldValue(
                                                                 `services[${index}].guarantee.endDate`,
@@ -1137,7 +1209,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                     placeholder="تاريخ البدء"
                                                 />
                                                 {field.value && (
-                                                    <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-md">
+                                                    <div className="flex items-center gap-2 bg-blue-50 p-2 rounded-md mt-2">
                                                         <span className="text-base font-medium text-blue-700">
                                                             التاريخ الهجري:
                                                         </span>
@@ -1164,7 +1236,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                     ''
                                                 }
                                                 readOnly
-                                                className="bg-gray-50" // إضافة خلفية رمادية فاتحة
+                                                className="bg-gray-50"
                                             />
                                         </div>
                                         {values.services[index].guarantee

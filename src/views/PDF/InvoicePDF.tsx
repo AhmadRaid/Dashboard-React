@@ -515,7 +515,6 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>الخدمات المقدمة</Text>
                     <View style={styles.table}>
-                        {/* Table Header */}
                         <View style={styles.tableHeader}>
                             <View style={[styles.tableCol, styles.col_price]}>
                                 <Text style={styles.tableHeaderText}>السعر</Text>
@@ -523,12 +522,9 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => {
                             <View style={[styles.tableCol, styles.col_service]}>
                                 <Text style={styles.tableHeaderText}>الخدمة</Text>
                             </View>
-                            <View style={[styles.tableCol, styles.col_category]}>
-                                <Text style={styles.tableHeaderText}>الصنف</Text>
-                            </View>
                             <View style={[styles.tableCol, styles.col_itemNumber]}>
                                 <Text style={styles.tableHeaderText}>
-                                    رقم الصنف
+                                    رقم
                                 </Text>
                             </View>
                         </View>
@@ -573,17 +569,9 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => {
                                         )}
                                 </View>
                                 <View
-                                    style={[styles.tableCol, styles.col_category]}
-                                >
-                                    <Text style={styles.value}>
-                                        {service.category || 'غير محدد'}
-                                    </Text>{' '}
-                                    {/* Display category */}
-                                </View>
-                                <View
                                     style={[styles.tableCol, styles.col_itemNumber]}
                                 >
-                                    <Text style={styles.value}>{index + 1}</Text>{' '}
+                                    <Text style={styles.value}>{index + 1}</Text>
                                     {/* Item number */}
                                 </View>
                             </View>

@@ -12,6 +12,7 @@ import { HiOutlineTrash } from 'react-icons/hi'
 import { apiSendServiceForOrder } from '@/services/OrdersService'
 import { toast, Notification } from '@/components/ui'
 import { useNavigate, useParams } from 'react-router-dom'
+import { apiAddService } from '@/services/ServiceAPI'
 
 type FormikRef = FormikProps<any>
 
@@ -182,7 +183,7 @@ const DeleteServiceButton = ({ onDelete }: { onDelete: any }) => {
 const OrderServiceForm = forwardRef<FormikRef, OrderServiceFormProps>(
     (props, ref) => {
         const navigate = useNavigate()
-        const { clientId } = useParams()
+        const { clientId } = useParams<{ clientId: string }>()
 
         const {
             type,
@@ -282,12 +283,12 @@ const OrderServiceForm = forwardRef<FormikRef, OrderServiceFormProps>(
                                 )
                             }
 
-                            console.log('Data being sent:', data)
-
-                            // إرسال البيانات إلى API
-                            const response = await apiSendServiceForOrder({
+                            const requestData = {
                                 ...data,
-                            })
+                                clientId: clientId 
+                            }
+
+                            const response = await apiAddService(data.orderId, requestData)
 
                             if (response) {
                                 toast.push(

@@ -34,6 +34,15 @@ export interface Order {
         phone: string
         clientType: string
     }
+    invoice: {
+        invoiceNumber: string
+        subtotal: number
+        taxRate: number
+        taxAmount: number
+        totalAmount: number
+        notes: string
+        invoiceDate: string
+    }
     carModel: string
     carColor: string
     carPlateNumber: string
