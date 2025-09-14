@@ -57,7 +57,9 @@ const clientValidationSchema = Yup.object().shape({
 })
 
 const carValidationSchema = Yup.object().shape({
-
+    carManufacturer: Yup.string() // ✅ الحقل الجديد
+        .required('اسم الشركة المصنعة مطلوب')
+        .max(50, 'يجب ألا يتجاوز اسم الشركة 50 حرفًا'),
     carModel: Yup.string()
         .required('موديل السيارة مطلوب')
         .max(50, 'يجب ألا يتجاوز موديل السيارة 50 حرفًا'),

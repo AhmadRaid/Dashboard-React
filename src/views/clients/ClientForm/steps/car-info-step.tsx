@@ -105,20 +105,20 @@ const CarInfoStep = ({
       <p className="mb-6 text-sm text-gray-500">قسم لإعداد معلومات السيارة والمركبة</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormItem
-          label="الشركة المصنعة و نوع السيارة"
-          invalid={!!errors.carManufacturer && !!touched.carManufacturer}
-          errorMessage={errors.carManufacturer as string}
-        >
-          <Field 
-            name="carManufacturer" 
-            type="text" 
-            size="sm" 
-            placeholder="الشركة المصنعة ونوع السيارة" 
-            component={Input} 
-            onBlur={() => setFieldTouched('carManufacturer', true)}
-          />
-        </FormItem>
+      <FormItem
+        label="اسم الشركة المصنعة"
+        invalid={!!errors.carManufacturer && !!touched.carManufacturer}
+        errorMessage={errors.carManufacturer}
+    >
+        <Field
+            name="carManufacturer"
+            type="text"
+            autoComplete="off"
+            component={Input}
+            size="sm"
+            placeholder="أدخل اسم الشركة المصنعة"
+        />
+    </FormItem>
 
         <FormItem
           label="موديل السيارة"
