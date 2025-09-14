@@ -110,6 +110,8 @@ type FormData = {
     carColor: string
     carPlateNumber: string
     carSize: string
+    carManufacturer: string // ← أضف هذا الحقل
+
     // Services
     services: Array<{
         id: string
@@ -152,6 +154,7 @@ const initialData: FormData = {
     carModel: '',
     carColor: '',
     carPlateNumber: '',
+    carManufacturer: '', // ← أضف هذا الحقل
     carSize: '',
     services: [
         {
@@ -328,7 +331,7 @@ const MultiStepClientForm = ({
                     carModel: values.carModel,
                     carColor: values.carColor,
                     carPlateNumber: values.carPlateNumber,
-
+                    carManufacturer: values.carManufacturer, // ← تأكد من إضافة هذا
                     carSize: values.carSize,
                 }
 

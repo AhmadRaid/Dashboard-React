@@ -44,7 +44,10 @@ const NewClientPage = () => {
   const handleFinalSave = async (fullData: any) => {
     try {
       // Normalize payload similar to ClientForm2 logic
-      const payload = { ...fullData }
+      const payload = { 
+        ...fullData,
+        carManufacturer: fullData.carManufacturer || '' // تأكد من وجود قيمة افتراضية
+    }
 
       if (Array.isArray(payload.services)) {
         payload.services = payload.services.map((service: any) => {
