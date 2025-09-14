@@ -1,6 +1,7 @@
 import { apiCreateClient } from "@/services/ClientsService"
 import MultiStepClientForm from "./multi-step-client-form"
 import { useNavigate } from "react-router-dom"
+import { toast, Notification } from '@/components/ui'
 
 const NewClientPage = () => {
 
@@ -12,6 +13,14 @@ const NewClientPage = () => {
       if (confirm) {
         const response = await apiCreateClient({ ...clientData })
         console.log("Client created after confirmation:", response.data)
+        toast.push(
+          <Notification
+              title="تمت اضافة بنجاح"
+              type="success"
+          >
+              تمت اضافة عميل بنجاح
+          </Notification>
+      )
       } else {
         // Local-only staging when just saving step 1 without confirmation
         console.log("Client data staged locally:", clientData)
@@ -54,7 +63,15 @@ const NewClientPage = () => {
 
       const response = await apiCreateClient(payload)
       console.log("Complete data saved:", response.data)
-      navigate('/')
+      navigate('/home-page')
+      toast.push(
+        <Notification
+            title="تمت الاضافة بنجاح"
+            type="success"
+        >
+            تم اضافة طلب بنجاح
+        </Notification>
+    )
     } catch (error) {
       console.error("Error saving complete data:", error)
       throw error
