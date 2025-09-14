@@ -106,7 +106,7 @@ const CarInfoStep = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormItem
-          label="الشركة المصنعة نوع السيارة"
+          label="الشركة المصنعة و نوع السيارة"
           invalid={!!errors.carManufacturer && !!touched.carManufacturer}
           errorMessage={errors.carManufacturer as string}
         >

@@ -22,7 +22,6 @@ type FormFieldsName = {
   carPlateNumber: string
   carManufacturer: string
   carSize: string
-  carType: string
 }
 
 type ClientFieldsProps = {
@@ -203,11 +202,11 @@ const ClientFields = (props: ClientFieldsProps) => {
       <p className="mb-6 text-sm text-gray-500">قسم لإعداد معلومات السيارة</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormItem
-          label="نوع السيارة"
-          invalid={!!errors.carType && !!touched.carType}
-          errorMessage={errors.carType as string}
+          label="الشركة المصنعة ونوع السيارة"
+          invalid={!!errors.carManufacturer && !!touched.carManufacturer}
+          errorMessage={errors.carManufacturer as string}
         >
-          <Field name="carType" type="text" size="sm" placeholder="نوع السيارة" component={Input} />
+          <Field name="carManufacturer" type="text" size="sm" placeholder="الشركة المصنعة ونوع السيارة" component={Input} />
         </FormItem>
 
         <FormItem

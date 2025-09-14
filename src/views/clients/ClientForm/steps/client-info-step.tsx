@@ -142,7 +142,7 @@ const ClientInfoStep = ({ touched, errors, values, setFieldValue, ordersCount = 
         </FormItem>
 
         <FormItem
-          label="الاسم الاب"
+          label="اسم الاب"
           invalid={!!errors.secondName && !!touched.secondName}
           errorMessage={errors.secondName}
           extra={values.secondName && !isArabicText(values.secondName) && (
@@ -164,7 +164,7 @@ const ClientInfoStep = ({ touched, errors, values, setFieldValue, ordersCount = 
         </FormItem>
 
         <FormItem
-          label="الاسم الجد"
+          label="اسم الجد"
           invalid={!!errors.thirdName && !!touched.thirdName}
           errorMessage={errors.thirdName}
           extra={values.thirdName && !isArabicText(values.thirdName) && (

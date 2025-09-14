@@ -42,7 +42,6 @@ interface Service {
 
 interface Order {
     orderNumber: string
-    carType: string
     carModel: string
     carColor: string
     carPlateNumber: string
@@ -55,7 +54,8 @@ interface Order {
 
 interface Client {
     firstName: string
-    middleName: string
+    secondName: string
+    thirdName: string
     lastName: string
     clientNumber: string
     phone: string
@@ -613,9 +613,10 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                         <View style={styles.clientInfoItem}>
                             <Text style={styles.label}>اسم العميل:</Text>
                             <Text style={styles.value}>
-                                {`${guaranteeDoc.client.firstName} ${
-                                    guaranteeDoc.client.middleName || ''
-                                } ${guaranteeDoc.client.lastName}`}
+                                {`${guaranteeDoc.client.firstName} 
+                                    ${guaranteeDoc.client.secondName} 
+                                ${guaranteeDoc.client.thirdName}
+                                ${guaranteeDoc.client.lastName}`}
                             </Text>
 
                             <Text style={[styles.label, { marginTop: 2 }]}>
@@ -653,8 +654,8 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                     <View style={styles.carInfo}>
                         {[
                             {
-                                label: 'نوع السيارة',
-                                value: guaranteeDoc.order.carType,
+                                label: 'الشركة المصنعة ونوع السيارة',
+                                value: guaranteeDoc.order.carManufacturer,
                             },
                             {
                                 label: 'موديل السيارة',
@@ -668,7 +669,7 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                                 label: 'رقم اللوحة',
                                 value: guaranteeDoc.order.carPlateNumber,
                             },
-                            
+
                             {
                                 label: 'حجم السيارة',
                                 value: guaranteeDoc.order.carSize,
@@ -692,7 +693,8 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                 {/* Footer fixed on every page */}
                 <View style={styles.footerFixed} fixed>
                     <Text style={styles.footerText}>
-                        شروط الضمان: يخضع هذا الضمان للشروط والأحكام المذكورة أعلاه
+                        شروط الضمان: يخضع هذا الضمان للشروط والأحكام المذكورة
+                        أعلاه
                     </Text>
                     <Text style={styles.footerText}>
                         للإستفسارات حول الضمان، يرجى الاتصال على: 0554474543
@@ -702,25 +704,38 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                     </Text>
                 </View>
             </Page>
-            
+
             {/* Service pages: two services per page */}
             {serviceChunks.map((servicesPair: any[], chunkIndex: number) => (
-                <Page key={`services-page-${chunkIndex}`} size="A4" style={styles.page}>
+                <Page
+                    key={`services-page-${chunkIndex}`}
+                    size="A4"
+                    style={styles.page}
+                >
                     {/* Header for services page */}
                     <View style={styles.servicesHeaderCard}>
                         <View style={styles.servicesHeaderAccent} />
                         <View style={styles.servicesHeaderContent}>
-                            <Text style={styles.servicesHeaderTitle}>الخدمات والضمانات</Text>
-                            <Text style={styles.servicesHeaderSubtitle}>تفاصيل الخدمات المقدمة ومعلومات الضمان لكل خدمة</Text>
+                            <Text style={styles.servicesHeaderTitle}>
+                                الخدمات والضمانات
+                            </Text>
+                            <Text style={styles.servicesHeaderSubtitle}>
+                                تفاصيل الخدمات المقدمة ومعلومات الضمان لكل خدمة
+                            </Text>
                         </View>
                     </View>
 
                     <View style={styles.section}>
                         {servicesPair.map((service: any, index: number) => (
-                            <View key={`service-${chunkIndex * 2 + index}`} style={styles.serviceSection}>
+                            <View
+                                key={`service-${chunkIndex * 2 + index}`}
+                                style={styles.serviceSection}
+                            >
                                 <View style={styles.serviceHeader}>
                                     <Text style={styles.serviceTitle}>
-                                        {`الخدمة ${chunkIndex * 2 + index + 1}: `}
+                                        {`الخدمة ${
+                                            chunkIndex * 2 + index + 1
+                                        }: `}
                                         {service.serviceType === 'protection'
                                             ? 'حماية'
                                             : service.serviceType === 'polish'
@@ -1198,16 +1213,15 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                                                             styles.guaranteeStatus
                                                         }
                                                     >
-                                                        {isGuaranteeActive(
-                                                            service.guarantee
-                                                                .endDate
-                                                        ) ? (
+                                                        {service.guarantee
+                                                            .status ==
+                                                        'active' ? (
                                                             <Text
                                                                 style={
                                                                     styles.activeBadge
                                                                 }
                                                             >
-                                                                نشط
+                                                                فعال
                                                             </Text>
                                                         ) : (
                                                             <Text
@@ -1215,7 +1229,7 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                                                                     styles.validityBadge
                                                                 }
                                                             >
-                                                                منتهي
+                                                                غير فعال
                                                             </Text>
                                                         )}
                                                     </View>
@@ -1227,11 +1241,16 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                             </View>
                         ))}
                     </View>
-                    <Text fixed style={styles.pageNumber} render={({ pageNumber }) => `${pageNumber}`} />
+                    <Text
+                        fixed
+                        style={styles.pageNumber}
+                        render={({ pageNumber }) => `${pageNumber}`}
+                    />
                     {/* Footer fixed on every page */}
                     <View style={styles.footerFixed} fixed>
                         <Text style={styles.footerText}>
-                            شروط الضمان: يخضع هذا الضمان للشروط والأحكام المذكورة أعلاه
+                            شروط الضمان: يخضع هذا الضمان للشروط والأحكام
+                            المذكورة أعلاه
                         </Text>
                         <Text style={styles.footerText}>
                             للإستفسارات حول الضمان، يرجى الاتصال على: 0554474543

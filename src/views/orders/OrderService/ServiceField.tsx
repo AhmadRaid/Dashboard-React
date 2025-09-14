@@ -125,7 +125,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
             const res = await apiGetClientOrders(clientId)
 
             const allOrders = res.data.data.orders.map((order: any) => ({
-                label: `${order.carType} - ${order.carModel}`,
+                label: `${order.carManufacturer} - ${order.carModel}`,
                 value: order._id,
                 orderData: order,
             }))

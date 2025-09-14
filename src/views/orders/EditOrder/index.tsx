@@ -36,7 +36,6 @@ const EditOrder = () => {
                         carPlateNumber: orderData.carPlateNumber || '',
                         carManufacturer: orderData.carManufacturer || '',
                         carSize: orderData.carSize || '',
-                        carType: orderData.carType || '',
                         orderStatus: orderData.status || 'new',
                         services: orderData.services || [],
                     })

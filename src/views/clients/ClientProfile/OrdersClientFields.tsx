@@ -1,3 +1,4 @@
+// OrdersClientFields.tsx
 import AdaptableCard from '@/components/shared/AdaptableCard'
 import { ClientWithOrdersData } from '@/@types/clients'
 import { useState, useMemo } from 'react'
@@ -106,7 +107,8 @@ const transformOrderToGuaranteeDoc = (order: any, client: any): any => {
         issueDate: new Date(),
         client: {
             firstName: client.firstName,
-            middleName: client.middleName || '',
+            secondName: client.secondName || '', // تم التعديل
+            thirdName: client.thirdName || '', // تم التعديل
             lastName: client.lastName,
             clientNumber: client.clientNumber || `CL-${client._id}`,
             phone: client.phone,
@@ -114,7 +116,6 @@ const transformOrderToGuaranteeDoc = (order: any, client: any): any => {
         },
         order: {
             orderNumber: order.orderNumber,
-            carType: order.carType,
             carModel: order.carModel,
             carColor: order.carColor,
             carPlateNumber: order.carPlateNumber,
@@ -152,6 +153,7 @@ const transformOrderToGuaranteeDoc = (order: any, client: any): any => {
                         new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
                     terms: service.guarantee?.terms,
                     Notes: service.guarantee?.Notes,
+                    status: service.guarantee?.status, // تم التعديل لإضافة حقل الحالة
                 },
             })),
         },
@@ -309,7 +311,7 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
     // --- DataTable Columns Definition ---
     const ordersColumns: ColumnDef<any>[] = [
         { header: 'رقم الطلب', accessorKey: 'orderNumber' },
-        { header: 'نوع السيارة', accessorKey: 'carType' },
+        { header: 'الشركة المصنعة ونوع السيارة', accessorKey: 'carManufacturer' },
         { header: 'موديل السيارة', accessorKey: 'carModel' },
         { header: 'لون السيارة', accessorKey: 'carColor' },
         {
@@ -501,8 +503,7 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                             الاسم الكامل
                         </h6>
                         <p className="text-gray-800 dark:text-gray-100">
-                            {values.firstName} {values.middleName}{' '}
-                            {values.lastName}
+                            {values.firstName} {values.secondName} {values.thirdName} {values.lastName}{' '}
                         </p>
                     </div>
                     <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-700">

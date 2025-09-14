@@ -1,8 +1,11 @@
 import { useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { Order } from '@/@types/order'
-import { apiGetOrdersDetails } from '@/services/OrdersService'
-import { Button } from '@/components/ui'
+import {
+    apiGetOrdersDetails,
+    apiChangeGurenteeStatus,
+} from '@/services/OrdersService'
+import { Button, toast } from '@/components/ui'
 import { HiOutlineArrowRight } from 'react-icons/hi'
 import { useNavigate } from 'react-router-dom'
 import AdaptableCard from '@/components/shared/AdaptableCard'
@@ -16,6 +19,9 @@ import {
     FiPercent,
     FiTag,
     FiInfo,
+    FiCheckCircle,
+    FiXCircle,
+    FiShield,
 } from 'react-icons/fi'
 import ShowOrderFields from './ShowOrderField'
 
@@ -23,24 +29,126 @@ const OrderDetails = () => {
     const { orderId } = useParams()
     const [order, setOrder] = useState<Order | null>(null)
     const [loading, setLoading] = useState(true)
+    const [activatingGuarantee, setActivatingGuarantee] = useState<
+        string | null
+    >(null)
+    const [deactivatingGuarantee, setDeactivatingGuarantee] = useState<
+        string | null
+    >(null)
     const navigate = useNavigate()
 
     useEffect(() => {
         window.scrollTo(0, 0)
-
-        const fetchOrderDetails = async () => {
-            try {
-                const response = await apiGetOrdersDetails(orderId)
-                setOrder(response.data.data)
-            } catch (error) {
-                console.error('Failed to fetch order details:', error)
-            } finally {
-                setLoading(false)
-            }
-        }
-
         fetchOrderDetails()
     }, [orderId])
+
+    const fetchOrderDetails = async () => {
+        try {
+            setLoading(true)
+            const response = await apiGetOrdersDetails(orderId)
+            setOrder(response.data.data)
+        } catch (error) {
+            console.error('Failed to fetch order details:', error)
+            toast.push(
+                <Notification title="نجاح" type="error">
+                    فشل في تحميل تفاصيل الطلب'
+                </Notification>
+            )
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    // In OrderDetails component, update the function calls to pass both serviceId and guaranteeId
+    // In OrderDetails component
+    const handleActivateGuarantee = async (
+        serviceId: string,
+        guaranteeId: string
+    ) => {
+        if (!orderId || !order) return
+        try {
+            setActivatingGuarantee(guaranteeId)
+            await apiChangeGurenteeStatus(orderId, serviceId, guaranteeId, {
+                status: 'active',
+            })
+            toast.push(
+                <Notification title="نجاح" type="success">
+                    تم تفعيل الضمان بنجاح'
+                </Notification>
+            )
+            // Update the order state directly
+            setOrder((prevOrder) => {
+                if (!prevOrder) return null
+                const updatedServices = prevOrder.services.map((service) => {
+                    if (service._id === serviceId && service.guarantee) {
+                        return {
+                            ...service,
+                            guarantee: {
+                                ...service.guarantee,
+                                status: 'active',
+                            },
+                        }
+                    }
+                    return service
+                })
+                return { ...prevOrder, services: updatedServices }
+            })
+        } catch (error) {
+            console.error('Failed to activate guarantee:', error)
+            toast.push(
+                <Notification title="فشل" type="error">
+                    فشل في تفعيل الضمان'
+                </Notification>
+            )
+        } finally {
+            setActivatingGuarantee(null)
+        }
+    }
+
+    const handleDeactivateGuarantee = async (
+        serviceId: string,
+        guaranteeId: string
+    ) => {
+        if (!orderId || !order) return
+        try {
+            setDeactivatingGuarantee(guaranteeId)
+            await apiChangeGurenteeStatus(orderId, serviceId, guaranteeId, {
+                status: 'inactive',
+            })
+            toast.push(
+                <Notification title="نجاح" type="success">
+                    تم إلغاء تفعيل الضمان بنجاح'
+                </Notification>
+            )
+
+            // Update the order state directly
+            setOrder((prevOrder) => {
+                if (!prevOrder) return null
+                const updatedServices = prevOrder.services.map((service) => {
+                    if (service._id === serviceId && service.guarantee) {
+                        return {
+                            ...service,
+                            guarantee: {
+                                ...service.guarantee,
+                                status: 'inactive',
+                            },
+                        }
+                    }
+                    return service
+                })
+                return { ...prevOrder, services: updatedServices }
+            })
+        } catch (error) {
+            console.error('Failed to deactivate guarantee:', error)
+            toast.push(
+                <Notification title="فشل" type="error">
+                    فشل في إلغاء تفعيل الضمان'
+                </Notification>
+            )
+        } finally {
+            setDeactivatingGuarantee(null)
+        }
+    }
 
     if (loading) {
         return (
@@ -107,6 +215,17 @@ const OrderDetails = () => {
                             )}
                         </p>
                     )}
+                    {guarantee.isActive !== undefined && (
+                        <p
+                            className={`font-semibold ${
+                                guarantee.isActive
+                                    ? 'text-green-600'
+                                    : 'text-red-600'
+                            }`}
+                        >
+                            الحالة: {guarantee.isActive ? 'مفعل' : 'غير مفعل'}
+                        </p>
+                    )}
                 </div>
             )
         }
@@ -115,19 +234,80 @@ const OrderDetails = () => {
     }
 
     return (
-        <div className="container mx-auto p-4">
-            <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold mb-1">
-                    تفاصيل طلب
+        <div className="container mx-auto p-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
+            <div className="flex justify-between items-center mb-8">
+                <h3 className="text-2xl font-extrabold text-gray-800 dark:text-gray-100">
+                    تفاصيل الطلب
                     {order.orderNumber && (
-                        <span className="mr-2 text-indigo-600 dark:text-indigo-400 text-xl">
+                        <span className="mr-2 text-indigo-600 dark:text-indigo-400 text-xl font-medium">
                             #{order.orderNumber}
                         </span>
                     )}
                 </h3>
             </div>
 
-            <AdaptableCard>
+            <div className="space-y-10">
+                <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <div class="bg-gradient-to-br from-gray-700 to-gray-500 rounded-t-lg p-6 mb-6 flex items-center shadow-md">
+                        <div>
+                            <h5 class="text-2xl font-bold text-white flex items-center gap-3">
+                                <span>معلومات الطلب</span>
+                                <svg
+                                    stroke="currentColor"
+                                    fill="currentColor"
+                                    strokeWidth="0"
+                                    viewBox="0 0 24 24"
+                                    className="text-2xl"
+                                    height="1em"
+                                    width="1em"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"></path>
+                                </svg>
+                            </h5>
+                            <p class="text-gray-100 text-opacity-90">
+                                تفاصيل الطلب ووقت الإنشاء
+                            </p>
+                        </div>
+                    </div>
+                    <div className=" grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-gray-50 p-5 rounded-lg">
+                            <h3 className="text-sm font-medium text-gray-500 mb-2">
+                                تاريخ الإنشاء
+                            </h3>
+                            <p className="text-lg font-medium text-gray-800">
+                                {new Date(order.createdAt).toLocaleDateString(
+                                    'en-GB',
+                                    {
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: 'numeric',
+                                    }
+                                )}
+                            </p>
+                        </div>
+                        <div className="bg-gray-50 p-5 rounded-lg">
+                            <h3 className="text-sm font-medium text-gray-500 mb-2">
+                                حالة الطلب
+                            </h3>
+                            <span
+                                className={`inline-block px-4 py-1 rounded-full text-white font-semibold ${
+                                    order.status === 'طلب جديد'
+                                        ? 'bg-green-500'
+                                        : order.status === 'طلب صيانة'
+                                        ? 'bg-yellow-500'
+                                        : order.status === 'ملغي'
+                                        ? 'bg-red-500'
+                                        : 'bg-gray-500'
+                                }`}
+                            >
+                                {order.status}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* قسم معلومات السيارة والخدمات */}
                 <ShowOrderFields
                     values={{
                         carModel: order.carModel,
@@ -136,28 +316,38 @@ const OrderDetails = () => {
                         carPlateNumber: order.carPlateNumber,
                         carManufacturer: order.carManufacturer,
                         carSize: order.carSize,
-                        carType: order.carType,
                         services: order.services.map((service) => ({
                             ...service,
                             guarantee: service.guarantee || null,
+                            _id: service._id,
                         })),
                     }}
                     touched={{}}
                     errors={{}}
                     readOnly={true}
+                    onActivateGuarantee={handleActivateGuarantee}
+                    onDeactivateGuarantee={handleDeactivateGuarantee}
+                    activatingGuarantee={activatingGuarantee}
+                    deactivatingGuarantee={deactivatingGuarantee}
                 />
 
-                {/* التفاصيل المالية المحسّنة */}
+                {/* قسم التفاصيل المالية */}
                 {order.invoice && (
-                    <div className="mt-8">
-                        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2 text-gray-800">
-                            <FiDollarSign className="text-indigo-600" />
-                            التفاصيل المالية
-                        </h2>
-                        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
-                            {/* بطاقات المؤشرات المالية الرئيسية */}
+                    <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                        <div class="bg-gradient-to-br from-gray-700 to-gray-500 rounded-t-lg p-6 mb-6 flex items-center shadow-md">
+                            <div>
+                                <h5 class="text-2xl font-bold text-white flex items-center gap-3">
+                                    <span>التفاصيل المالية</span>
+                                    <FiDollarSign className="text-3xl" />
+                                </h5>
+                                <p class="text-gray-100 text-opacity-90">
+                                    تفاصيل السيارة الأساسية والمعلومات الفنية
+                                    لطلب الخدمة.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="p-8">
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                                {/* إجمالي المبلغ المدفوع */}
                                 <div className="flex flex-col items-center justify-center p-6 bg-green-50 rounded-xl">
                                     <div className="bg-green-100 p-3 rounded-full mb-3">
                                         <FiDollarSign className="text-green-600 text-2xl" />
@@ -170,8 +360,6 @@ const OrderDetails = () => {
                                         ر.س
                                     </span>
                                 </div>
-
-                                {/* المبلغ قبل الضريبة */}
                                 <div className="flex flex-col items-center justify-center p-6 bg-blue-50 rounded-xl">
                                     <div className="bg-blue-100 p-3 rounded-full mb-3">
                                         <FiTag className="text-blue-600 text-2xl" />
@@ -183,8 +371,6 @@ const OrderDetails = () => {
                                         {order.invoice.subtotal.toFixed(2)} ر.س
                                     </span>
                                 </div>
-
-                                {/* قيمة الضريبة */}
                                 <div className="flex flex-col items-center justify-center p-6 bg-red-50 rounded-xl">
                                     <div className="bg-red-100 p-3 rounded-full mb-3">
                                         <FiPercent className="text-red-600 text-2xl" />
@@ -196,8 +382,6 @@ const OrderDetails = () => {
                                         {order.invoice.taxAmount.toFixed(2)} ر.س
                                     </span>
                                 </div>
-
-                                {/* حالة الفاتورة */}
                                 <div className="flex flex-col items-center justify-center p-6 bg-yellow-50 rounded-xl">
                                     <div className="bg-yellow-100 p-3 rounded-full mb-3">
                                         <FiFileText className="text-yellow-600 text-2xl" />
@@ -210,15 +394,12 @@ const OrderDetails = () => {
                                     </span>
                                 </div>
                             </div>
-
-                            {/* تفاصيل إضافية للفوترة */}
                             <div className="bg-gray-50 rounded-lg p-6">
                                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                                    تفاصيل الفاتورة
+                                    تفاصيل إضافية
                                 </h3>
-                                <div className="space-y-4">
-                                    {/* رقم الفاتورة */}
-                                    <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="flex justify-between items-center">
                                         <span className="text-gray-600 flex items-center gap-2">
                                             <FiFileText className="text-indigo-500" />
                                             رقم الفاتورة:
@@ -227,101 +408,38 @@ const OrderDetails = () => {
                                             {order.invoice.invoiceNumber}
                                         </span>
                                     </div>
-
-                                    {/* تاريخ الفاتورة بالميلادي والهجري */}
-                                    <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                                    <div className="flex justify-between items-center">
                                         <span className="text-gray-600 flex items-center gap-2">
                                             <FiCalendar className="text-indigo-500" />
                                             تاريخ الفاتورة:
                                         </span>
-                                        <div className="flex flex-col items-end">
-                                            {/* التاريخ الميلادي */}
-                                            <span className="font-medium text-gray-800">
-                                                {new Date(
-                                                    order.invoice.invoiceDate
-                                                ).toLocaleDateString('EN-US')}
-                                            </span>
-                                            {/* التاريخ الهجري */}
-                                            <span className="text-sm text-gray-500 mt-1">
-                                                {new Date(
-                                                    order.invoice.invoiceDate
-                                                ).toLocaleDateString('ar-SA', {
-                                                    calendar:
-                                                        'islamic-umalqura',
-                                                    year: 'numeric',
-                                                    month: 'long',
-                                                    day: 'numeric',
-                                                })}
-                                            </span>
-                                        </div>
+                                        <span className="font-medium text-gray-800">
+                                            {new Date(
+                                                order.createdAt
+                                            ).toLocaleDateString('en-GB', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric',
+                                            })}
+                                        </span>
                                     </div>
-
-                                    {/* ملاحظات الفاتورة */}
-                                    {order.invoice.notes && (
-                                        <div className="flex justify-between items-start pb-2">
-                                            <span className="text-gray-600 flex items-center gap-2">
-                                                <FiInfo className="text-indigo-500" />
-                                                ملاحظات:
-                                            </span>
-                                            <p className="text-gray-800 max-w-sm text-right">
-                                                {order.invoice.notes}
-                                            </p>
-                                        </div>
-                                    )}
                                 </div>
+                                {order.invoice.notes && (
+                                    <div className="mt-4">
+                                        <span className="text-gray-600 flex items-center gap-2">
+                                            <FiInfo className="text-indigo-500" />
+                                            ملاحظات:
+                                        </span>
+                                        <p className="text-gray-800 mt-1">
+                                            {order.invoice.notes}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
                 )}
-
-                {/* معلومات إضافية للطلب */}
-                <div className="mt-8">
-                    <div className="flex items-center gap-2 mb-4">
-                        <FiInfo className="text-xl text-indigo-600" />
-                        <h2 className="text-2xl font-bold text-gray-800">
-                            معلومات إضافية للطلب
-                        </h2>
-                    </div>
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* تاريخ الإنشاء */}
-                        <div className="bg-gray-50 p-5 rounded-lg">
-                            <h3 className="text-sm font-medium text-gray-500 mb-2">
-                                تاريخ الإنشاء
-                            </h3>
-                            <p className="text-lg font-medium text-gray-800">
-                                {new Date(order.createdAt).toLocaleDateString(
-                                    'ar-SA',
-                                    {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric',
-                                    }
-                                )}
-                            </p>
-                        </div>
-
-                        {/* حالة الطلب */}
-                        <div className="bg-gray-50 p-5 rounded-lg">
-                            <h3 className="text-sm font-medium text-gray-500 mb-2">
-                                حالة الطلب
-                            </h3>
-                            <span
-                                className={`inline-block px-4 py-1 rounded-full text-white font-semibold ${
-                                    order.status === 'مكتمل'
-                                        ? 'bg-green-500'
-                                        : order.status === 'قيد المعالجة'
-                                        ? 'bg-yellow-500'
-                                        : order.status === 'ملغي'
-                                        ? 'bg-red-500'
-                                        : 'bg-gray-500'
-                                }`}
-                            >
-                                {order.status}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </AdaptableCard>
+            </div>
         </div>
     )
 }

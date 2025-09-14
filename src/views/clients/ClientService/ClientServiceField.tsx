@@ -62,9 +62,8 @@ interface ClientInfo {
     thirdName: string
     lastName: string
     phone: string
-    secondName: string
     email?: string
-    carType?: string
+    carManufacturer?: string
     carModel?: string
     carYear?: string
 }
@@ -204,7 +203,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
             const res = await apiGetClientOrders(clientId)
 
             const allOrders = res.data.data.orders.map((order: any) => ({
-                label: `${order.carType} - ${order.carModel}`,
+                label: `${order.carManufacturer} - ${order.carModel}`,
                 value: order._id,
                 orderData: order,
             }))
@@ -317,9 +316,9 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                             {client.phone} 
                                                         </span>
                                                     </div>
-                                                    {client.carType && client.carModel && (
+                                                    {client.carManufacturer && client.carModel && (
                                                         <div className="text-sm text-gray-600">
-                                                            {client.carType} {client.carModel} {client.carYear && ` - ${client.carYear}`}
+                                                            {client.carManufacturer} {client.carModel} {client.carYear && ` - ${client.carYear}`}
                                                         </div>
                                                     )}
                                                 </div>

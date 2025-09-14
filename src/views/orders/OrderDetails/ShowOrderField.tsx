@@ -2,20 +2,22 @@ import AdaptableCard from '@/components/shared/AdaptableCard'
 import Input from '@/components/ui/Input'
 import { FormItem } from '@/components/ui/Form'
 import { Field, FormikErrors, FormikTouched, FieldProps } from 'formik'
-import { Select } from '@/components/ui'
+import { Button } from '@/components/ui'
 import { Field as FormikField } from 'formik'
 import {
     FaCar,
     FaTools,
     FaShieldAlt,
-    FaCalendarAlt,
     FaTag,
     FaPalette,
     FaRulerCombined,
-    FaMapMarkerAlt,
-    FaBuilding,
     FaWrench,
-} from 'react-icons/fa' // Added more specific icons
+    FaDollarSign,
+    FaInfoCircle,
+    FaCalendarAlt,
+    FaMapMarkerAlt,
+} from 'react-icons/fa'
+import { FiCheckCircle, FiXCircle, FiInfo } from 'react-icons/fi'
 
 type FormFieldsName = {
     carModel: string
@@ -24,10 +26,10 @@ type FormFieldsName = {
     carPlateNumber: string
     carManufacturer: string
     carSize: string
-    carType: string
     services: Array<{
+        _id: string // Add _id for service
         serviceType: string
-        dealDetails: string
+        dealDetails?: string
         protectionFinish?: string
         protectionSize?: string
         protectionCoverage?: string
@@ -42,11 +44,14 @@ type FormFieldsName = {
         servicePrice?: number
         serviceDate?: string
         guarantee?: {
+            _id: string
             typeGuarantee: string
             startDate: string
             endDate: string
-            terms: string
-            Notes: string
+            terms?: string
+            notes?: string
+            status: string // Ensure this is status
+            accepted: boolean
         }
     }>
 }
@@ -56,649 +61,411 @@ type OrderFieldsProps = {
     errors: FormikErrors<FormFieldsName>
     values: any
     readOnly?: boolean
+    onActivateGuarantee?: (serviceId: string, guaranteeId: string) => void // Update this
+    onDeactivateGuarantee?: (serviceId: string, guaranteeId: string) => void // Update this
+    activatingGuarantee?: string | null
+    deactivatingGuarantee?: string | null
 }
 
-const carSizeOptions = [
-    { label: 'صغيرة', value: 'small', icon: '🚗' },
-    { label: 'متوسطة', value: 'medium', icon: '🚙' },
-    { label: 'كبيرة', value: 'large', icon: '🚚' },
-    { label: 'كبيرة جداً', value: 'X-large', icon: '🚛' },
-    { label: 'ضخمة', value: 'XX-large', icon: '🚌' },
-]
+const getServiceTypeName = (serviceType: string) => {
+    switch (serviceType) {
+        case 'protection':
+            return 'حماية'
+        case 'polish':
+            return 'تلميع'
+        case 'insulator':
+            return 'عازل حراري'
+        case 'additions':
+            return 'إضافات'
+        default:
+            return serviceType
+    }
+}
 
-const branchOptions = [
-    { label: 'فرع أبحر', value: 'فرع ابحر', icon: '🌊' }, // Changed icon to be more specific
-    { label: 'فرع المدينة', value: 'فرع المدينة', icon: '🏢' }, // Changed icon to be more specific
-    { label: 'اخرى', value: 'اخرى', icon: '📍' },
-]
-
-// Icons will now use gray tones for consistency with the new palette
 const serviceTypeIcons = {
-    protection: <FaShieldAlt className="text-gray-600 dark:text-gray-400" />,
-    polish: <FaWrench className="text-gray-600 dark:text-gray-400" />,
-    insulator: <FaTools className="text-gray-600 dark:text-gray-400" />,
-    additions: <FaTag className="text-gray-600 dark:text-gray-400" />,
+    protection: (
+        <FaShieldAlt className="text-purple-600 dark:text-purple-400" />
+    ),
+    polish: <FaWrench className="text-orange-600 dark:text-orange-400" />,
+    insulator: <FaTools className="text-blue-600 dark:text-blue-400" />,
+    additions: <FaTag className="text-green-600 dark:text-green-400" />,
     default: <FaTools className="text-gray-500 dark:text-gray-500" />,
 }
 
+const renderReadOnlyValue = (
+    value: string | number | undefined,
+    placeholder: string = '-'
+) => (
+    <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium text-gray-800 dark:text-gray-200 shadow-inner">
+        {value || placeholder}
+    </div>
+)
+
 const ShowOrderFields = (props: OrderFieldsProps) => {
-    const { values, touched, errors, readOnly = false } = props
+    const {
+        values,
+        readOnly = false,
+        onActivateGuarantee,
+        onDeactivateGuarantee,
+        activatingGuarantee,
+        deactivatingGuarantee,
+    } = props
 
-    // Helper function for rendering readonly values
-    const renderReadOnlyValue = (
-        value: string | number | undefined,
-        placeholder: string = '-'
-    ) => (
-        <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium text-gray-800 dark:text-gray-200">
-            {value || placeholder}
-        </div>
-    )
+    const formatDate = (dateString?: string) => {
+        if (!dateString) return '-';
+        return new Date(dateString).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+        });
+    };
 
-    // Helper for translating service type names
-    const getServiceTypeName = (serviceType: string) => {
-        switch (serviceType) {
+    const renderServiceDetails = (service: any) => {
+        switch (service.serviceType) {
             case 'protection':
-                return 'حماية'
+                return (
+                    <>
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                                <FaPalette className="ml-2 text-base text-gray-500" />{' '}
+                                لون السيارة الأصلي
+                            </label>
+                            {renderReadOnlyValue(service.originalCarColor)}
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                                <FaPalette className="ml-2 text-base text-gray-500" />{' '}
+                                لون الحماية
+                            </label>
+                            {renderReadOnlyValue(service.protectionColor)}
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                                <FaWrench className="ml-2 text-base text-gray-500" />{' '}
+                                درجة اللمعان
+                            </label>
+                            {renderReadOnlyValue(service.protectionFinish)}
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                                <FaRulerCombined className="ml-2 text-base text-gray-500" />{' '}
+                                حجم الفيلم
+                            </label>
+                            {renderReadOnlyValue(
+                                service.protectionSize ? `${service.protectionSize} مل` : '-'
+                            )}
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                                <FaShieldAlt className="ml-2 text-base text-gray-500" />{' '}
+                                نوع التغطية
+                            </label>
+                            {renderReadOnlyValue(service.protectionCoverage)}
+                        </div>
+                    </>
+                );
             case 'polish':
-                return 'تلميع'
+                return (
+                    <>
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                                <FaWrench className="ml-2 text-base text-gray-500" />{' '}
+                                نوع التلميع
+                            </label>
+                            {renderReadOnlyValue(service.polishType || '-')}
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                                <FaWrench className="ml-2 text-base text-gray-500" />{' '}
+                                نوع التلميع الفرعي
+                            </label>
+                            {renderReadOnlyValue(service.polishSubType || '-')}
+                        </div>
+                    </>
+                );
             case 'insulator':
-                return 'عازل حراري'
+                return (
+                    <>
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                                <FaTools className="ml-2 text-base text-gray-500" />{' '}
+                                نوع العازل
+                            </label>
+                            {renderReadOnlyValue(service.insulatorType || '-')}
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                                <FaTools className="ml-2 text-base text-gray-500" />{' '}
+                                تغطية العازل
+                            </label>
+                            {renderReadOnlyValue(service.insulatorCoverage || '-')}
+                        </div>
+                    </>
+                );
             case 'additions':
-                return 'إضافات'
-            case 'wash':
-                return 'غسيل' // Added wash type if applicable
+                return (
+                    <>
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                                <FaTag className="ml-2 text-base text-gray-500" />{' '}
+                                نوع الإضافة
+                            </label>
+                            {renderReadOnlyValue(service.additionType || '-')}
+                        </div>
+                        {/* You can add more fields specific to 'additions' here */}
+                    </>
+                );
             default:
-                return serviceType
+                return null;
         }
-    }
+    };
 
     return (
-        <div className="w-full max-w-full p-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
+        <div className="w-full max-w-full">
             <div className="max-w-7xl mx-auto">
-                <AdaptableCard
-                    divider
-                    className="w-full shadow-xl rounded-lg overflow-hidden"
-                >
-                    {/* Car Information Header */}
-                    {/* Changed background to gray gradient for professionalism */}
+                {/* Car Information Section */}
+                <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 mb-10">
                     <div className="bg-gradient-to-br from-gray-700 to-gray-500 rounded-t-lg p-6 mb-6 flex items-center shadow-md">
                         <div>
                             <h5 className="text-2xl font-bold text-white flex items-center gap-3">
                                 <span>معلومات السيارة</span>
-                                <FaCar className="text-white text-3xl" />
+                                <svg
+                                    stroke="currentColor"
+                                    fill="currentColor"
+                                    strokeWidth="0"
+                                    viewBox="0 0 512 512"
+                                    className="text-white text-3xl"
+                                    height="1em"
+                                    width="1em"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path d="M499.99 176h-59.87l-16.64-41.6C406.38 91.63 365.57 64 319.5 64h-127c-46.06 0-86.88 27.63-103.99 70.4L71.87 176H12.01C4.2 176-1.53 183.34.37 190.91l6 24C7.7 220.25 12.5 224 18.01 224h20.07C24.65 235.73 16 252.78 16 272v48c0 16.12 6.16 30.67 16 41.93V416c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32v-32h256v32c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32v-54.07c9.84-11.25 16-25.8 16-41.93v-48c0-19.22-8.65-36.27-22.07-48H494c5.51 0 10.31-3.75 11.64-9.09l6-24c1.89-7.57-3.84-14.91-11.65-14.91zm-352.06-17.83c7.29-18.22 24.94-30.17 44.57-30.17h127c19.63 0 37.28 11.95 44.57 30.17L384 208H128l19.93-49.83zM96 319.8c-19.2 0-32-12.76-32-31.9S76.8 256 96 256s48 28.71 48 47.85-28.8 15.95-48 15.95zm320 0c-19.2 0-48 3.19-48-15.95S396.8 256 416 256s32 12.76 32 31.9-12.8 31.9-32 31.9z"></path>
+                                </svg>
                             </h5>
                             <p className="text-gray-100 text-opacity-90">
-                                تفاصيل السيارة الأساسية والمعلومات الفنية لطلب
-                                الخدمة.
+                                تفاصيل السيارة الأساسية والمعلومات الفنية لطلب الخدمة.
                             </p>
                         </div>
                     </div>
-
-                    {/* Car Information Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-6">
-                        {/* Car Type */}
-                        <FormItem
-                            label={
-                                <span className="flex items-center text-gray-700 dark:text-gray-200">
-                                    <FaCar className="ml-2 text-lg text-gray-500" />{' '}
-                                    نوع السيارة
-                                </span>
-                            }
-                            invalid={!!errors.carType && !!touched.carType}
-                            errorMessage={errors.carType as string}
-                            className="mb-0"
-                        >
-                            {readOnly ? (
-                                renderReadOnlyValue(values.carType)
-                            ) : (
-                                <Field
-                                    name="carType"
-                                    type="text"
-                                    size="sm"
-                                    placeholder="مثال: سيدان، دفع رباعي..."
-                                    component={Input}
-                                    className="w-full border-gray-300 focus:border-gray-500 focus:ring-gray-500 transition duration-200"
-                                />
-                            )}
-                        </FormItem>
-
-                        {/* Car Model */}
-                        <FormItem
-                            label={
-                                <span className="flex items-center text-gray-700 dark:text-gray-200">
-                                    <FaTag className="ml-2 text-lg text-gray-500" />{' '}
-                                    موديل السيارة
-                                </span>
-                            }
-                            invalid={!!errors.carModel && !!touched.carModel}
-                            errorMessage={errors.carModel}
-                            className="mb-0"
-                        >
-                            {readOnly ? (
-                                renderReadOnlyValue(values.carModel)
-                            ) : (
-                                <Field
-                                    name="carModel"
-                                    type="text"
-                                    size="sm"
-                                    placeholder="مثال: كامري، فورد F-150"
-                                    component={Input}
-                                    className="w-full border-gray-300 focus:border-gray-500 focus:ring-gray-500 transition duration-200"
-                                />
-                            )}
-                        </FormItem>
-
-                        {/* Car Color */}
-                        <FormItem
-                            label={
-                                <span className="flex items-center text-gray-700 dark:text-gray-200">
-                                    <FaPalette className="ml-2 text-lg text-gray-500" />{' '}
-                                    لون السيارة
-                                </span>
-                            }
-                            invalid={!!errors.carColor && !!touched.carColor}
-                            errorMessage={errors.carColor}
-                            className="mb-0"
-                        >
-                            {readOnly ? (
-                                renderReadOnlyValue(values.carColor)
-                            ) : (
-                                <Field
-                                    name="carColor"
-                                    type="text"
-                                    size="sm"
-                                    placeholder="مثال: أبيض، أسود"
-                                    component={Input}
-                                    className="w-full border-gray-300 focus:border-gray-500 focus:ring-gray-500 transition duration-200"
-                                />
-                            )}
-                        </FormItem>
-
-                        {/* License Plate */}
-                        <FormItem
-                            label={
-                                <span className="flex items-center text-gray-700 dark:text-gray-200">
-                                    <FaCar className="ml-2 text-lg text-gray-500" />
-                                    رقم لوحة3 السيارة
-                                </span>
-                            }
-                            invalid={
-                                !!errors.carPlateNumber &&
-                                !!touched.carPlateNumber
-                            }
-                            errorMessage={errors.carPlateNumber as string}
-                            className="mb-0 col-span-full"
-                        >
-                            {readOnly ? (
-                                <div className="flex justify-center mt-2">
-                                    <div className="flex gap-1 sm:gap-2 bg-gray-200 dark:bg-gray-800 p-2 sm:p-3 rounded-lg shadow-inner overflow-x-auto">
-                                        {[...Array(8)].map((_, i) => (
-                                            <div
-                                                key={i}
-                                                className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm sm:text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100 uppercase"
-                                            >
-                                                {values.carPlateNumber?.[i] ||
-                                                    ' '}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ) : (
-                                <Field name="carPlateNumber">
-                                    {({ field, form }: FieldProps) => (
-                                        <div className="flex justify-center mt-2">
-                                            <div className="flex gap-1 sm:gap-2 bg-gray-100 dark:bg-gray-700 p-1 sm:p-2 rounded-lg overflow-x-auto">
-                                                {[...Array(8)].map((_, i) => (
-                                                    <Input
-                                                        key={i}
-                                                        type="text"
-                                                        size="sm"
-                                                        maxLength={1}
-                                                        className="text-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 border-2 border-gray-300 rounded-lg text-sm sm:text-lg md:text-xl font-bold uppercase focus:border-gray-500 focus:ring-1 focus:ring-gray-500 transition duration-200"
-                                                        value={
-                                                            field.value?.[i] ||
-                                                            ''
-                                                        }
-                                                        onChange={(e) => {
-                                                            const value =
-                                                                e.target.value.toUpperCase()
-                                                            let newValue =
-                                                                field.value ||
-                                                                ''
-                                                            newValue =
-                                                                newValue.padEnd(
-                                                                    8,
-                                                                    ' '
-                                                                )
-                                                            newValue =
-                                                                newValue.substring(
-                                                                    0,
-                                                                    i
-                                                                ) +
-                                                                value +
-                                                                newValue.substring(
-                                                                    i + 1
-                                                                )
-                                                            form.setFieldValue(
-                                                                field.name,
-                                                                newValue.trim()
-                                                            )
-                                                            if (
-                                                                value &&
-                                                                i < 7
-                                                            ) {
-                                                                const nextInput =
-                                                                    document.querySelector(
-                                                                        `input[name="${
-                                                                            field.name
-                                                                        }-${
-                                                                            i +
-                                                                            1
-                                                                        }"]`
-                                                                    ) as HTMLInputElement
-                                                                nextInput?.focus()
-                                                            }
-                                                        }}
-                                                        name={`${field.name}-${i}`}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </Field>
-                            )}
-                        </FormItem>
-
-                        {/* Car Size */}
-                        <FormItem
-                            label={
-                                <span className="flex items-center text-gray-700 dark:text-gray-200">
-                                    <FaRulerCombined className="ml-2 text-lg text-gray-500" />{' '}
-                                    حجم السيارة
-                                </span>
-                            }
-                            invalid={!!errors.carSize && !!touched.carSize}
-                            errorMessage={errors.carSize as string}
-                            className="mb-0 "
-                        >
-                            {readOnly ? (
-                                renderReadOnlyValue(values.carSize)
-                            ) : (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-2">
-                                    {carSizeOptions.map((option) => (
-                                        <label
-                                            key={option.value}
-                                            className={`relative p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 flex flex-col items-center justify-center text-center
-                                                ${
-                                                    values.carSize ===
-                                                    option.value
-                                                        ? 'border-gray-500 bg-gray-100 dark:bg-gray-800/50 text-gray-700 dark:text-gray-200 shadow-md'
-                                                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800'
-                                                }
-                                                ${
-                                                    readOnly
-                                                        ? 'cursor-default opacity-80'
-                                                        : ''
-                                                }
-                                            `}
+                    <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                                <FaCar className="ml-2 text-base text-gray-500" />{' '}
+                                الشركة المصنعة و نوع السيارة
+                            </label>
+                            {renderReadOnlyValue(values.carManufacturer)}
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                                <FaTag className="ml-2 text-base text-gray-500" />{' '}
+                                موديل السيارة
+                            </label>
+                            {renderReadOnlyValue(values.carModel)}
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                                <FaPalette className="ml-2 text-base text-gray-500" />{' '}
+                                لون السيارة
+                            </label>
+                            {renderReadOnlyValue(values.carColor)}
+                        </div>
+                        <div className="flex flex-col lg:col-span-3">
+                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                                <FaMapMarkerAlt className="ml-2 text-base text-gray-500" />{' '}
+                                رقم لوحة السيارة
+                            </label>
+                            <div className="flex justify-center mt-2">
+                                <div className="flex gap-2 bg-gray-200 dark:bg-gray-800 p-3 rounded-xl shadow-inner overflow-x-auto">
+                                    {Array.from(values.carPlateNumber || '').map((char, i) => (
+                                        <div
+                                            key={i}
+                                            className="w-12 h-14 flex items-center justify-center bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-2xl font-bold text-gray-900 dark:text-gray-100 uppercase"
                                         >
-                                            <FormikField
-                                                type="radio"
-                                                name="carSize"
-                                                value={option.value}
-                                                className="absolute opacity-0"
-                                                checked={
-                                                    values.carSize ===
-                                                    option.value
-                                                }
-                                                disabled={readOnly}
-                                            />
-                                            <span className="text-4xl mb-2">
-                                                {option.icon}
-                                            </span>
-                                            <span className="font-semibold text-base">
-                                                {option.label}
-                                            </span>
-                                        </label>
+                                            {char || ' '}
+                                        </div>
                                     ))}
                                 </div>
-                            )}
-                        </FormItem>
+                            </div>
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                                <FaRulerCombined className="ml-2 text-base text-gray-500" />{' '}
+                                حجم السيارة
+                            </label>
+                            {renderReadOnlyValue(values.carSize)}
+                        </div>
                     </div>
+                </div>
 
-                    <div className="border-t border-gray-200 dark:border-gray-700 my-8"></div>
-
-                    {/* Services Header */}
-                    {/* Changed background to a gray gradient */}
-                    <div className="bg-gradient-to-br from-gray-700 to-gray-500 rounded-lg p-6 my-6 flex items-center shadow-md">
+                {/* Services Section */}
+                <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <div className="bg-gradient-to-br from-gray-700 to-gray-500 rounded-t-lg p-6 mb-6 flex items-center shadow-md">
                         <div>
                             <h5 className="text-2xl font-bold text-white flex items-center gap-3">
-                                <span> الخدمات المقدمة </span>
-                                <FaTools className="text-white text-3xl" />
+                                <span>الخدمات المقدمة</span>
+                                <svg
+                                    stroke="currentColor"
+                                    fill="currentColor"
+                                    strokeWidth="0"
+                                    viewBox="0 0 512 512"
+                                    className="text-white text-3xl"
+                                    height="1em"
+                                    width="1em"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path d="M501.1 395.7L384 278.6c-23.1-23.1-57.6-27.6-85.4-13.9L192 158.1V96L64 0 0 64l96 128h62.1l106.6 106.6c-13.6 27.8-9.2 62.3 13.9 85.4l117.1 117.1c14.6 14.6 38.2 14.6 52.7 0l52.7-52.7c14.5-14.6 14.5-38.2 0-52.7zM331.7 225c28.3 0 54.9 11 74.9 31l19.4 19.4c15.8-6.9 30.8-16.5 43.8-29.5 37.1-37.1 49.7-89.3 37.9-136.7-2.2-9-13.5-12.1-20.1-5.5l-74.4 74.4-67.9-11.3L334 98.9l74.4-74.4c6.6-6.6 3.4-17.9-5.7-20.2-47.4-11.7-99.6.9-136.6 37.9-28.5 28.5-41.9 66.1-41.2 103.6l82.1 82.1c8.1-1.9 16.5-2.9 24.7-2.9zm-103.9 82l-56.7-56.7L18.7 402.8c-25 25-25 65.5 0 90.5s65.5 25 90.5 0l123.6-123.6c-7.6-19.9-9.9-41.6-5-62.7zM64 472c-13.2 0-24-10.8-24-24 0-13.3 10.7-24 24-24s24 10.7 24 24c0 13.2-10.7 24-24 24z"></path>
+                                </svg>
                             </h5>
                             <p className="text-gray-100 text-opacity-90">
-                                استعراض تفصيلي لجميع الخدمات التي تم تقديمها مع
-                                معلومات الضمان.
+                                استعراض تفصيلي لجميع الخدمات التي تم تقديمها مع معلومات الضمان.
                             </p>
                         </div>
                     </div>
-
-                    {/* Services List */}
-                    <div className="px-6 pb-6 space-y-8">
-                        {values.services?.length === 0 && (
+                    <div className="p-8">
+                        {values.services?.length === 0 ? (
                             <p className="text-center text-gray-500 dark:text-gray-400 py-4">
                                 لا توجد خدمات مسجلة لهذا الطلب.
                             </p>
-                        )}
-                        {values.services?.map((service: any, index: number) => (
-                            <div
-                                key={index}
-                                className="border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white dark:bg-gray-850"
-                            >
-                                {/* Service Header */}
-                                {/* Background color changes based on service type, now using subtle gray shades */}
-                                <div
-                                    className={`flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700
-                                    ${
-                                        service.serviceType === 'protection'
-                                            ? 'bg-gray-50 dark:bg-gray-900/30'
-                                            : service.serviceType === 'polish'
-                                            ? 'bg-gray-50 dark:bg-gray-900/30'
-                                            : service.serviceType ===
-                                              'insulator'
-                                            ? 'bg-gray-50 dark:bg-gray-900/30'
-                                            : 'bg-gray-50 dark:bg-gray-800'
-                                    }
-                                `}
-                                >
-                                    <div className="flex items-center">
-                                        {serviceTypeIcons[
-                                            service.serviceType as keyof typeof serviceTypeIcons
-                                        ] || serviceTypeIcons.default}
-                                        <h6 className="text-xl font-bold mr-3 text-gray-800 dark:text-gray-100">
-                                            الخدمة {index + 1}:{' '}
-                                            {getServiceTypeName(
-                                                service.serviceType
-                                            )}
-                                        </h6>
-                                    </div>
-                              
-                                </div>
-
-                                {/* Service Content */}
-                                <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {/* Common Fields */}
-                                    <FormItem
-                                        label={
-                                            <span className="flex items-center text-gray-700 dark:text-gray-200">
-                                                <FaTag className="ml-2 text-lg text-gray-500" />{' '}
-                                                تفاصيل الاتفاق
-                                            </span>
-                                        }
-                                        className="mb-0"
-                                    >
-                                        {renderReadOnlyValue(
-                                            service.dealDetails,
-                                            'لا يوجد تفاصيل'
-                                        )}
-                                    </FormItem>
-
-                                    {service.servicePrice && (
-                                        <FormItem
-                                            label={
-                                                <span className="flex items-center text-gray-700 dark:text-gray-200">
-                                                    <FaTag className="ml-2 text-lg text-gray-500" />{' '}
-                                                    سعر الخدمة
-                                                </span>
-                                            }
-                                            className="mb-0"
-                                        >
-                                            <div className="bg-gray-100 dark:bg-gray-900/30 p-3 rounded-lg font-bold text-gray-800 dark:text-gray-200 text-lg">
-                                                {service.servicePrice} ريال
-                                                سعودي
+                        ) : (
+                            values.services?.map(
+                                (service: any, index: number) => (
+                                    <div key={service._id || index}>
+                                        <div className="border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-lg bg-gray-50 dark:bg-gray-850 transform hover:scale-[1.01] transition-transform duration-300">
+                                            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                                                <div className="flex items-center">
+                                                    <div className="p-3 rounded-full bg-gray-100 dark:bg-gray-700">
+                                                        {serviceTypeIcons[
+                                                            service.serviceType as keyof typeof serviceTypeIcons
+                                                        ] ||
+                                                            serviceTypeIcons.default}
+                                                    </div>
+                                                    <h6 className="text-xl font-bold mr-4 text-gray-800 dark:text-gray-100">
+                                                        الخدمة {index + 1}:{' '}
+                                                        {getServiceTypeName(
+                                                            service.serviceType
+                                                        )}
+                                                    </h6>
+                                                </div>
+                                                {service.servicePrice && (
+                                                    <div className="flex items-center bg-green-500/10 dark:bg-green-500/20 p-2 rounded-lg font-bold text-green-700 dark:text-green-300 text-lg ring-1 ring-green-500/30">
+                                                        <FaDollarSign className="ml-2 text-green-600" />
+                                                        {service.servicePrice}{' '}
+                                                        ر.س
+                                                    </div>
+                                                )}
                                             </div>
-                                        </FormItem>
-                                    )}
-
-                                    {/* Protection Service Fields */}
-                                    {service.serviceType === 'protection' && (
-                                        <>
-                                            <FormItem
-                                                label={
-                                                    <span className="flex items-center text-gray-700 dark:text-gray-200">
-                                                        <FaPalette className="ml-2 text-lg text-gray-500" />{' '}
-                                                        لون السيارة الأصلي
-                                                    </span>
-                                                }
-                                                className="mb-0"
-                                            >
-                                                {renderReadOnlyValue(
-                                                    service.originalCarColor
-                                                )}
-                                            </FormItem>
-                                            <FormItem
-                                                label={
-                                                    <span className="flex items-center text-gray-700 dark:text-gray-200">
-                                                        <FaPalette className="ml-2 text-lg text-gray-500" />{' '}
-                                                        لون الحماية
-                                                    </span>
-                                                }
-                                                className="mb-0"
-                                            >
-                                                {renderReadOnlyValue(
-                                                    service.protectionColor
-                                                )}
-                                            </FormItem>
-                                            <FormItem
-                                                label={
-                                                    <span className="flex items-center text-gray-700 dark:text-gray-200">
-                                                        <FaTools className="ml-2 text-lg text-gray-500" />{' '}
-                                                        درجة اللمعان
-                                                    </span>
-                                                }
-                                                className="mb-0"
-                                            >
-                                                {renderReadOnlyValue(
-                                                    service.protectionFinish ===
-                                                        'glossy'
-                                                        ? 'لامع'
-                                                        : service.protectionFinish ===
-                                                          'matte'
-                                                        ? 'مطفى'
-                                                        : service.protectionFinish ===
-                                                          'colored'
-                                                        ? 'ملون'
-                                                        : service.protectionFinish ||
-                                                          '-'
-                                                )}
-                                            </FormItem>
-                                            {service.protectionFinish ===
-                                                'glossy' && (
-                                                <FormItem
-                                                    label={
-                                                        <span className="flex items-center text-gray-700 dark:text-gray-200">
-                                                            <FaRulerCombined className="ml-2 text-lg text-gray-500" />{' '}
-                                                            حجم الفيلم
-                                                        </span>
-                                                    }
-                                                    className="mb-0"
-                                                >
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                                {/* Common fields for all services */}
+                                                <div className="flex flex-col">
+                                                    <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                                                        <FaInfoCircle className="ml-2 text-base text-gray-500" />{' '}
+                                                        تفاصيل الاتفاق
+                                                    </label>
                                                     {renderReadOnlyValue(
-                                                        service.protectionSize
-                                                            ? `${service.protectionSize} مل`
-                                                            : '-'
+                                                        service.dealDetails,
+                                                        'لا يوجد تفاصيل'
                                                     )}
-                                                </FormItem>
+                                                </div>
+
+                                                {/* Render service-specific fields */}
+                                                {renderServiceDetails(service)}
+                                            </div>
+
+                                            {/* Guarantee Section */}
+                                            {service.guarantee && (
+                                                <div
+                                                    className={`mt-8 p-6 rounded-xl border-2 ${
+                                                        service.guarantee.status === 'active'
+                                                            ? 'bg-green-50 border-green-200'
+                                                            : 'bg-red-50 border-red-200'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200 dark:border-gray-600">
+                                                        <div className="flex items-center gap-3">
+                                                            {service.guarantee.status === 'active' ? (
+                                                                <FiCheckCircle className="text-green-600 text-3xl" />
+                                                            ) : (
+                                                                <FiXCircle className="text-red-600 text-3xl" />
+                                                            )}
+                                                            <h6 className="text-lg font-bold text-gray-800 dark:text-gray-300">
+                                                                تفاصيل الضمان
+                                                            </h6>
+                                                        </div>
+                                                        {readOnly &&
+                                                            (service.guarantee.status === 'active' ? (
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="solid"
+                                                                    color="red"
+                                                                    loading={deactivatingGuarantee === service.guarantee._id}
+                                                                    onClick={() => onDeactivateGuarantee?.(service._id, service.guarantee._id)}
+                                                                    className="flex items-center gap-2 transition-all duration-200"
+                                                                >
+                                                                    <FiXCircle />
+                                                                    إلغاء تفعيل الضمان
+                                                                </Button>
+                                                            ) : (
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="solid"
+                                                                    color="green"
+                                                                    loading={activatingGuarantee === service.guarantee._id}
+                                                                    onClick={() => onActivateGuarantee?.(service._id, service.guarantee._id)}
+                                                                    className="flex items-center gap-2 transition-all duration-200"
+                                                                >
+                                                                    <FiCheckCircle />
+                                                                    تفعيل الضمان
+                                                                </Button>
+                                                            ))}
+                                                    </div>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                                        <div className="flex flex-col">
+                                                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">
+                                                                حالة الضمان
+                                                            </label>
+                                                            <span
+                                                                className={`px-4 py-2 rounded-full font-semibold text-sm ${
+                                                                    service.guarantee.status === 'active'
+                                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                                                                        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                                                                }`}
+                                                            >
+                                                                {service.guarantee.status === 'active'
+                                                                    ? 'مفعل'
+                                                                    : 'غير مفعل'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">
+                                                                مدة الضمان
+                                                            </label>
+                                                            {renderReadOnlyValue(service.guarantee.typeGuarantee || '-')}
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">
+                                                                تاريخ البدء
+                                                            </label>
+                                                            {renderReadOnlyValue(formatDate(service.guarantee.startDate))}
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">
+                                                                تاريخ الانتهاء
+                                                            </label>
+                                                            {renderReadOnlyValue(formatDate(service.guarantee.endDate))}
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             )}
-                                            <FormItem
-                                                label={
-                                                    <span className="flex items-center text-gray-700 dark:text-gray-200">
-                                                        <FaShieldAlt className="ml-2 text-lg text-gray-500" />{' '}
-                                                        نوع التغطية
-                                                    </span>
-                                                }
-                                                className="mb-0"
-                                            >
-                                                {renderReadOnlyValue(
-                                                    service.protectionCoverage ===
-                                                        'full'
-                                                        ? 'كامل'
-                                                        : service.protectionCoverage ===
-                                                          'half'
-                                                        ? 'نص'
-                                                        : service.protectionCoverage ===
-                                                          'quarter'
-                                                        ? 'ربع'
-                                                        : service.protectionCoverage ===
-                                                          'edges'
-                                                        ? 'أطراف'
-                                                        : service.protectionCoverage ===
-                                                          'other'
-                                                        ? 'اخرى'
-                                                        : service.protectionCoverage ||
-                                                          '-'
-                                                )}
-                                            </FormItem>
-                                        </>
-                                    )}
-
-                                    {/* Polish Service Fields (Example, expand as needed) */}
-                                    {service.serviceType === 'polish' && (
-                                        <>
-                                            <FormItem
-                                                label={
-                                                    <span className="flex items-center text-gray-700 dark:text-gray-200">
-                                                        <FaWrench className="ml-2 text-lg text-gray-500" />{' '}
-                                                        نوع التلميع
-                                                    </span>
-                                                }
-                                                className="mb-0"
-                                            >
-                                                {renderReadOnlyValue(
-                                                    service.polishType || '-'
-                                                )}
-                                            </FormItem>
-                                            <FormItem
-                                                label={
-                                                    <span className="flex items-center text-gray-700 dark:text-gray-200">
-                                                        <FaWrench className="ml-2 text-lg text-gray-500" />{' '}
-                                                        نوع التلميع الفرعي
-                                                    </span>
-                                                }
-                                                className="mb-0"
-                                            >
-                                                {renderReadOnlyValue(
-                                                    service.polishSubType || '-'
-                                                )}
-                                            </FormItem>
-                                        </>
-                                    )}
-
-                                    {/* Insulator Service Fields (Example, expand as needed) */}
-                                    {service.serviceType === 'insulator' && (
-                                        <>
-                                            <FormItem
-                                                label={
-                                                    <span className="flex items-center text-gray-700 dark:text-gray-200">
-                                                        <FaTools className="ml-2 text-lg text-gray-500" />{' '}
-                                                        نوع العازل
-                                                    </span>
-                                                }
-                                                className="mb-0"
-                                            >
-                                                {renderReadOnlyValue(
-                                                    service.insulatorType || '-'
-                                                )}
-                                            </FormItem>
-                                            <FormItem
-                                                label={
-                                                    <span className="flex items-center text-gray-700 dark:text-gray-200">
-                                                        <FaTools className="ml-2 text-lg text-gray-500" />{' '}
-                                                        تغطية العازل
-                                                    </span>
-                                                }
-                                                className="mb-0"
-                                            >
-                                                {renderReadOnlyValue(
-                                                    service.insulatorCoverage ||
-                                                        '-'
-                                                )}
-                                            </FormItem>
-                                        </>
-                                    )}
-                                    {/* Add more service type specific fields here following the same pattern */}
-                                </div>
-
-                                {/* Guarantee Section */}
-                                {service.guarantee && (
-                                    <div className="col-span-full p-6 border-t border-gray-200 dark:border-gray-700 mt-4">
-                                        <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-5 border border-gray-200 dark:border-gray-700 shadow-inner">
-                                            <div className="flex items-center mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
-                                                <FaShieldAlt className="text-gray-600 dark:text-gray-400 text-2xl mr-3" />{' '}
-                                                {/* Icon color adjusted */}
-                                                <h6 className="text-lg font-bold text-gray-800 dark:text-gray-300">
-                                                    تفاصيل الضمان
-                                                </h6>
-                                            </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                                <FormItem
-                                                    label="مدة الضمان"
-                                                    className="mb-0"
-                                                >
-                                                    <div className="bg-gray-100 dark:bg-gray-800/50 p-2 rounded text-gray-700 dark:text-gray-200 font-medium">
-                                                        {service.guarantee
-                                                            .typeGuarantee ||
-                                                            '-'}
-                                                    </div>
-                                                </FormItem>
-                                                <FormItem
-                                                    label="تاريخ البدء"
-                                                    className="mb-0"
-                                                >
-                                                    <div className="bg-gray-100 dark:bg-gray-800/50 p-2 rounded text-gray-700 dark:text-gray-200 font-medium">
-                                                        {service.guarantee
-                                                            .startDate
-                                                            ? new Date(
-                                                                  service.guarantee.startDate
-                                                              ).toLocaleDateString(
-                                                                  'en-US'
-                                                              )
-                                                            : '-'}
-                                                    </div>
-                                                </FormItem>
-                                                <FormItem
-                                                    label="تاريخ الانتهاء"
-                                                    className="mb-0"
-                                                >
-                                                    <div className="bg-gray-100 dark:bg-gray-800/50 p-2 rounded text-gray-700 dark:text-gray-200 font-medium">
-                                                        {service.guarantee
-                                                            .endDate
-                                                            ? new Date(
-                                                                  service.guarantee.endDate
-                                                              ).toLocaleDateString(
-                                                                  'en-US'
-                                                              )
-                                                            : '-'}
-                                                    </div>
-                                                </FormItem>
-
-                                                <FormItem
-                                                    label="الملاحظات"
-                                                    className="mb-0"
-                                                >
-                                                    <div className="bg-gray-100 dark:bg-gray-800/50 p-2 rounded text-gray-700 dark:text-gray-200 font-medium">
-                                                        {service.notes || '-'}
-                                                    </div>
-                                                </FormItem>
-                                                {/* Add more guarantee fields as needed following the same pattern */}
-                                            </div>
                                         </div>
+                                        {index < values.services.length - 1 && (
+                                            <div className="my-10 h-0.5 w-full bg-gradient-to-r from-transparent via-gray-400 to-transparent dark:via-gray-600 rounded-full" />
+                                        )}
                                     </div>
-                                )}
-                            </div>
-                        ))}
+                                )
+                            )
+                        )}
                     </div>
-                </AdaptableCard>
+                </div>
             </div>
         </div>
     )

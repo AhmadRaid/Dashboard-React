@@ -487,7 +487,7 @@ const MultiStepClientForm = ({
                                 touched,
                                 errors,
                                 setFieldValue,
-                                setFieldTouched // أضفنا setFieldTouched
+                                setFieldTouched
                             )}
 
                             {/* Navigation Buttons */}
@@ -543,7 +543,11 @@ const MultiStepClientForm = ({
                                             }
                                             disabled={!isValid}
                                         >
-                                            ادراج سيارة العميل
+                                            {currentStep === 1
+                                                ? 'ادراج سيارة للعميل'
+                                                : currentStep === 2
+                                                ? 'ادراج خدمات للسيارة'
+                                                : 'التالي'}
                                         </Button>
                                     )}
                                 </div>

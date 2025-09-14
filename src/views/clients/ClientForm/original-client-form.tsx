@@ -61,7 +61,6 @@ type InitialData = {
   carPlateNumber: string
   carManufacturer: string
   carSize: string
-  carType: string
   services: Array<{
     id: string
     serviceType: string
@@ -104,7 +103,6 @@ const initialData: InitialData = {
   carPlateNumber: "",
   carManufacturer: "",
   carSize: "",
-  carType: "",
   services: [
     {
       id: "service-0",
@@ -158,20 +156,11 @@ export const validationSchema = Yup.object().shape({
     .oneOf(["عملاء فرع ابحر", "عملاء فرع المدينة", "اخرى"], "اختر فرعًا صحيحًا")
     .required("يجب اختيار الفرع"),
 
-  carType: Yup.string()
-    .max(50, "يجب ألا يتجاوز نوع السيارة 50 حرفًا")
-    .test("require-if-car-fields-exist", "نوع السيارة مطلوب عند إدخال أي بيانات للسيارة", function (value) {
-      const { carModel, carColor, carManufacturer, carPlateNumber, carSize, services } = this.parent
-      const anyCarFieldFilled = !!carModel || !!carColor || !!carManufacturer || !!carPlateNumber || !!carSize
-      // إذا كان هناك أي حقل آخر مملوء، فإن carType مطلوب
-      return anyCarFieldFilled ? !!value : true
-    }),
-
   carModel: Yup.string()
     .max(50, "يجب ألا يتجاوز موديل السيارة 50 حرفًا")
     .test("require-if-car-fields-exist", "موديل السيارة مطلوب عند إدخال أي بيانات للسيارة", function (value) {
-      const { carType, carColor, carManufacturer, carPlateNumber, carSize, services } = this.parent
-      const anyCarFieldFilled = !!carType || !!carColor || !!carManufacturer || !!carPlateNumber || !!carSize
+      const {  carColor, carManufacturer, carPlateNumber, carSize, services } = this.parent
+      const anyCarFieldFilled =  !!carColor || !!carManufacturer || !!carPlateNumber || !!carSize
 
       return anyCarFieldFilled ? !!value : true
     }),
@@ -179,8 +168,8 @@ export const validationSchema = Yup.object().shape({
   carColor: Yup.string()
     .max(30, "يجب ألا يتجاوز لون السيارة 30 حرفًا")
     .test("require-if-car-fields-exist", "لون السيارة مطلوب عند إدخال أي بيانات للسيارة", function (value) {
-      const { carType, carModel, carManufacturer, carPlateNumber, carSize, services } = this.parent
-      const anyCarFieldFilled = !!carType || !!carModel || !!carManufacturer || !!carPlateNumber || !!carSize
+      const {  carModel, carManufacturer, carPlateNumber, carSize, services } = this.parent
+      const anyCarFieldFilled =  !!carModel || !!carManufacturer || !!carPlateNumber || !!carSize
       return anyCarFieldFilled ? !!value : true
     }),
 
@@ -188,8 +177,8 @@ export const validationSchema = Yup.object().shape({
     "require-if-car-fields-exist",
     "الشركة المصنعة للسيارة مطلوبة عند إدخال أي بيانات للسيارة",
     function (value) {
-      const { carType, carModel, carColor, carPlateNumber, carSize, services } = this.parent
-      const anyCarFieldFilled = !!carType || !!carModel || !!carColor || !!carPlateNumber || !!carSize
+      const { carModel, carColor, carPlateNumber, carSize, services } = this.parent
+      const anyCarFieldFilled =  !!carModel || !!carColor || !!carPlateNumber || !!carSize
       return anyCarFieldFilled ? !!value : true
     },
   ),
@@ -200,16 +189,16 @@ export const validationSchema = Yup.object().shape({
       "يجب أن يتكون رقم اللوحة من 7 أو 8 أحرف عربية/إنجليزية أو أرقام", // رسالة خطأ محدثة
     )
     .test("require-if-car-fields-exist", "رقم لوحة السيارة مطلوب عند إدخال أي بيانات للسيارة", function (value) {
-      const { carType, carModel, carColor, carManufacturer, carSize } = this.parent
-      const anyCarFieldFilled = !!carType || !!carModel || !!carColor || !!carManufacturer || !!carSize
+      const { carModel, carColor, carManufacturer, carSize } = this.parent
+      const anyCarFieldFilled =  !!carModel || !!carColor || !!carManufacturer || !!carSize
       return anyCarFieldFilled ? !!value : true
     }),
 
   carSize: Yup.string()
     .oneOf(["small", "medium", "large", "X-large", "XX-large"], "اختر حجمًا صالحًا للسيارة")
     .test("require-if-car-fields-exist", "حجم السيارة مطلوب عند إدخال أي بيانات للسيارة", function (value) {
-      const { carType, carModel, carColor, carManufacturer, carPlateNumber, services } = this.parent
-      const anyCarFieldFilled = !!carType || !!carModel || !!carColor || !!carManufacturer || !!carPlateNumber
+      const {  carModel, carColor, carManufacturer, carPlateNumber, services } = this.parent
+      const anyCarFieldFilled =  !!carModel || !!carColor || !!carManufacturer || !!carPlateNumber
       return anyCarFieldFilled ? !!value : true
     }),
 

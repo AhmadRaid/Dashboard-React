@@ -53,7 +53,6 @@ type InitialData = {
     carPlateNumber: string
     carManufacturer: string
     carSize: string
-    carType: string
     orderStatus: 'new' | 'maintenance' // أضفنا هذا الحقل
 
     services: Array<{
@@ -94,7 +93,6 @@ const initialData: InitialData = {
     carPlateNumber: '',
     carManufacturer: '',
     carSize: '',
-    carType: '',
     orderStatus: 'new',
     services: [
         {
@@ -114,16 +112,15 @@ const initialData: InitialData = {
 }
 
 export const validationSchema = Yup.object().shape({
-    carType: Yup.string()
-        .max(50, 'يجب ألا يتجاوز نوع السيارة 50 حرفًا')
+    carManufacturer: Yup.string()
+        .max(50, 'يجب ألا يتجاوز الشركة المصنعة ونوع السيارة 50 حرفًا')
         .test(
             'require-if-car-fields-exist',
-            'نوع السيارة مطلوب عند إدخال أي بيانات للسيارة',
+            'الشركة المصنعة ونوع السيارة مطلوب عند إدخال أي بيانات للسيارة',
             function (value) {
                 const {
                     carModel,
                     carColor,
-                    carManufacturer,
                     carPlateNumber,
                     carSize,
                     services,
@@ -131,10 +128,8 @@ export const validationSchema = Yup.object().shape({
                 const anyCarFieldFilled =
                     !!carModel ||
                     !!carColor ||
-                    !!carManufacturer ||
                     !!carPlateNumber ||
                     !!carSize
-                // إذا كان هناك أي حقل آخر مملوء، فإن carType مطلوب
                 return anyCarFieldFilled ? !!value : true
             }
         ),
@@ -146,7 +141,6 @@ export const validationSchema = Yup.object().shape({
             'موديل السيارة مطلوب عند إدخال أي بيانات للسيارة',
             function (value) {
                 const {
-                    carType,
                     carColor,
                     carManufacturer,
                     carPlateNumber,
@@ -154,7 +148,6 @@ export const validationSchema = Yup.object().shape({
                     services,
                 } = this.parent
                 const anyCarFieldFilled =
-                    !!carType ||
                     !!carColor ||
                     !!carManufacturer ||
                     !!carPlateNumber ||
@@ -171,7 +164,6 @@ export const validationSchema = Yup.object().shape({
             'لون السيارة مطلوب عند إدخال أي بيانات للسيارة',
             function (value) {
                 const {
-                    carType,
                     carModel,
                     carManufacturer,
                     carPlateNumber,
@@ -179,7 +171,6 @@ export const validationSchema = Yup.object().shape({
                     services,
                 } = this.parent
                 const anyCarFieldFilled =
-                    !!carType ||
                     !!carModel ||
                     !!carManufacturer ||
                     !!carPlateNumber ||
@@ -198,14 +189,12 @@ export const validationSchema = Yup.object().shape({
             'رقم لوحة السيارة مطلوب عند إدخال أي بيانات للسيارة',
             function (value) {
                 const {
-                    carType,
                     carModel,
                     carColor,
                     carManufacturer,
                     carSize,
                 } = this.parent
                 const anyCarFieldFilled =
-                    !!carType ||
                     !!carModel ||
                     !!carColor ||
                     !!carManufacturer ||
@@ -224,7 +213,6 @@ export const validationSchema = Yup.object().shape({
             'حجم السيارة مطلوب عند إدخال أي بيانات للسيارة',
             function (value) {
                 const {
-                    carType,
                     carModel,
                     carColor,
                     carManufacturer,
@@ -232,7 +220,6 @@ export const validationSchema = Yup.object().shape({
                     services,
                 } = this.parent
                 const anyCarFieldFilled =
-                    !!carType ||
                     !!carModel ||
                     !!carColor ||
                     !!carManufacturer ||

@@ -22,7 +22,6 @@ type FormFieldsName = {
     carPlateNumber: string
     carManufacturer: string
     carSize: string
-    carType: string
 }
 
 type ClientFieldsProps = {
@@ -90,14 +89,14 @@ const OrderFields = (props: ClientFieldsProps) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormItem
                     label="الشركة المصنعة ونوع السيارة"
-                    invalid={!!errors.carType && !!touched.carType}
-                    errorMessage={errors.carType as string}
+                    invalid={!!errors.carManufacturer && !!touched.carManufacturer}
+                    errorMessage={errors.carManufacturer as string}
                 >
                     <Field
                         name="carManufacturer"
                         type="text"
                         size="sm"
-                        placeholder="نوع السيارة"
+                        placeholder="الشركة المصنعة ونوع السيارة"
                         component={Input}
                     />
                 </FormItem>

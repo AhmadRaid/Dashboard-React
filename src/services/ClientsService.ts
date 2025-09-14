@@ -96,19 +96,7 @@ export async function apiCreateOrderGurentee(
     })
 }
 
-export async function apiChangeGurenteeStatus(
-    orederId: string | undefined,
-    guaranteeId: string | undefined,
-    data: {
-        status: string
-    }
-) {
-    return ApiService.fetchData({
-        url: `/orders/${orederId}/guarantee/${guaranteeId}/status`,
-        method: 'PATCH',
-        data,
-    })
-}
+
 
 export async function apiGetAllServices() {
     return ApiService.fetchData({

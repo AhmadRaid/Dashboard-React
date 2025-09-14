@@ -48,7 +48,6 @@ export interface Order {
     carPlateNumber: string
     carManufacturer: string
     carSize: string
-    carType: string
     branch: string
     services: Array<{
         serviceType: string

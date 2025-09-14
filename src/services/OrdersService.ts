@@ -52,3 +52,18 @@ export async function apiSendServiceForOrder(data: any) {
         data,
     })
 }
+
+export async function apiChangeGurenteeStatus(
+    orderId: string,
+    serviceId: string,
+    guaranteeId: string, // This should now receive the actual guarantee ID
+    data: {
+        status: 'active' | 'inactive'
+    }
+) {
+    return ApiService.fetchData({
+        url: `/orders/${orderId}/service/${serviceId}/guarantee/${guaranteeId}/status`,
+        method: 'PATCH',
+        data,
+    })
+}

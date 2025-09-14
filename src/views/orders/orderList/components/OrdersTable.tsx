@@ -68,8 +68,8 @@ const OrdersTable = () => {
                 cell: (props) => props.getValue() || 'غير محدد',
             },
             {
-                header: 'نوع السيارة',
-                accessorKey: 'carType',
+                header: 'الشركة المصنعة ونوع السيارة',
+                accessorKey: 'carManufacturer',
                 cell: (props) => props.getValue() || 'غير محدد',
             },
             {

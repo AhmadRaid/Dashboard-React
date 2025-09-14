@@ -28,7 +28,6 @@ interface Service {
 
 interface Order {
     orderNumber: string
-    carType: string
     carModel: string
     carColor: string
     carPlateNumber: string
@@ -489,7 +488,7 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => {
                     <Text style={styles.sectionTitle}>معلومات السيارة</Text>
                     <View style={styles.carInfo}>
                         {[
-                            { label: 'نوع السيارة', value: invoice.order.carType },
+                            { label: 'الشركة المصنعة ونوع السيارة', value: invoice.order.carManufacturer },
                             {
                                 label: 'موديل السيارة',
                                 value: invoice.order.carModel,
