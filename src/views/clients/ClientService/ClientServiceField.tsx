@@ -1324,6 +1324,149 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 }}
                             />
                         </FormItem>
+                        <FormItem
+                                label="سعر الخدمة"
+                                invalid={
+                                    !!(errors.services as any)?.[index]
+                                        ?.servicePrice &&
+                                    !!(touched.services as any)?.[index]
+                                        ?.servicePrice
+                                }
+                                errorMessage={
+                                    (errors.services as any)?.[index]
+                                        ?.servicePrice
+                                }
+                            >
+                                <div className="flex flex-col gap-2">
+                                    <Field
+                                        name={`services[${index}].servicePrice`}
+                                    >
+                                        {({ field, form }: FieldProps) => (
+                                            <Input
+                                                {...field}
+                                                type="number"
+                                                size="sm"
+                                                placeholder="أدخل سعر الخدمة"
+                                                min={50}
+                                                onChange={(e: any) => {
+                                                    const raw: string =
+                                                        e.target.value
+                                                    if (raw === '') {
+                                                        form.setFieldValue(
+                                                            `services[${index}].servicePrice`,
+                                                            undefined
+                                                        )
+                                                        return
+                                                    }
+                                                    const stripped =
+                                                        raw.replace(
+                                                            /^0+(?=\d)/,
+                                                            ''
+                                                        )
+                                                    const value =
+                                                        Number.parseFloat(
+                                                            stripped
+                                                        )
+                                                    if (Number.isNaN(value)) {
+                                                        form.setFieldValue(
+                                                            `services[${index}].servicePrice`,
+                                                            undefined
+                                                        )
+                                                    } else {
+                                                        form.setFieldValue(
+                                                            `services[${index}].servicePrice`,
+                                                            value
+                                                        )
+                                                    }
+                                                }}
+                                                onBlur={(e: any) => {
+                                                    const raw: string =
+                                                        e.target.value
+                                                    if (raw === '') {
+                                                        form.setFieldValue(
+                                                            `services[${index}].servicePrice`,
+                                                            undefined
+                                                        )
+                                                        return
+                                                    }
+                                                    const value =
+                                                        Number.parseFloat(raw)
+                                                    if (Number.isNaN(value)) {
+                                                        form.setFieldValue(
+                                                            `services[${index}].servicePrice`,
+                                                            undefined
+                                                        )
+                                                    } else {
+                                                        form.setFieldValue(
+                                                            `services[${index}].servicePrice`,
+                                                            value
+                                                        )
+                                                    }
+                                                }}
+                                            />
+                                        )}
+                                    </Field>
+                                    {typeof values.services[index]
+                                        .servicePrice === 'number' &&
+                                        values.services[index].servicePrice >=
+                                            50 && (
+                                            <div className="flex flex-col gap-1 bg-gray-50 p-2 rounded-md">
+                                                <div className="flex justify-between">
+                                                    <span className="text-sm font-medium text-gray-600">
+                                                        السعر الأساسي:
+                                                    </span>
+                                                    <span className="text-sm font-semibold">
+                                                        {
+                                                            values.services[
+                                                                index
+                                                            ].servicePrice
+                                                        }{' '}
+                                                        ريال
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-sm font-medium text-gray-600">
+                                                        الضريبة (5%):
+                                                    </span>
+                                                    <span className="text-sm font-semibold">
+                                                        {(
+                                                            values.services[
+                                                                index
+                                                            ].servicePrice *
+                                                            0.05
+                                                        ).toFixed(2)}{' '}
+                                                        ريال
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between border-t pt-1 mt-1">
+                                                    <span className="text-sm font-medium text-gray-800">
+                                                        الإجمالي شامل الضريبة:
+                                                    </span>
+                                                    <span className="text-sm font-bold text-blue-600">
+                                                        {(
+                                                            values.services[
+                                                                index
+                                                            ].servicePrice *
+                                                            1.05
+                                                        ).toFixed(2)}{' '}
+                                                        ريال
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    {typeof values.services[index]
+                                        .servicePrice === 'number' &&
+                                        values.services[index].servicePrice >
+                                            0 &&
+                                        values.services[index].servicePrice <
+                                            50 && (
+                                            <div className="mt-1 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-red-700 text-sm">
+                                                الحد الأدنى لسعر الخدمة هو 50
+                                                ريال بقرار من الإدارة
+                                            </div>
+                                        )}
+                                </div>
+                            </FormItem>
                     </div>
 
                     {/* Guarantee Fields */}

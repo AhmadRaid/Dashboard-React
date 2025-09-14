@@ -225,8 +225,13 @@ const OrderServiceForm = forwardRef<FormikRef, OrderServiceFormProps>(
                             // استخدام البيانات بدون حقل clientSearch
                             let data_with_empty_fields = dataWithoutClientSearch
 
+                            console.log('111111111111111111111111',data_with_empty_fields);
+                            
+
                             // تنظيف البيانات من الحقول الفارغة
                             data = removeEmptyFields(data_with_empty_fields)
+
+                            console.log('111111111111111111111111',data);
 
                             // تحويل التواريخ إلى ISOString
                             if (data.services) {
