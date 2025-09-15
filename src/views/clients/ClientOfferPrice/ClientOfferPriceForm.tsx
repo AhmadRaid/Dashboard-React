@@ -1,23 +1,24 @@
+// ClientOfferPriceForm.tsx
 import { forwardRef, useState } from 'react'
 import { FormContainer, FormItem } from '@/components/ui/Form'
 import Button from '@/components/ui/Button'
 import StickyFooter from '@/components/shared/StickyFooter'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
-import { Form, Formik, FormikProps, FieldProps } from 'formik'
+import { Form, Formik, FormikProps, FieldProps, Field } from 'formik'
 import { AiOutlineSave } from 'react-icons/ai'
 import cloneDeep from 'lodash/cloneDeep'
 import * as Yup from 'yup'
-import OrderServiceFields from './ClientServiceField'
 import { HiOutlineTrash } from 'react-icons/hi'
-import { apiSendServiceForOrder } from '@/services/OrdersService'
 import { toast, Notification } from '@/components/ui'
 import { useNavigate, useParams } from 'react-router-dom'
 import { apiAddService } from '@/services/ServiceAPI'
+import ClientOfferPriceFields from './ClientOfferPriceField'
+import { apiCreateOfferPrice } from '@/services/ClientsService'
 
 type FormikRef = FormikProps<any>
 
 type Service = {
-    id: string
+    id?: string // make id optional for the final payload
     serviceType?: string
     dealDetails?: string
     protectionFinish?: string
@@ -32,7 +33,7 @@ type Service = {
     servicePrice?: number
     serviceDate?: string
     guarantee?: {
-        id: string
+        id?: string // make id optional for the final payload
         typeGuarantee: string
         startDate: string
         endDate: string
@@ -44,6 +45,8 @@ type Service = {
 type InitialData = {
     orderId: string
     services: Service[]
+    clientId: string
+    clientSearch: string
 }
 
 const initialData: InitialData = {
@@ -63,14 +66,17 @@ const initialData: InitialData = {
             },
         },
     ],
+    clientId: '',
+    clientSearch: '',
 }
 
 export const validationSchema = Yup.object().shape({
     orderId: Yup.string(),
+    clientId: Yup.string().required('يجب اختيار عميل'), // Add validation for clientId
+    clientSearch: Yup.string(),
     services: Yup.array().of(
         Yup.object().shape({
-            serviceType: Yup.string()
-            .oneOf(
+            serviceType: Yup.string().oneOf(
                 ['polish', 'protection', 'insulator', 'additions'],
                 'اختر نوع خدمة صالح'
             ),
@@ -150,7 +156,7 @@ const DeleteServiceButton = ({ onDelete }: { onDelete: any }) => {
     )
 }
 
-const OrderServiceForm = forwardRef<FormikRef, OrderServiceFormProps>(
+const ClientOfferPriceForm = forwardRef<FormikRef, OrderServiceFormProps>(
     (props, ref) => {
         const navigate = useNavigate()
         const { clientId } = useParams()
@@ -174,6 +180,8 @@ const OrderServiceForm = forwardRef<FormikRef, OrderServiceFormProps>(
                         },
                     },
                 ],
+                clientId: '',
+                clientSearch: '',
             },
             onFormSubmit,
             onDiscard,
@@ -219,55 +227,62 @@ const OrderServiceForm = forwardRef<FormikRef, OrderServiceFormProps>(
                             // إنشاء نسخة عميقة من القيم
                             let data = cloneDeep(values)
 
-                            const { clientSearch, ...dataWithoutClientSearch } =
-                                data
+                            const { clientSearch, ...dataWithoutClientSearch } = data
 
                             // استخدام البيانات بدون حقل clientSearch
                             let data_with_empty_fields = dataWithoutClientSearch
 
-                            console.log('111111111111111111111111',data_with_empty_fields);
-                            
-
                             // تنظيف البيانات من الحقول الفارغة
                             data = removeEmptyFields(data_with_empty_fields)
-
-                            console.log('111111111111111111111111',data);
 
                             // تحويل التواريخ إلى ISOString
                             if (data.services) {
                                 data.services = data.services.map(
-                                    (service: any) => ({
-                                        ...service,
-                                        serviceDate: service.serviceDate
-                                            ? new Date(
-                                                  service.serviceDate
-                                              ).toISOString()
-                                            : undefined,
-                                        guarantee: service.guarantee
-                                            ? {
-                                                  ...service.guarantee,
-                                                  startDate: service.guarantee
-                                                      .startDate
-                                                      ? new Date(
-                                                            service.guarantee.startDate
-                                                        ).toISOString()
-                                                      : undefined,
-                                                  endDate: service.guarantee
-                                                      .endDate
-                                                      ? new Date(
-                                                            service.guarantee.endDate
-                                                        ).toISOString()
-                                                      : undefined,
-                                              }
-                                            : undefined,
-                                    })
+                                    (service: any) => {
+                                        // Remove id from the service object
+                                        delete service.id; 
+
+                                        // Remove id from the guarantee object if it exists
+                                        if (service.guarantee) {
+                                            delete service.guarantee.id; 
+                                        }
+
+                                        return {
+                                            ...service,
+                                            serviceDate: service.serviceDate
+                                                ? new Date(
+                                                      service.serviceDate
+                                                  ).toISOString()
+                                                : undefined,
+                                            guarantee: service.guarantee
+                                                ? {
+                                                      ...service.guarantee,
+                                                      startDate: service.guarantee
+                                                          .startDate
+                                                          ? new Date(
+                                                                service.guarantee.startDate
+                                                            ).toISOString()
+                                                          : undefined,
+                                                      endDate: service.guarantee
+                                                          .endDate
+                                                          ? new Date(
+                                                                service.guarantee.endDate
+                                                            ).toISOString()
+                                                          : undefined,
+                                                  }
+                                                : undefined,
+                                        }
+                                    }
                                 )
                             }
-
-                            // إرسال البيانات إلى API
-                            const response = await apiAddService(data.orderId, {
+                            // Add the clientId to the final payload
+                            const finalPayload = {
                                 ...data,
-                            })
+                                clientId: values.clientId,
+                            }
+                            
+                            // إرسال البيانات إلى API
+                            const response = await apiCreateOfferPrice(finalPayload)
 
                             if (response) {
                                 toast.push(
@@ -298,12 +313,13 @@ const OrderServiceForm = forwardRef<FormikRef, OrderServiceFormProps>(
                         return (
                             <Form>
                                 <FormContainer>
-                                    <OrderServiceFields
+                                    <ClientOfferPriceFields
                                         touched={touched}
                                         errors={errors}
                                         values={values}
                                         form={form}
                                     />
+                                    <Field type="hidden" name="clientId" />
 
                                     <StickyFooter
                                         className="-mx-8 px-8 flex items-center justify-between py-4"
@@ -333,9 +349,7 @@ const OrderServiceForm = forwardRef<FormikRef, OrderServiceFormProps>(
                                                 icon={<AiOutlineSave />}
                                                 type="submit"
                                             >
-                                                {type === 'new'
-                                                    ? 'اضافة'
-                                                    : 'تحديث'}
+                                               اضافة
                                             </Button>
                                         </div>
                                     </StickyFooter>
@@ -349,6 +363,6 @@ const OrderServiceForm = forwardRef<FormikRef, OrderServiceFormProps>(
     }
 )
 
-OrderServiceForm.displayName = 'OrderServiceForm'
+ClientOfferPriceForm.displayName = 'ClientOfferPriceForm'
 
-export default OrderServiceForm
+export default ClientOfferPriceForm

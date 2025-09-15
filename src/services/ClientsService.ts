@@ -104,3 +104,21 @@ export async function apiGetAllServices() {
         method: 'get',
     })
 }
+
+export async function apiCreateOfferPrice(
+    data: any
+) {
+    return ApiService.fetchData({
+        url: '/offer-prices',
+        method: 'post',
+        data,
+    })
+}
+
+export async function apiGetAllOfferPrice(
+) {
+    return ApiService.fetchData({
+        url: '/offer-prices',
+        method: 'get',
+    })
+}

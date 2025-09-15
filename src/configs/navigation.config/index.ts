@@ -132,7 +132,7 @@ const navigationConfig: NavigationTree[] = [
             },
             {
                 key: 'servicesSales.createQuote',
-                path: '/sales/create-quote',
+                path: '/clients/create-offer-price',
                 title: 'إنشاء عرض سعر',
                 translateKey: 'nav.servicesSales.createQuote',
                 icon: 'documentDuplicate', // أيقونة مستند مكرر (للعروض)

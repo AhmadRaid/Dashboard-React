@@ -44,8 +44,7 @@ type Service = {
         typeGuarantee: string
         startDate: string
         endDate: string
-        terms: string
-        Notes: string
+        notes: string
     }
 }
 
@@ -53,9 +52,10 @@ type FormFieldsName = {
     services: Service[]
     orderId: string
     clientSearch: string
+    clientId?: string // Add clientId to the form fields type
 }
 
-type OrderServiceFieldsProps = {
+type OfferPriceFieldsProps = {
     touched: FormikTouched<FormFieldsName>
     errors: FormikErrors<FormFieldsName>
     values: any
@@ -76,7 +76,7 @@ interface ClientInfo {
     carYear?: string
 }
 
-const OrderServiceFields = (props: OrderServiceFieldsProps) => {
+const ClientOfferPriceFields = (props: OfferPriceFieldsProps) => {
     const { values, touched, errors, form } = props
     const [serviceCounter, setServiceCounter] = useState(1)
     const [orders, setOrders] = useState<
@@ -155,6 +155,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                 setClientInfo(null)
                 setSearchResults([])
                 setShowResults(false)
+                form.setFieldValue('clientId', '') // Clear clientId on empty search
                 return
             }
 
@@ -185,6 +186,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                         form.setFieldValue('orderId', '')
                         setOrdersLoaded(false)
                         setSearchResults([])
+                        form.setFieldValue('clientId', '') // Clear clientId when no client found
                     }
                 })
                 .catch((error) => {
@@ -194,6 +196,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                     form.setFieldValue('orderId', '')
                     setOrdersLoaded(false)
                     setSearchResults([])
+                    form.setFieldValue('clientId', '') // Clear clientId on error
                 })
                 .finally(() => {
                     setLoadingClient(false)
@@ -218,6 +221,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
             setClientInfo(null)
             setSearchResults([])
             setShowResults(false)
+            form.setFieldValue('clientId', '') // Clear clientId on empty search
             return
         }
 
@@ -230,36 +234,13 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
     const selectClient = async (client: ClientInfo) => {
         const fullName = `${client.firstName} ${client.secondName} ${client.thirdName} ${client.lastName}`
         form.setFieldValue('clientSearch', fullName)
+        form.setFieldValue('clientId', client._id) // Set the clientId field
 
         setClientInfo(client)
         setSearchedClientId(client._id)
         setShowResults(false)
-        getOrders(client._id)
     }
 
-    const getOrders = async (clientId: string) => {
-        setLoadingOrders(true)
-        try {
-            const res = await apiGetClientOrders(clientId)
-    
-            const allOrders = res.data.data.orders.map((order: any) => ({
-                label: `${order.carManufacturer} - ${order.carModel} - ${new Date(order.createdAt).toLocaleDateString('en-GB', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                })}`,
-                value: order._id,
-                orderData: order,
-            }))
-    
-            setOrders(allOrders)
-            setOrdersLoaded(true)
-        } catch (error) {
-            setOrders([])
-            setOrdersLoaded(false)
-        }
-        setLoadingOrders(false)
-    }
     const addServiceWithGuarantee = () => {
         const newIndex = values.services?.length ?? 0
         const newServiceId = `service-${Date.now()}-${newIndex}`
@@ -274,8 +255,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                 typeGuarantee: '',
                 startDate: '',
                 endDate: '',
-                terms: '',
-                Notes: '',
+                notes: '',
             },
         }
 
@@ -314,9 +294,9 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
 
     return (
         <AdaptableCard divider className="mb-4">
-            <h5 className="text-lg font-semibold">الخدمات والضمانات</h5>
+            <h5 className="text-lg font-semibold">انشاء عرض سعر</h5>
             <p className="mb-6 text-sm text-gray-500">
-                قسم لإعداد الخدمات والضمانات المقدمة للعميل
+                قسم لاضافة عرض سعر لعميل معين بخدمات معينة
             </p>
 
             {/* حقل البحث عن العميل */}
@@ -431,62 +411,41 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                     </Link>
                 </div>
             )}
-
-            {/* عرض قائمة الطلبات فقط إذا وجد العميل وتم جلب الطلبات بنجاح */}
-            {clientExists && hasSearched && ordersLoaded && (
-                <FormItem
-                    label="المبيعات السابقة"
-                    invalid={shouldShowError('orderId') && !!errors.orderId}
-                    errorMessage={
-                        shouldShowError('orderId')
-                            ? (errors.orderId as string)
-                            : ''
-                    }
-                >
-                    <Field name="orderId">
-                        {({ field, form }: FieldProps) => (
-                            <Select
-                                field={field}
-                                form={form}
-                                placeholder={
-                                    loadingOrders
-                                        ? 'جاري تحميل الطلبات...'
-                                        : 'اختر السيارة المراد اضافة الخدمة الجديدة لها'
-                                }
-                                options={
-                                    loadingOrders
-                                        ? [
-                                              {
-                                                  label: 'جاري التحميل...',
-                                                  value: '',
-                                              },
-                                          ]
-                                        : orders.length > 0
-                                        ? orders
-                                        : [
-                                              {
-                                                  label: 'لا توجد طلبات متاحة لهذا العميل',
-                                                  value: '',
-                                              },
-                                          ]
-                                }
-                                value={orders.find(
-                                    (order) => order.value === field.value
-                                )}
-                                onChange={(option) => {
-                                    form.setFieldValue(
-                                        field.name,
-                                        option?.value || ''
-                                    )
-                                    setOrderSelected(!!option?.value)
-                                    setOrderTouched(true)
-                                    setSearchTriggered(false)
-                                }}
-                                onBlur={() => setOrderTouched(true)}
-                            />
+            
+            {/* Display client info after selection */}
+            {clientInfo && (
+                <div className="my-6 p-6 bg-blue-50 border border-blue-200 rounded-xl">
+                    <h5 className="text-blue-700 font-bold text-lg mb-2">
+                        بيانات العميل
+                    </h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex items-center gap-2 text-blue-800">
+                            <HiUser className="text-lg" />
+                            <span className="font-medium">الاسم:</span>
+                            <span>{`${clientInfo.firstName} ${clientInfo.secondName} ${clientInfo.thirdName} ${clientInfo.lastName}`}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-blue-800">
+                            <HiPhone className="text-lg" />
+                            <span className="font-medium">الهاتف:</span>
+                            <span>{clientInfo.phone}</span>
+                        </div>
+                        {clientInfo.email && (
+                            <div className="flex items-center gap-2 text-blue-800">
+                                <HiMail className="text-lg" />
+                                <span className="font-medium">البريد:</span>
+                                <span>{clientInfo.email}</span>
+                            </div>
                         )}
-                    </Field>
-                </FormItem>
+                        {(clientInfo.carManufacturer || clientInfo.carModel || clientInfo.carYear) && (
+                            <div className="flex items-center gap-2 text-blue-800">
+                                <span className="font-medium">السيارة:</span>
+                                <span>
+                                    {clientInfo.carManufacturer} {clientInfo.carModel} {clientInfo.carYear && `(${clientInfo.carYear})`}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
 
             {/* حقول الخدمات والضمانات */}
@@ -625,7 +584,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                                             startDate: '',
                                                             endDate: '',
                                                             terms: '',
-                                                            Notes: '',
+                                                            notes: '',
                                                         }
                                                     )
                                                 }
@@ -1323,35 +1282,6 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                 )}
                             </>
                         )}
-
-                        <FormItem
-                            label="تفاصيل الاتفاق"
-                            invalid={
-                                shouldShowError(
-                                    `services[${index}].dealDetails`
-                                ) && !!errors.services?.[index]?.dealDetails
-                            }
-                            errorMessage={
-                                errors.services?.[index]?.dealDetails as string
-                            }
-                        >
-                            <Field
-                                name={`services[${index}].dealDetails`}
-                                type="text"
-                                size="sm"
-                                placeholder="أدخل تفاصيل الاتفاق"
-                                component={Input}
-                                onChange={(
-                                    e: React.ChangeEvent<HTMLInputElement>
-                                ) => {
-                                    form.setFieldValue(
-                                        `services[${index}].dealDetails`,
-                                        e.target.value
-                                    )
-                                    setSearchTriggered(false)
-                                }}
-                            />
-                        </FormItem>
                         <FormItem
                             label="سعر الخدمة"
                             invalid={
@@ -1372,7 +1302,6 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                             type="number"
                                             size="sm"
                                             placeholder="أدخل سعر الخدمة"
-                                            min={50}
                                             onChange={(e: any) => {
                                                 const raw: string =
                                                     e.target.value
@@ -1429,9 +1358,7 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                     )}
                                 </Field>
                                 {typeof values.services[index].servicePrice ===
-                                    'number' &&
-                                    values.services[index].servicePrice >=
-                                        50 && (
+                                    'number' && (
                                         <div className="flex flex-col gap-1 bg-gray-50 p-2 rounded-md">
                                             <div className="flex justify-between">
                                                 <span className="text-sm font-medium text-gray-600">
@@ -1471,17 +1398,35 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                             </div>
                                         </div>
                                     )}
-                                {typeof values.services[index].servicePrice ===
-                                    'number' &&
-                                    values.services[index].servicePrice > 0 &&
-                                    values.services[index].servicePrice <
-                                        50 && (
-                                        <div className="mt-1 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-red-700 text-sm">
-                                            الحد الأدنى لسعر الخدمة هو 50 ريال
-                                            بقرار من الإدارة
-                                        </div>
-                                    )}
                             </div>
+                        </FormItem>
+                        <FormItem
+                            label="تفاصيل الاتفاق"
+                            invalid={
+                                shouldShowError(
+                                    `services[${index}].dealDetails`
+                                ) && !!errors.services?.[index]?.dealDetails
+                            }
+                            errorMessage={
+                                errors.services?.[index]?.dealDetails as string
+                            }
+                        >
+                            <Field
+                                name={`services[${index}].dealDetails`}
+                                type="text"
+                                size="sm"
+                                placeholder="أدخل تفاصيل الاتفاق"
+                                component={Input}
+                                onChange={(
+                                    e: React.ChangeEvent<HTMLInputElement>
+                                ) => {
+                                    form.setFieldValue(
+                                        `services[${index}].dealDetails`,
+                                        e.target.value
+                                    )
+                                    setSearchTriggered(false)
+                                }}
+                            />
                         </FormItem>
                     </div>
 
@@ -1684,17 +1629,17 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
                                     label="ملاحظات على الضمان"
                                     invalid={
                                         !!errors.services?.[index]?.guarantee
-                                            ?.Notes &&
+                                            ?.notes &&
                                         !!touched.services?.[index]?.guarantee
-                                            ?.Notes
+                                            ?.notes
                                     }
                                     errorMessage={
                                         errors.services?.[index]?.guarantee
-                                            ?.Notes as string
+                                            ?.notes as string
                                     }
                                 >
                                     <Field
-                                        name={`services[${index}].guarantee.Notes`}
+                                        name={`services[${index}].guarantee.notes`}
                                         type="text"
                                         size="sm"
                                         placeholder="اضف ملاحظات على الضمان"
@@ -1722,5 +1667,4 @@ const OrderServiceFields = (props: OrderServiceFieldsProps) => {
         </AdaptableCard>
     )
 }
-
-export default OrderServiceFields
+export default ClientOfferPriceFields

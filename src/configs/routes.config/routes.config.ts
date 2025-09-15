@@ -201,4 +201,30 @@ export const protectedRoutes = [
         component: lazy(() => import('@/views/tasks/TaskForm/TaskForm')),
         authority: [],
     },
+
+
+    /////////////////////////////////// Offer Price ////////////////////////////////////////
+    {
+        key: 'users.clientsOffersPrice',
+        path: '/clients/create-offer-price',
+        component: lazy(
+            () =>
+                import(
+                    '@/views/clients/ClientOfferPrice/ClientOfferPriceForm'
+                )
+        ),
+        authority: [],
+    },
+
+    // {
+    //     key: 'users.clientsCommunication',
+    //     path: '/clients-communication',
+    //     component: lazy(
+    //         () =>
+    //             import(
+    //                 '@/views/clients/ClientOfferPrice'
+    //             )
+    //     ),
+    //     authority: [],
+    // },
 ]
