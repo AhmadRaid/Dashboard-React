@@ -57,6 +57,8 @@ interface Invoice {
     notes?: string
     client: Client
     order: Order
+    createdAt: string | Date
+
 }
 
 // Create styles
@@ -271,7 +273,7 @@ const styles = StyleSheet.create({
     totalLabel: {
         fontSize: 9, // Smaller font
         color: '#4A5568',
-        fontWeight: 'medium',
+        fontWeight: 'normal',
         textAlign: 'right', // Ensure label is aligned right
     },
     totalValue: {
@@ -283,7 +285,7 @@ const styles = StyleSheet.create({
     grandTotal: {
         fontSize: 13, // Smaller font
         color: '#1A202C',
-        fontWeight: 'extrabold',
+        fontWeight: 'bold',
     },
     notesSection: {
         marginBottom: 8, // Reduced margin
@@ -327,7 +329,7 @@ const styles = StyleSheet.create({
         borderRadius: 6, // Slightly less rounded
         fontSize: 7, // Smaller font
         marginTop: 1, // Reduced margin
-        fontWeight: 'medium',
+        fontWeight: 'normal',
         textAlign: 'right', // Ensure badge text is right-aligned
     },
 })
@@ -342,7 +344,7 @@ Font.register({
     fonts: [
         { src: '/fonts/Tajawal-Regular.ttf', fontWeight: 'normal' },
         { src: '/fonts/Tajawal-Bold.ttf', fontWeight: 'bold' },
-        { src: '/fonts/Tajawal-ExtraBold.ttf', fontWeight: 'extrabold' },
+        { src: '/fonts/Tajawal-ExtraBold.ttf', fontWeight: 'bold' },
     ],
 })
 

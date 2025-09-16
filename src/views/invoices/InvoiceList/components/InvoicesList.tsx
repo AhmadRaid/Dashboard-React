@@ -114,8 +114,16 @@ const InvoiceList = () => {
             },
             {
                 header: 'تاريخ الفاتورة',
-                accessorKey: 'invoiceDate',
-                cell: (props) => props.getValue(),
+                accessorKey: 'createdAt',
+                cell: (props) => {
+                    const createdAt = props.row.original.createdAt
+                    if (!createdAt) return 'غير متاح'
+                    return new Date(createdAt).toLocaleDateString('en-GB', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                    })
+                },
             },
             {
                 header: 'الحالة',

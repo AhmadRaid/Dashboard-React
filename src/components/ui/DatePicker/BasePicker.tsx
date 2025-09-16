@@ -98,7 +98,15 @@ const BasePicker = forwardRef<HTMLInputElement, BasePickerProps>(
                 <CloseButton className="text-base" onClick={onClear} />
             )
         ) : (
-            <>{inputSuffix}</>
+            <div
+                role="button"
+                onMouseDown={(e) => {
+                    e.preventDefault()
+                    openDropdown()
+                }}
+            >
+                {inputSuffix}
+            </div>
         )
 
         const toggleDropdown = () => {
