@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react'
+import dayjs from 'dayjs'
 import { useNavigate } from 'react-router-dom'
 import DataTable from '@/components/shared/DataTable'
 import type { DataTableResetHandle, ColumnDef } from '@/components/shared/DataTable'
@@ -38,9 +39,8 @@ const InvoiceList = () => {
 
         return invoiceData.map((invoice) => ({
             ...invoice,
-            clientName: invoice.clientId?.name || 'غير محدد',
             totalAmount: invoice.totalAmount?.toLocaleString() || '0',
-            invoiceDate: new Date(invoice.invoiceDate).toLocaleDateString('en-US')
+            invoiceDate: dayjs(invoice.invoiceDate).format('DD/MM/YYYY')
         }))
     }, [invoiceData])
 
@@ -52,30 +52,70 @@ const InvoiceList = () => {
                 cell: (props) => props.getValue() || 'غير محدد',
             },
             {
-                header: 'تاريخ الفاتورة',
-                accessorKey: 'invoiceDate',
-                cell: (props) => props.getValue(),
-            },
-            {
                 header: 'اسم العميل',
-                accessorKey: 'clientName',
-                cell: (props) => props.getValue(),
+                cell: (props) => {
+                    const client = props.row.original.clientDetails;
+                    if (!client) {
+                        return 'غير محدد';
+                    }
+                    return `${client.firstName} ${client.secondName} ${client.thirdName} ${client.lastName}`;
+                },
             },
             {
                 header: 'الخدمات',
-                accessorKey: 'services',
                 cell: (props) => {
-                    const services = props.row.original.services
+                    const services = props.row.original.orderDetails?.services
                     if (!services || services.length === 0) {
-                        return 'لا توجد خدمات'
+                        return (
+                            <div className="text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-default py-1">
+                                لا توجد خدمات لعرضها
+                            </div>
+                        )
                     }
-                    return services.map((s: any) => s.serviceName).join('، ')
+
+                    const translateServiceType = (type: string) => {
+                        switch (type) {
+                            case 'protection':
+                                return 'حماية'
+                            case 'polish':
+                                return 'تلميع'
+                            case 'insulator':
+                                return 'عازل حراري'
+                            case 'additions':
+                                return 'إضافات'
+                            default:
+                                return type
+                        }
+                    }
+
+                    return (
+                        <div className="space-y-2">
+                            {services.map((service: any, index: number) => (
+                                <React.Fragment key={index}>
+                                    <div className="flex items-center">
+                                        <span className="font-medium">
+                                            {translateServiceType(service.serviceType)}
+                                        </span>
+                                    </div>
+                                    {index < services.length - 1 && (
+                                        <div className="border-t border-dashed border-gray-400/80 dark:border-gray-500/80 my-2"></div>
+                                    )}
+                                </React.Fragment>
+                            ))}
+                        </div>
+                    )
                 },
             },
+            
             {
                 header: 'المجموع',
                 accessorKey: 'totalAmount',
                 cell: (props) => `${props.getValue()} ر.س`,
+            },
+            {
+                header: 'تاريخ الفاتورة',
+                accessorKey: 'invoiceDate',
+                cell: (props) => props.getValue(),
             },
             {
                 header: 'الحالة',

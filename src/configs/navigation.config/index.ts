@@ -215,7 +215,7 @@ const navigationConfig: NavigationTree[] = [
         subMenu: [
             {
                 key: 'clientsMenu.clientsList',
-                path: '/clients',
+                path: '/invoices',
                 title: 'قائمة الفواتير',
                 translateKey: 'nav.clientsMenu.updateClient',
                 icon: 'userGroup', // أيقونة مجموعة المستخدمين

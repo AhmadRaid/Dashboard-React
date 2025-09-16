@@ -4,10 +4,13 @@ import InvoicesTableSearch from './InvoicesTableSearch'
 import { Link } from 'react-router-dom'
 import { Select, DatePicker } from '@/components/ui'
 import dayjs from 'dayjs'
-import { useAppDispatch, setTableData, resetFilters } from '../store'
+import { useAppDispatch, useAppSelector, setTableData, resetFilters } from '../store'
 
 export const InvoicesTableTools = () => {
     const dispatch = useAppDispatch()
+    const { startDate, endDate } = useAppSelector(
+        (state) => state.invoiceListSlice.data.tableData
+    )
 
     const statusOptions = [
         { label: 'جميع الحالات', value: '' },
@@ -36,11 +39,16 @@ export const InvoicesTableTools = () => {
         }))
     }
 
-    const handleDateRangeChange = (range: [Date | null, Date | null]) => {
-        const [start, end] = range
+    const handleStartDateChange = (date: Date | null) => {
         dispatch(setTableData({
-            startDate: start ? dayjs(start).format('YYYY-MM-DD') : null,
-            endDate: end ? dayjs(end).format('YYYY-MM-DD') : null,
+            startDate: date ? dayjs(date).format('YYYY-MM-DD') : null,
+            pageIndex: 1,
+        }))
+    }
+
+    const handleEndDateChange = (date: Date | null) => {
+        dispatch(setTableData({
+            endDate: date ? dayjs(date).format('YYYY-MM-DD') : null,
             pageIndex: 1,
         }))
     }
@@ -63,6 +71,25 @@ export const InvoicesTableTools = () => {
                     onChange={(option) => handleStatusFilter(option?.value || '')}
                     className="min-w-[150px]"
                 />
+
+                <div className="flex items-center gap-3">
+                    <DatePicker
+                        size="sm"
+                        inputFormat="YYYY-MM-DD"
+                        placeholder="من تاريخ"
+                        value={startDate ? dayjs(startDate, 'YYYY-MM-DD').toDate() : null}
+                        onChange={handleStartDateChange}
+                        className="min-w-[150px]"
+                    />
+                    <DatePicker
+                        size="sm"
+                        inputFormat="YYYY-MM-DD"
+                        placeholder="إلى تاريخ"
+                        value={endDate ? dayjs(endDate, 'YYYY-MM-DD').toDate() : null}
+                        onChange={handleEndDateChange}
+                        className="min-w-[150px]"
+                    />
+                </div>
                 
                 <Select
                     size="sm"
@@ -72,22 +99,8 @@ export const InvoicesTableTools = () => {
                     className="min-w-[150px]"
                 />
 
-                <DatePicker.DatePickerRange
-                    size="sm"
-                    inputFormat="YYYY-MM-DD"
-                    placeholder="من تاريخ ~ إلى تاريخ"
-                    onChange={handleDateRangeChange}
-                    className="min-w-[220px]"
-                />
+              
 
-                <Link to="/invoices/create">
-                    <Button
-                        variant="solid"
-                        icon={<HiPlusCircle />}
-                    >
-                        إنشاء فاتورة
-                    </Button>
-                </Link>
             </div>
         </div>
     )

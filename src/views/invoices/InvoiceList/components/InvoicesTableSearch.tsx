@@ -22,7 +22,7 @@ const InvoicesTableSearch = () => {
     return (
         <Input
             ref={searchInput}
-            className="max-w-md md:w-52 md:mb-0 mb-4"
+            className="w-[160px] md:w-[200px] md:mb-0 mb-0"
             size="sm"
             placeholder="ابحث برقم الفاتورة أو العميل"
             prefix={<HiOutlineSearch className="text-lg" />}
