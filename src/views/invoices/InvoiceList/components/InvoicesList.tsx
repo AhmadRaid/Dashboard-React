@@ -18,7 +18,7 @@ const InvoiceList = () => {
     const dispatch = useAppDispatch()
     const navigate = useNavigate()
 
-    const { pageIndex, limit, sort, query, total } = useAppSelector(
+    const { pageIndex, limit, sort, query, startDate, endDate, total } = useAppSelector(
         (state) => state.invoiceListSlice.data.tableData
     )
 
@@ -31,7 +31,7 @@ const InvoiceList = () => {
 
     useEffect(() => {
         dispatch(getInvoices())
-    }, [pageIndex, limit, sort, query, dispatch])
+    }, [pageIndex, limit, sort, query, startDate, endDate, dispatch])
 
     const normalizedData = useMemo(() => {
         if (!invoiceData) return []

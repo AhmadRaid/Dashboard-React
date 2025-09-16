@@ -670,33 +670,7 @@ const transformInitialData = (data:any) => {
                                             {service.serviceType ===
                                                 'protection' && (
                                                 <>
-                                                    <FormItem
-                                                        label="لون السيارة الأصلي"
-                                                        invalid={
-                                                            !!errors.services?.[
-                                                                index
-                                                            ]
-                                                                ?.originalCarColor &&
-                                                            !!touched
-                                                                .services?.[
-                                                                index
-                                                            ]?.originalCarColor
-                                                        }
-                                                        errorMessage={
-                                                            errors.services?.[
-                                                                index
-                                                            ]
-                                                                ?.originalCarColor as string
-                                                        }
-                                                    >
-                                                        <Field
-                                                            name={`services[${index}].originalCarColor`}
-                                                            type="text"
-                                                            size="sm"
-                                                            placeholder="أدخل لون السيارة الأصلي"
-                                                            component={Input}
-                                                        />
-                                                    </FormItem>
+                                        
 
                                                     {/* حقل لون الحماية */}
                                                     <FormItem

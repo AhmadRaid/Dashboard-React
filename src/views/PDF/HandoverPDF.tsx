@@ -360,12 +360,7 @@ const HandoverPDF: React.FC<HandoverDocumentProps> = ({
                     value: service.protectionCoverage,
                 })
             }
-            if (service.originalCarColor) {
-                fields.push({
-                    label: 'لون السيارة الأصلي',
-                    value: service.originalCarColor,
-                })
-            }
+      
             if (service.protectionColor) {
                 fields.push({
                     label: 'لون الحماية',

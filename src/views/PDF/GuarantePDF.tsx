@@ -856,22 +856,7 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                                                     </Text>
                                                 </View>
                                             )}
-                                            {service.originalCarColor && (
-                                                <View
-                                                    style={
-                                                        styles.serviceDetailItem
-                                                    }
-                                                >
-                                                    <Text style={styles.label}>
-                                                        لون السيارة الأصلي:
-                                                    </Text>
-                                                    <Text style={styles.value}>
-                                                        {
-                                                            service.originalCarColor
-                                                        }
-                                                    </Text>
-                                                </View>
-                                            )}
+
                                             {service.protectionColor && (
                                                 <View
                                                     style={

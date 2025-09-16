@@ -8,10 +8,11 @@ import {
     UpdateInvoice,
 } from '@/@types/invoice'
 
-export async function apiGetInvoices() {
+export async function apiGetInvoices(params?: GetInvoicesParams) {
     return ApiService.fetchData<GetInvoicesResponse, GetInvoicesParams>({
         url: '/invoices',
         method: 'get',
+        params,
     })
 }
 

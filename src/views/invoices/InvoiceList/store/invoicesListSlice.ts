@@ -9,6 +9,8 @@ interface TableData {
     limit: number
     total: number
     query: string
+    startDate?: string | null
+    endDate?: string | null
     sort: {
         order: '' | 'asc' | 'desc'
         key: string
@@ -30,6 +32,8 @@ const initialState: InvoiceListState = {
         limit: 10,
         total: 0,
         query: '',
+        startDate: null,
+        endDate: null,
         sort: {
             order: 'desc',
             key: 'invoiceDate',
@@ -40,8 +44,20 @@ const initialState: InvoiceListState = {
 
 export const getInvoices = createAsyncThunk(
     `${SLICE_NAME}/getInvoices`,
-    async () => {
-        const response = await apiGetInvoices()
+    async (_: void, thunkAPI) => {
+        const state: any = thunkAPI.getState()
+        const tableData: TableData = state.invoiceListSlice?.data?.tableData
+        const params = {
+            page: tableData.pageIndex,
+            limit: tableData.limit,
+            sort: tableData.sort?.key
+                ? `${tableData.sort.key}:${tableData.sort.order || 'desc'}`
+                : undefined,
+            query: tableData.query || undefined,
+            startDate: tableData.startDate || undefined,
+            endDate: tableData.endDate || undefined,
+        }
+        const response = await apiGetInvoices(params)
         return response.data
     }
 )

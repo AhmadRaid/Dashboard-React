@@ -112,26 +112,20 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
     } = props
 
     const formatDate = (dateString?: string) => {
-        if (!dateString) return '-';
+        if (!dateString) return '-'
         return new Date(dateString).toLocaleDateString('en-GB', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
-        });
-    };
+        })
+    }
 
     const renderServiceDetails = (service: any) => {
         switch (service.serviceType) {
             case 'protection':
                 return (
                     <>
-                        <div className="flex flex-col">
-                            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
-                                <FaPalette className="ml-2 text-base text-gray-500" />{' '}
-                                لون السيارة الأصلي
-                            </label>
-                            {renderReadOnlyValue(service.originalCarColor)}
-                        </div>
+                
                         <div className="flex flex-col">
                             <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
                                 <FaPalette className="ml-2 text-base text-gray-500" />{' '}
@@ -152,7 +146,9 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                                 حجم الفيلم
                             </label>
                             {renderReadOnlyValue(
-                                service.protectionSize ? `${service.protectionSize} مل` : '-'
+                                service.protectionSize
+                                    ? `${service.protectionSize} مل`
+                                    : '-'
                             )}
                         </div>
                         <div className="flex flex-col">
@@ -163,7 +159,7 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                             {renderReadOnlyValue(service.protectionCoverage)}
                         </div>
                     </>
-                );
+                )
             case 'polish':
                 return (
                     <>
@@ -182,7 +178,7 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                             {renderReadOnlyValue(service.polishSubType || '-')}
                         </div>
                     </>
-                );
+                )
             case 'insulator':
                 return (
                     <>
@@ -198,10 +194,12 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                                 <FaTools className="ml-2 text-base text-gray-500" />{' '}
                                 تغطية العازل
                             </label>
-                            {renderReadOnlyValue(service.insulatorCoverage || '-')}
+                            {renderReadOnlyValue(
+                                service.insulatorCoverage || '-'
+                            )}
                         </div>
                     </>
-                );
+                )
             case 'additions':
                 return (
                     <>
@@ -214,11 +212,11 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                         </div>
                         {/* You can add more fields specific to 'additions' here */}
                     </>
-                );
+                )
             default:
-                return null;
+                return null
         }
-    };
+    }
 
     return (
         <div className="w-full max-w-full">
@@ -243,7 +241,8 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                                 </svg>
                             </h5>
                             <p className="text-gray-100 text-opacity-90">
-                                تفاصيل السيارة الأساسية والمعلومات الفنية لطلب الخدمة.
+                                تفاصيل السيارة الأساسية والمعلومات الفنية لطلب
+                                الخدمة.
                             </p>
                         </div>
                     </div>
@@ -276,7 +275,9 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                             </label>
                             <div className="flex justify-center mt-2">
                                 <div className="flex gap-2 bg-gray-200 dark:bg-gray-800 p-3 rounded-xl shadow-inner overflow-x-auto">
-                                    {Array.from(values.carPlateNumber || '').map((char, i) => (
+                                    {Array.from(
+                                        values.carPlateNumber || ''
+                                    ).map((char, i) => (
                                         <div
                                             key={i}
                                             className="w-12 h-14 flex items-center justify-center bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-2xl font-bold text-gray-900 dark:text-gray-100 uppercase"
@@ -317,7 +318,8 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                                 </svg>
                             </h5>
                             <p className="text-gray-100 text-opacity-90">
-                                استعراض تفصيلي لجميع الخدمات التي تم تقديمها مع معلومات الضمان.
+                                استعراض تفصيلي لجميع الخدمات التي تم تقديمها مع
+                                معلومات الضمان.
                             </p>
                         </div>
                     </div>
@@ -375,14 +377,17 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                                             {service.guarantee && (
                                                 <div
                                                     className={`mt-8 p-6 rounded-xl border-2 ${
-                                                        service.guarantee.status === 'active'
+                                                        service.guarantee
+                                                            .status === 'active'
                                                             ? 'bg-green-50 border-green-200'
                                                             : 'bg-red-50 border-red-200'
                                                     }`}
                                                 >
                                                     <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200 dark:border-gray-600">
                                                         <div className="flex items-center gap-3">
-                                                            {service.guarantee.status === 'active' ? (
+                                                            {service.guarantee
+                                                                .status ===
+                                                            'active' ? (
                                                                 <FiCheckCircle className="text-green-600 text-3xl" />
                                                             ) : (
                                                                 <FiXCircle className="text-red-600 text-3xl" />
@@ -392,25 +397,52 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                                                             </h6>
                                                         </div>
                                                         {readOnly &&
-                                                            (service.guarantee.status === 'active' ? (
+                                                            (service.guarantee
+                                                                .status ===
+                                                            'active' ? (
                                                                 <Button
                                                                     size="sm"
                                                                     variant="solid"
                                                                     color="red"
-                                                                    loading={deactivatingGuarantee === service.guarantee._id}
-                                                                    onClick={() => onDeactivateGuarantee?.(service._id, service.guarantee._id)}
+                                                                    loading={
+                                                                        deactivatingGuarantee ===
+                                                                        service
+                                                                            .guarantee
+                                                                            ._id
+                                                                    }
+                                                                    onClick={() =>
+                                                                        onDeactivateGuarantee?.(
+                                                                            service._id,
+                                                                            service
+                                                                                .guarantee
+                                                                                ._id
+                                                                        )
+                                                                    }
                                                                     className="flex items-center gap-2 transition-all duration-200"
                                                                 >
                                                                     <FiXCircle />
-                                                                    إلغاء تفعيل الضمان
+                                                                    إلغاء تفعيل
+                                                                    الضمان
                                                                 </Button>
                                                             ) : (
                                                                 <Button
                                                                     size="sm"
                                                                     variant="solid"
                                                                     color="green"
-                                                                    loading={activatingGuarantee === service.guarantee._id}
-                                                                    onClick={() => onActivateGuarantee?.(service._id, service.guarantee._id)}
+                                                                    loading={
+                                                                        activatingGuarantee ===
+                                                                        service
+                                                                            .guarantee
+                                                                            ._id
+                                                                    }
+                                                                    onClick={() =>
+                                                                        onActivateGuarantee?.(
+                                                                            service._id,
+                                                                            service
+                                                                                .guarantee
+                                                                                ._id
+                                                                        )
+                                                                    }
                                                                     className="flex items-center gap-2 transition-all duration-200"
                                                                 >
                                                                     <FiCheckCircle />
@@ -425,12 +457,18 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                                                             </label>
                                                             <span
                                                                 className={`px-4 py-2 rounded-full font-semibold text-sm ${
-                                                                    service.guarantee.status === 'active'
+                                                                    service
+                                                                        .guarantee
+                                                                        .status ===
+                                                                    'active'
                                                                         ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                                                                         : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                                                                 }`}
                                                             >
-                                                                {service.guarantee.status === 'active'
+                                                                {service
+                                                                    .guarantee
+                                                                    .status ===
+                                                                'active'
                                                                     ? 'مفعل'
                                                                     : 'غير مفعل'}
                                                             </span>
@@ -439,19 +477,36 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                                                             <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">
                                                                 مدة الضمان
                                                             </label>
-                                                            {renderReadOnlyValue(service.guarantee.typeGuarantee || '-')}
+                                                            {renderReadOnlyValue(
+                                                                service
+                                                                    .guarantee
+                                                                    .typeGuarantee ||
+                                                                    '-'
+                                                            )}
                                                         </div>
                                                         <div className="flex flex-col">
                                                             <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">
                                                                 تاريخ البدء
                                                             </label>
-                                                            {renderReadOnlyValue(formatDate(service.guarantee.startDate))}
+                                                            {renderReadOnlyValue(
+                                                                formatDate(
+                                                                    service
+                                                                        .guarantee
+                                                                        .startDate
+                                                                )
+                                                            )}
                                                         </div>
                                                         <div className="flex flex-col">
                                                             <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">
                                                                 تاريخ الانتهاء
                                                             </label>
-                                                            {renderReadOnlyValue(formatDate(service.guarantee.endDate))}
+                                                            {renderReadOnlyValue(
+                                                                formatDate(
+                                                                    service
+                                                                        .guarantee
+                                                                        .endDate
+                                                                )
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>

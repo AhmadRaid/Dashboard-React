@@ -2,7 +2,8 @@ import Button from '@/components/ui/Button'
 import { HiPlusCircle } from 'react-icons/hi'
 import InvoicesTableSearch from './InvoicesTableSearch'
 import { Link } from 'react-router-dom'
-import { Select } from '@/components/ui'
+import { Select, DatePicker } from '@/components/ui'
+import dayjs from 'dayjs'
 import { useAppDispatch, setTableData, resetFilters } from '../store'
 
 export const InvoicesTableTools = () => {
@@ -35,6 +36,15 @@ export const InvoicesTableTools = () => {
         }))
     }
 
+    const handleDateRangeChange = (range: [Date | null, Date | null]) => {
+        const [start, end] = range
+        dispatch(setTableData({
+            startDate: start ? dayjs(start).format('YYYY-MM-DD') : null,
+            endDate: end ? dayjs(end).format('YYYY-MM-DD') : null,
+            pageIndex: 1,
+        }))
+    }
+
     const handleResetAllFilters = () => {
         dispatch(resetFilters())
     }
@@ -60,6 +70,14 @@ export const InvoicesTableTools = () => {
                     options={sortOptions}
                     onChange={(option) => handleSortChange(option?.value || '')}
                     className="min-w-[150px]"
+                />
+
+                <DatePicker.DatePickerRange
+                    size="sm"
+                    inputFormat="YYYY-MM-DD"
+                    placeholder="من تاريخ ~ إلى تاريخ"
+                    onChange={handleDateRangeChange}
+                    className="min-w-[220px]"
                 />
 
                 <Link to="/invoices/create">
