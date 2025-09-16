@@ -33,7 +33,6 @@ interface ServiceData {
         notes: string
     }
     protectionFinish?: string
-    originalCarColor?: string
     protectionColor?: string
     insulatorType?: string
     insulatorCoverage?: string

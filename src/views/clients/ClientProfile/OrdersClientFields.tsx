@@ -132,7 +132,6 @@ const transformOrderToGuaranteeDoc = (order: any, client: any): any => {
                 protectionFinish: service.protectionFinish,
                 protectionSize: service.protectionSize,
                 protectionCoverage: service.protectionCoverage,
-                originalCarColor: service.originalCarColor,
                 protectionColor: service.protectionColor,
                 insulatorType: service.insulatorType,
                 insulatorCoverage: service.insulatorCoverage,

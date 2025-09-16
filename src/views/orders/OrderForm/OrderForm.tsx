@@ -33,7 +33,6 @@ type Service = {
     washScope?: string
     servicePrice?: number
     serviceDate?: string
-    originalCarColor?: string
     protectionColor?: string
 }
 
@@ -62,7 +61,6 @@ type InitialData = {
         protectionFinish?: string
         protectionSize?: string
         protectionCoverage?: string
-        originalCarColor?: string
         protectionColor?: string
         insulatorType?: string
         insulatorCoverage?: string

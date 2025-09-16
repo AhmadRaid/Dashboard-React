@@ -33,7 +33,6 @@ type FormFieldsName = {
         protectionFinish?: string
         protectionSize?: string
         protectionCoverage?: string
-        originalCarColor?: string
         protectionColor?: string
         insulatorType?: string
         insulatorCoverage?: string
