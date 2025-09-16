@@ -49,7 +49,7 @@ interface Client {
 
 interface Invoice {
     invoiceNumber: string
-    invoiceDate: string | Date
+    createdAt: string | Date
     subtotal: number
     taxRate: number
     taxAmount: number
@@ -57,8 +57,6 @@ interface Invoice {
     notes?: string
     client: Client
     order: Order
-    createdAt: string | Date
-
 }
 
 // Create styles
@@ -181,16 +179,16 @@ const styles = StyleSheet.create({
         textAlign: 'right', // Ensure value is aligned right
     },
     carInfo: {
-        flexDirection: 'row-reverse', // Key change: Reverse the order of flex items (boxes) for RTL
+        flexDirection: 'row-reverse', // RTL
         flexWrap: 'wrap',
         justifyContent: 'space-between',
         marginBottom: 6, // Reduced margin
     },
     carInfoItem: {
-        width: '31%',
+        width: '48%', // two per row to avoid large leftover gaps
         marginBottom: 4, // Reduced margin
         backgroundColor: '#F3F4F6',
-        padding: 4, // Reduced padding
+        padding: 6, // Slightly larger for readability
         borderRadius: 4,
         textAlign: 'right', // Ensure text is aligned right within the box
     },
@@ -230,23 +228,18 @@ const styles = StyleSheet.create({
         textAlign: 'right',
     },
     col_itemNumber: {
-        // New style for Item number column (رقم الصنف)
-        width: '8%', // Adjusted width
-        textAlign: 'right',
-    },
-    col_category: {
-        // New style for Category column (الصنف)
-        width: '20%', // Adjusted width
+        // Item number column (رقم)
+        width: '12%',
         textAlign: 'right',
     },
     col_service: {
         // Service column (الخدمة)
-        width: '52%', // Adjusted width
+        width: '58%',
         textAlign: 'right',
     },
     col_price: {
         // Price column (السعر)
-        width: '20%', // Adjusted width
+        width: '30%',
         textAlign: 'right',
     },
     totalsContainer: {
@@ -418,7 +411,7 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => {
                             تاريخ الفاتورة:
                         </Text>
                         <Text style={styles.value}>
-                            {new Date(invoice.invoiceDate).toLocaleDateString(
+                            {new Date(invoice.createdAt).toLocaleDateString(
                                 'ar-SA',
                                 {
                                     year: 'numeric',
@@ -517,26 +510,25 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => {
                     <Text style={styles.sectionTitle}>الخدمات المقدمة</Text>
                     <View style={styles.table}>
                         <View style={styles.tableHeader}>
-                            <View style={[styles.tableCol, styles.col_price]}>
+                        <View style={[styles.tableCol, styles.col_price]}>
                                 <Text style={styles.tableHeaderText}>السعر</Text>
                             </View>
+                        
                             <View style={[styles.tableCol, styles.col_service]}>
                                 <Text style={styles.tableHeaderText}>الخدمة</Text>
                             </View>
                             <View style={[styles.tableCol, styles.col_itemNumber]}>
-                                <Text style={styles.tableHeaderText}>
-                                    رقم
-                                </Text>
+                                <Text style={styles.tableHeaderText}>رقم</Text>
                             </View>
                         </View>
 
                         {/* Table Rows */}
                         {invoice.order.services.map((service, index) => (
                             <View key={index} style={styles.tableRow}>
-                                {/* Order of cells in JSX is now adjusted to visually appear correctly in RTL */}
-                                <View style={[styles.tableCol, styles.col_price]}>
+                                    <View style={[styles.tableCol, styles.col_price]}>
                                     <Text style={styles.value}>{service.servicePrice}</Text>
                                 </View>
+                               
                                 <View style={[styles.tableCol, styles.col_service]}>
                                     <Text style={styles.value}>
                                         {service.serviceType === 'protection'
@@ -569,11 +561,8 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => {
                                             </Text>
                                         )}
                                 </View>
-                                <View
-                                    style={[styles.tableCol, styles.col_itemNumber]}
-                                >
+                                <View style={[styles.tableCol, styles.col_itemNumber]}>
                                     <Text style={styles.value}>{index + 1}</Text>
-                                    {/* Item number */}
                                 </View>
                             </View>
                         ))}
