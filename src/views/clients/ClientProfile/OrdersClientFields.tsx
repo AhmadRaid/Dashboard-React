@@ -31,6 +31,8 @@ import type { FormikErrors, FormikTouched } from 'formik'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import { HiOutlineTrash } from 'react-icons/hi'
 import GuaranteePDF from '@/views/PDF/GuarantePDF'
+import HandoverPDF from '@/views/PDF/HandoverPDF'
+import { apiGetOrdersDetails } from '@/services/OrdersService'
 
 // --- Helper Functions ---
 const formatDate = (isoString?: string) => {
@@ -185,13 +187,13 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
     const handleStartDownload = async (
         event: React.MouseEvent,
         orderId: string,
-        type: 'invoice' | 'guarantee' | 'receipt'
+        type: 'invoice' | 'guarantee' | 'handover'
     ) => {
-        if (downloadLoadingOrderId === orderId) return
-
-        setDownloadLoadingOrderId(orderId)
-        setDownloadType(type)
-
+        if (downloadLoadingOrderId === orderId) return;
+    
+        setDownloadLoadingOrderId(orderId);
+        setDownloadType(type);
+    
         toast.push(
             <Notification title="تصدير" type="info">
                 جارٍ إعداد ملف{' '}
@@ -199,80 +201,88 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                     ? 'الفاتورة'
                     : type === 'guarantee'
                     ? 'الضمان'
-                    : 'إيصال السيارة'}{' '}
+                    : 'إقرار تسليم السيارة'}{' '}
                 للتنزيل...
             </Notification>
-        )
-
+        );
+    
         try {
-            let responseData: any
-            let fileName: string = ''
-            let pdfComponent: JSX.Element | null = null
-
+            let responseData: any;
+            let fileName: string = '';
+            let pdfComponent: JSX.Element | null = null;
+    
             if (type === 'invoice') {
-                const response = await apiGetInvoiceByOrderId(orderId)
-                responseData = response.data.data
-                if (!responseData) throw new Error('Invoice data not found.')
-                fileName = `فاتورة_${responseData.invoiceNumber}.pdf`
-                pdfComponent = <InvoicePDF invoice={responseData} />
+                const response = await apiGetInvoiceByOrderId(orderId);
+                responseData = response.data.data;
+                if (!responseData) throw new Error('Invoice data not found.');
+                fileName = `فاتورة_${responseData.invoiceNumber}.pdf`;
+                pdfComponent = <InvoicePDF invoice={responseData} />;
             } else {
                 // Find the order in the client's orders
-                const order = values.orders?.find((o: any) => o._id === orderId)
-                if (!order) throw new Error('Order not found.')
-
+                const order = values.orders?.find((o: any) => o._id === orderId);
+                if (!order) throw new Error('Order not found.');
+    
                 if (type === 'guarantee') {
-                    responseData = transformOrderToGuaranteeDoc(order, values)
-                    fileName = `ضمان_${order.orderNumber}.pdf`
-                    pdfComponent = <GuaranteePDF guaranteeDoc={responseData} />
-                } else if (type === 'receipt') {
-                    responseData = {
-                        orderId,
-                        clientName: values.firstName + ' ' + values.lastName,
-                        carDetails: order,
-                    }
-                    fileName = `إيصال_سيارة_${order.orderNumber}.pdf`
-                    // You'll need to create a ReceiptPDF component similar to GuaranteePDF
-                    // pdfComponent = <ReceiptPDF receiptData={responseData} />
-                    throw new Error(
-                        'Receipt PDF generation not implemented yet.'
-                    )
+                    responseData = transformOrderToGuaranteeDoc(order, values);
+                    fileName = `ضمان_${order.orderNumber}.pdf`;
+                    pdfComponent = <GuaranteePDF guaranteeDoc={responseData} />;
+                } else if (type === 'handover') {
+                    // Fetch the detailed order data from the API
+                    const response = await apiGetOrdersDetails(orderId);
+                    const orderData = response.data.data;
+                    if (!orderData) throw new Error('Order data not found.');
+    
+                    // يمكنك إضافة حقول خاصة بإقرار التسليم هنا
+                    const handoverDate = new Date().toLocaleDateString('EN-US');
+                    const odometerReading = orderData.carPlateNumber || 0; // استخدم قراءة العداد من بيانات الطلب
+                    const employeeName = 'اسم الموظف المسؤول'; // يجب الحصول على هذا من حالة التطبيق أو مدخل المستخدم
+    
+                    fileName = `إقرار_تسليم_سيارة_${orderData.orderNumber}.pdf`;
+                    pdfComponent = (
+                        <HandoverPDF
+                            orderData={orderData}
+                            handoverDate={handoverDate}
+                            odometerReading={odometerReading}
+                            employeeName={employeeName}
+                        />
+                    );
                 }
             }
-
+    
             if (!pdfComponent) {
-                throw new Error('Failed to create PDF component.')
+                throw new Error('Failed to create PDF component.');
             }
-
+    
             // Render PDF and trigger download
-            const container = document.createElement('div')
-            document.body.appendChild(container)
-            const root = createRoot(container)
-
+            const container = document.createElement('div');
+            document.body.appendChild(container);
+            const root = createRoot(container);
+    
             root.render(
                 <BlobProvider document={pdfComponent}>
                     {({ blob, loading, error }) => {
                         if (blob && !loading) {
                             try {
-                                const objectUrl = URL.createObjectURL(blob)
-                                const downloadLink = document.createElement('a')
-                                downloadLink.href = objectUrl
-                                downloadLink.download = fileName
-                                downloadLink.style.display = 'none'
-                                downloadLink.rel = 'noopener'
-                                document.body.appendChild(downloadLink)
-                                downloadLink.click()
-                                URL.revokeObjectURL(objectUrl)
-                                document.body.removeChild(downloadLink)
+                                const objectUrl = URL.createObjectURL(blob);
+                                const downloadLink = document.createElement('a');
+                                downloadLink.href = objectUrl;
+                                downloadLink.download = fileName;
+                                downloadLink.style.display = 'none';
+                                downloadLink.rel = 'noopener';
+                                document.body.appendChild(downloadLink);
+                                downloadLink.click();
+                                URL.revokeObjectURL(objectUrl);
+                                document.body.removeChild(downloadLink);
                                 toast.push(
                                     <Notification title="تصدير" type="success">
                                         تم تنزيل الملف بنجاح.
                                     </Notification>
-                                )
+                                );
                             } finally {
-                                setDownloadLoadingOrderId(null)
-                                setDownloadType(null)
-                                root.unmount()
-                                document.body.removeChild(container)
+                                setDownloadLoadingOrderId(null);
+                                setDownloadType(null);
+                                root.unmount();
+                                document.body.removeChild(container);
                             }
                         }
                         if (error) {
@@ -280,18 +290,18 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                                 <Notification title="خطأ" type="danger">
                                     حدث خطأ أثناء إنشاء ملف PDF: {error.message}
                                 </Notification>
-                            )
-                            setDownloadLoadingOrderId(null)
-                            setDownloadType(null)
-                            root.unmount()
-                            document.body.removeChild(container)
+                            );
+                            setDownloadLoadingOrderId(null);
+                            setDownloadType(null);
+                            root.unmount();
+                            document.body.removeChild(container);
                         }
-                        return null
+                        return null;
                     }}
                 </BlobProvider>
-            )
+            );
         } catch (error: any) {
-            console.error(`Error downloading ${type}:`, error)
+            console.error(`Error downloading ${type}:`, error);
             toast.push(
                 <Notification title="خطأ" type="danger">
                     فشل في تحميل{' '}
@@ -302,11 +312,11 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                         : 'الإيصال'}
                     : {error.message || 'خطأ غير معروف'}
                 </Notification>
-            )
-            setDownloadLoadingOrderId(null)
-            setDownloadType(null)
+            );
+            setDownloadLoadingOrderId(null);
+            setDownloadType(null);
         }
-    }
+    };
 
     // --- DataTable Columns Definition ---
     const ordersColumns: ColumnDef<any>[] = [
@@ -420,12 +430,12 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                                             handleStartDownload(
                                                 e as any,
                                                 order._id,
-                                                'receipt'
+                                                'handover'
                                             )
                                         }}
                                         disabled={
                                             isLoadingCurrentOrder &&
-                                            downloadType !== 'receipt'
+                                            downloadType !== 'handover'
                                         }
                                         className="w-full text-right px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2"
                                     >

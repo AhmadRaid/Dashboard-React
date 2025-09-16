@@ -136,7 +136,7 @@ export const validationSchema = Yup.object().shape({
     .max(100, "يجب ألا يتجاوز الاسم الكامل 100 حرف"),
 
   lastName: Yup.string()
-    .required("الاسم الاخير مطلوب")
+    .required("الاسم العائلة مطلوب")
     .min(2, "يجب أن يكون الاسم الكامل على الأقل 2 حروف")
     .max(100, "يجب ألا يتجاوز الاسم الكامل 100 حرف"),
 

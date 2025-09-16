@@ -106,7 +106,7 @@ const CarInfoStep = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormItem
-        label="اسم الشركة المصنعة"
+        label="اسم الشركة المصنعة ونوع السيارة"
         invalid={!!errors.carManufacturer && !!touched.carManufacturer}
         errorMessage={errors.carManufacturer}
     >
@@ -116,7 +116,7 @@ const CarInfoStep = ({
             autoComplete="off"
             component={Input}
             size="sm"
-            placeholder="أدخل اسم الشركة المصنعة"
+            placeholder="أدخل الشركة المصنعة ونوع السيارة"
         />
     </FormItem>
 

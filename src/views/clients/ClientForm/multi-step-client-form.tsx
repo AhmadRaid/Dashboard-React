@@ -28,7 +28,7 @@ const clientValidationSchema = Yup.object().shape({
         .min(2, 'يجب أن يكون الاسم على الأقل 2 حروف')
         .max(100, 'يجب ألا يتجاوز الاسم 100 حرف'),
     lastName: Yup.string()
-        .required('الاسم الاخير مطلوب')
+        .required('الاسم العائلة مطلوب')
         .min(2, 'يجب أن يكون الاسم على الأقل 2 حروف')
         .max(100, 'يجب ألا يتجاوز الاسم 100 حرف'),
     email: Yup.string().email('عنوان البريد الإلكتروني غير صالح'),
@@ -58,7 +58,7 @@ const clientValidationSchema = Yup.object().shape({
 
 const carValidationSchema = Yup.object().shape({
     carManufacturer: Yup.string() // ✅ الحقل الجديد
-        .required('اسم الشركة المصنعة مطلوب')
+        .required('اسم الشركة المصنعة ونوع السيارة مطلوب')
         .max(50, 'يجب ألا يتجاوز اسم الشركة 50 حرفًا'),
     carModel: Yup.string()
         .required('موديل السيارة مطلوب')

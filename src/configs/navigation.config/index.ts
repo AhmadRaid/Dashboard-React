@@ -204,6 +204,28 @@ const navigationConfig: NavigationTree[] = [
         ],
     },
 
+    {
+        key: 'invoicesMenu',
+        path: '',
+        title: 'الفواتير',
+        translateKey: 'nav.invoicesMenu.invoicesMenu',
+        icon: 'invoices', 
+        type: NAV_ITEM_TYPE_COLLAPSE,
+        authority: [],
+        subMenu: [
+            {
+                key: 'clientsMenu.clientsList',
+                path: '/clients',
+                title: 'قائمة الفواتير',
+                translateKey: 'nav.clientsMenu.updateClient',
+                icon: 'userGroup', // أيقونة مجموعة المستخدمين
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
+                subMenu: [],
+            },
+        ],
+    },
+
     // 3. المستخدمين (Users)
     {
         key: 'users',
