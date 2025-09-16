@@ -90,6 +90,7 @@ export interface GetInvoicesParams {
     limit?: number
     sort?: string
     query?: string
+    keyword?: string
     status?: InvoiceStatus
     startDate?: string
     endDate?: string

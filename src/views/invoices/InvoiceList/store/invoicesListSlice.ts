@@ -9,6 +9,7 @@ interface TableData {
     limit: number
     total: number
     query: string
+    keyword?: string
     startDate?: string | null
     endDate?: string | null
     sort: {
@@ -32,6 +33,7 @@ const initialState: InvoiceListState = {
         limit: 10,
         total: 0,
         query: '',
+        keyword: '',
         startDate: null,
         endDate: null,
         sort: {
@@ -53,7 +55,9 @@ export const getInvoices = createAsyncThunk(
             sort: tableData.sort?.key
                 ? `${tableData.sort.key}:${tableData.sort.order || 'desc'}`
                 : undefined,
+            // Keep both to be safe with backend expectations
             query: tableData.query || undefined,
+            keyword: tableData.query || tableData.keyword || undefined,
             startDate: tableData.startDate || undefined,
             endDate: tableData.endDate || undefined,
         }
