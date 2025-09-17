@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react'
 import dayjs from 'dayjs'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import DataTable from '@/components/shared/DataTable'
 import type { DataTableResetHandle, ColumnDef } from '@/components/shared/DataTable'
 import reducer, {
@@ -49,7 +49,20 @@ const InvoiceList = () => {
             {
                 header: 'رقم الفاتورة',
                 accessorKey: 'invoiceNumber',
-                cell: (props) => props.getValue() || 'غير محدد',
+                cell: (props) => {
+                    const id = props.row.original._id
+                    const num = props.getValue() || 'غير محدد'
+                    return (
+                        <Link
+                            to={`/invoices/${id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-indigo-600 hover:text-indigo-800 underline"
+                            title="عرض تفاصيل الفاتورة"
+                        >
+                            {String(num)}
+                        </Link>
+                    ) as any
+                },
             },
             {
                 header: 'اسم العميل',

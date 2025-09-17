@@ -412,7 +412,7 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => {
                         </Text>
                         <Text style={styles.value}>
                             {new Date(invoice.createdAt).toLocaleDateString(
-                                'ar-SA',
+                                'en-US',
                                 {
                                     year: 'numeric',
                                     month: 'long',
@@ -432,7 +432,7 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => {
                             تاريخ الطلب:
                         </Text>
                         <Text style={styles.value}>
-                            {new Date(invoice.order.createdAt).toLocaleDateString('ar-SA', {
+                            {new Date(invoice.order.createdAt).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric',

@@ -150,6 +150,13 @@ export const protectedRoutes = [
     },
 
     {
+        key: 'invoicesMenu.InvoiceDetails',
+        path: '/invoices/:invoiceId',
+        component: lazy(() => import('@/views/invoices/InvoiceDetails')),
+        authority: [],
+    },
+
+    {
         key: 'invoicesMenu.reportInvoices',
         path: '/invoices/financial-reports/:clientId',
         component: lazy(
