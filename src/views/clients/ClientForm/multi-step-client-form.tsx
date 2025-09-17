@@ -12,6 +12,8 @@ import ServicesStep from './steps/services-step'
 import StepIndicator from './step-indicator'
 import { apiCheckNameIsExist } from '@/services/ClientsService'
 import { ConfirmDialog } from '@/components/shared'
+import { toast } from '@/components/ui'
+import { Notification } from '@/components/ui'
 
 // Validation schemas for each step
 const clientValidationSchema = Yup.object().shape({
@@ -197,6 +199,10 @@ const MultiStepClientForm = ({
     const [pendingAction, setPendingAction] = useState<'next' | 'save' | null>(
         null
     )
+    // حالات جديدة لتخصيص محتوى مربع الحوار
+    const [dialogTitle, setDialogTitle] = useState('الاسم موجود مسبقاً');
+    const [dialogConfirmText, setDialogConfirmText] = useState('متابعة بنفس الاسم');
+    const [dialogCancelText, setDialogCancelText] = useState('تغيير الاسم');
 
     const steps = [
         {
@@ -230,44 +236,69 @@ const MultiStepClientForm = ({
     }
 
     const checkNameAndMaybeConfirm = async (
-        clientData: any
+        clientData: {
+            firstName: string
+            secondName: string
+            thirdName: string
+            lastName: string
+            phone: string
+            secondPhone: string
+        }
     ): Promise<boolean> => {
-        // returns true if allowed to proceed
-        const {
-            firstName,
-            secondName,
-            thirdName,
-            lastName,
-            phone,
-            secondPhone,
-        } = clientData
-
+        setIsLoading(true)
         try {
-            const res: any = await apiCheckNameIsExist({
-                firstName,
-                secondName,
-                thirdName,
-                lastName,
-                phone,
-                secondPhone,
-            })
-            const exists: boolean = !!res?.data?.data?.exists
-            if (exists) {
-                const apiMessage: string =
-                    (res?.data?.message as string) ??
-                    (res?.data?.data?.message as string) ??
-                    ''
-                if (apiMessage) {
-                    setNameExistsMessage(apiMessage)
-                }
-                setPendingClientData(clientData)
-                setShowNameExistsDialog(true)
-                return false
+            // 1. قم بإنشاء كائن جديد بالبيانات المطلوبة فقط
+            const checkData = {
+                firstName: clientData.firstName,
+                secondName: clientData.secondName,
+                thirdName: clientData.thirdName,
+                lastName: clientData.lastName,
+                phone: clientData.phone,
+                ...(clientData.secondPhone && {
+                    secondPhone: clientData.secondPhone,
+                }),
             }
-            return true
+
+            const res: any = await apiCheckNameIsExist(checkData)
+            const exists: boolean = !!res?.data?.data?.exists
+            const apiMessage: string = res?.data?.message || res?.data?.data?.message || ''
+
+
+            if (exists) {
+                // تحديث محتوى مربع الحوار بناءً على رسالة الـ API
+                if (apiMessage.includes('الاسم ورقم الهاتف موجودان')) {
+                    setDialogTitle('الاسم ورقم الهاتف موجودان مسبقاً');
+                    setDialogCancelText('تغيير البيانات');
+                    setDialogConfirmText('متابعة بنفس البيانات');
+                } else if (apiMessage.includes('الاسم موجود')) {
+                    setDialogTitle('الاسم موجود مسبقاً');
+                    setDialogCancelText('تغيير الاسم');
+                    setDialogConfirmText('متابعة بنفس الاسم');
+                } else if (apiMessage.includes('رقم الهاتف موجود')) {
+                    setDialogTitle('رقم الهاتف موجود مسبقاً');
+                    setDialogCancelText('تغيير رقم الهاتف');
+                    setDialogConfirmText('متابعة بنفس الرقم');
+                }
+                setNameExistsMessage(apiMessage);
+                setPendingClientData(clientData);
+                setShowNameExistsDialog(true);
+                return false;
+            }
+            return true;
         } catch (e) {
-            // If check fails, do not block normal flow
-            return true
+            console.error('Error checking client existence:', e)
+            // 2. إظهار رسالة خطأ للمستخدم
+            toast.push(
+                <Notification title="فشل التحقق" type="danger">
+                    حدث خطأ أثناء التحقق من وجود العميل. يرجى المحاولة مرة أخرى.
+                </Notification>,
+                {
+                    placement: 'top-end',
+                }
+            )
+            return true // نتابع التدفق الطبيعي حتى لو فشل التحقق
+        } finally {
+            setIsLoading(false)
         }
     }
 
@@ -296,6 +327,10 @@ const MultiStepClientForm = ({
         // stay on step 1 so user can change name
     }
 
+    const handleCloseDialog = () => {
+        setShowNameExistsDialog(false);
+    };
+
     const handleNext = async (
         values: FormData,
         setSubmitting: (isSubmitting: boolean) => void
@@ -316,6 +351,10 @@ const MultiStepClientForm = ({
                 }
                 if (!values.email) {
                     delete (clientData as any).email
+                }
+                // إضافة الشرط لحذف secondPhone إذا كان فارغًا
+                if (!values.secondPhone) {
+                    delete (clientData as any).secondPhone
                 }
 
                 setPendingAction('next')
@@ -369,6 +408,10 @@ const MultiStepClientForm = ({
 
                 if (!values.email) {
                     delete (clientData as any).email
+                }
+                // إضافة الشرط لحذف secondPhone إذا كان فارغًا
+                if (!values.secondPhone) {
+                    delete (clientData as any).secondPhone
                 }
 
                 setPendingAction('save')
@@ -512,14 +555,6 @@ const MultiStepClientForm = ({
                                 <div className="flex items-center gap-3">
                                     <Button
                                         type="button"
-                                        variant="plain"
-                                        onClick={onDiscard}
-                                    >
-                                        إلغاء
-                                    </Button>
-
-                                    <Button
-                                        type="button"
                                         variant="solid"
                                         loading={isLoading}
                                         icon={<AiOutlineSave />}
@@ -559,15 +594,16 @@ const MultiStepClientForm = ({
                         </div>
 
                         <ConfirmDialog
-                            isOpen={showNameExistsDialog}
-                            isLoading={false}
-                            type="warning"
-                            title="الاسم موجود مسبقاً"
-                            onCancel={cancelAfterConfirm}
-                            onConfirm={proceedAfterConfirm}
-                            cancelText="تغيير الاسم"
-                            confirmText="متابعة بنفس الاسم"
-                        >
+    isOpen={showNameExistsDialog}
+    isLoading={false}
+    type="warning"
+    title={dialogTitle}
+    onCancel={cancelAfterConfirm}
+    onConfirm={proceedAfterConfirm}
+    onClose={handleCloseDialog} // <-- أضف هذا السطر
+    cancelText={dialogCancelText}
+    confirmText={dialogConfirmText}
+>
                             <p className="text-gray-600 dark:text-gray-300">
                                 {nameExistsMessage}
                             </p>
