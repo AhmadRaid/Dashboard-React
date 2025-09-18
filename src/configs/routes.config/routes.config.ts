@@ -234,4 +234,33 @@ export const protectedRoutes = [
     //     ),
     //     authority: [],
     // },
+
+
+
+        /////////////////////////////////// Branch ////////////////////////////////////////
+
+        {
+            key: 'branches.BranchesForm',
+            path: '/branches/create-branch',
+            component: lazy(
+                () =>
+                    import(
+                        '@/views/branches/BranchForm/BranchForm'
+                    )
+            ),
+            authority: [],
+        },
+
+        {
+            key: 'branches.BranchesList',
+            path: '/branches',
+            component: lazy(
+                () =>
+                    import(
+                        '@/views/branches/BranchList/components/BranchesTable'
+                    )
+            ),
+            authority: [],
+        }
+
 ]

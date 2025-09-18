@@ -209,7 +209,7 @@ const navigationConfig: NavigationTree[] = [
         path: '',
         title: 'الفواتير',
         translateKey: 'nav.invoicesMenu.invoicesMenu',
-        icon: 'invoices', 
+        icon: 'invoices',
         type: NAV_ITEM_TYPE_COLLAPSE,
         authority: [],
         subMenu: [
@@ -221,6 +221,38 @@ const navigationConfig: NavigationTree[] = [
                 icon: 'userGroup', // أيقونة مجموعة المستخدمين
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
+                subMenu: [],
+            },
+        ],
+    },
+
+    {
+        key: 'branchesMenu',
+        path: '',
+        title: 'الافرع',
+        translateKey: 'nav.branchesMenu.branchesMenu',
+        icon: 'branches',
+        type: NAV_ITEM_TYPE_COLLAPSE,
+        authority: [],
+        subMenu: [
+            {
+                key: 'branchesMenu.branchesList',
+                path: '/branches',
+                title: 'قائمة الافرع',
+                translateKey: 'nav.branchesMenu.updateBranches',
+                icon: 'branches',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [],
+                subMenu: [],
+            },
+            {
+                key: 'branchesMenu.branchesList',
+                path: '/branches/create-branch',
+                title: 'اضافة فرع جديد',
+                translateKey: 'nav.branchesMenu.updateBranches',
+                icon: 'branches',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [],
                 subMenu: [],
             },
         ],
