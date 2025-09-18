@@ -1,3 +1,5 @@
+// src/utils/hooks/useAuth.ts
+import Cookies from 'js-cookie'
 import { apiSignIn, apiSignOut, apiSignUp } from '@/services/AuthService'
 import {
     setUser,
@@ -22,8 +24,10 @@ function useAuth() {
 
     const query = useQuery()
 
-    const { token, signedIn } = useAppSelector((state) => state.auth.session)
-
+    // ملاحظة: لا نعتمد الآن على Redux token، بل نعتمد على الكوكيز
+    const accessToken = Cookies.get('accessToken');
+    const signedIn = !!accessToken;
+    
     const signIn = async (
         values: SignInCredential
     ): Promise<
@@ -31,16 +35,20 @@ function useAuth() {
               status: Status
               message: string
           }
-        | undefined
+        | undefined                             
     > => {
         try {
             const resp = await apiSignIn(values)
-            console.log(resp)
-
             if (resp.data) {
-                const { accessToken } = resp.data.data
-                dispatch(signInSuccess(accessToken))
-                const user = resp.data.data.user
+                const { accessToken, user } = resp.data.data
+                
+                // حفظ التوكن في الكوكيز من الواجهة الأمامية
+                Cookies.set('accessToken', accessToken, {
+                    expires: 1, // ينتهي بعد يوم واحد
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'Strict'
+                });
+
                 dispatch(
                     setUser({
                         email: user.email,
@@ -49,6 +57,7 @@ function useAuth() {
                         authority: [user.role as Roles],
                     })
                 )
+                
                 const redirectUrl = query.get(REDIRECT_URL_KEY)
                 navigate(
                     redirectUrl ? redirectUrl : appConfig.authenticatedEntryPath
@@ -58,7 +67,6 @@ function useAuth() {
                     message: '',
                 }
             }
-            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
         } catch (errors: any) {
             return {
                 status: 'failed',
@@ -72,11 +80,18 @@ function useAuth() {
             const resp = await apiSignUp(values)
 
             if (resp.data) {
-                const { accessToken } = resp.data.data
-                const user = resp.data.data.user
+                const { accessToken, user } = resp.data.data
+                
+                // حفظ التوكن في الكوكيز من الواجهة الأمامية
+                Cookies.set('accessToken', accessToken, {
+                    expires: 1, // ينتهي بعد يوم واحد
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'Strict'
+                });
+
                 dispatch(
                     setUser({
-                        email: user.employeeId, // يمكن تعديله لاحقًا حسب اسم المستخدم
+                        email: user.employeeId,
                         fullName: user.fullName,
                         image: user.image || '',
                         authority: [user.role as Roles],
@@ -116,12 +131,13 @@ function useAuth() {
     }
 
     const signOut = async () => {
-        await apiSignOut()
-        handleSignOut()
+        // حذف الكوكيز من الواجهة الأمامية
+        Cookies.remove('accessToken');
+        handleSignOut();
     }
 
     return {
-        authenticated: token && signedIn,
+        authenticated: signedIn,
         signIn,
         signUp,
         signOut,

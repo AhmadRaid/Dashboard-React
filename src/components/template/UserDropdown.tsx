@@ -79,7 +79,7 @@ const _UserDropdown = ({ className }: CommonProps) => {
                     <span className="text-xl opacity-50">
                         <HiOutlineLogout />
                     </span>
-                    <span>Sign Out</span>
+                    <span>تسجيل خروج</span>
                 </Dropdown.Item>
             </Dropdown>
         </div>
