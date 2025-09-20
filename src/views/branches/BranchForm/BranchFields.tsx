@@ -1,8 +1,15 @@
+// src/components/branch/BranchFields.tsx
+
 import AdaptableCard from '@/components/shared/AdaptableCard'
 import Input from '@/components/ui/Input'
 import { FormItem } from '@/components/ui/Form'
 import { Field, FormikErrors, FormikTouched } from 'formik'
-import { HiOutlineDocumentText, HiOutlinePhone, HiOutlineLocationMarker } from 'react-icons/hi'
+import {
+    HiOutlineDocumentText,
+    HiOutlinePhone,
+    HiOutlineLocationMarker,
+} from 'react-icons/hi'
+import InputGroup from '@/components/ui/InputGroup'
 
 type FormFieldsName = {
     name: string
@@ -14,11 +21,11 @@ type FormFieldsName = {
 type BranchFieldsProps = {
     touched: FormikTouched<FormFieldsName>
     errors: FormikErrors<FormFieldsName>
-    values: any
+    values: FormFieldsName // تأكد من وجود هذه الخاصية
 }
 
 const BranchFields = (props: BranchFieldsProps) => {
-    const { touched, errors } = props
+    const { touched, errors, values } = props
 
     return (
         <AdaptableCard divider className="mb-4">
@@ -64,17 +71,26 @@ const BranchFields = (props: BranchFieldsProps) => {
                     invalid={!!errors.phone && !!touched.phone}
                     errorMessage={errors.phone as string}
                 >
-                    <Field name="phone">
-                        {({ field }) => (
-                            <Input
-                                {...field}
-                                type="text"
-                                size="sm"
-                                placeholder="رقم الهاتف الأساسي"
-                                suffix={<HiOutlinePhone className="text-gray-400" />}
-                            />
-                        )}
-                    </Field>
+                    <InputGroup className="w-full">
+                        <InputGroup.Addon>05</InputGroup.Addon>
+                        <Field name="phone">
+                            {({ field, form }) => (
+                                <Input
+                                    {...field}
+                                    type="tel"
+                                    size="sm"
+                                    placeholder="xxxxxxxx"
+                                    maxLength={8}
+                                    value={field.value?.startsWith('05') ? field.value.slice(2) : field.value}
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/^05/, '') // إزالة أي بادئة 05
+                                        form.setFieldValue(field.name, '05' + value)
+                                    }}
+                                    suffix={<HiOutlinePhone className="text-gray-400" />}
+                                />
+                            )}
+                        </Field>
+                    </InputGroup>
                 </FormItem>
 
                 <FormItem
@@ -82,17 +98,26 @@ const BranchFields = (props: BranchFieldsProps) => {
                     invalid={!!errors.secondPhone && !!touched.secondPhone}
                     errorMessage={errors.secondPhone as string}
                 >
-                    <Field name="secondPhone">
-                        {({ field }) => (
-                            <Input
-                                {...field}
-                                type="text"
-                                size="sm"
-                                placeholder="رقم الهاتف الثانوي"
-                                suffix={<HiOutlinePhone className="text-gray-400" />}
-                            />
-                        )}
-                    </Field>
+                    <InputGroup className="w-full">
+                        <InputGroup.Addon>05</InputGroup.Addon>
+                        <Field name="secondPhone">
+                            {({ field, form }) => (
+                                <Input
+                                    {...field}
+                                    type="tel"
+                                    size="sm"
+                                    placeholder="xxxxxxxx"
+                                    maxLength={8}
+                                    value={field.value?.startsWith('05') ? field.value.slice(2) : field.value}
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/^05/, '')
+                                        form.setFieldValue(field.name, '05' + value)
+                                    }}
+                                    suffix={<HiOutlinePhone className="text-gray-400" />}
+                                />
+                            )}
+                        </Field>
+                    </InputGroup>
                 </FormItem>
             </div>
         </AdaptableCard>

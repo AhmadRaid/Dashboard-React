@@ -15,24 +15,24 @@ export async function apiAddNewBranch(data: any) {
     })
 }
 
-export async function apiGetBranchDetails(carId: string) {
+export async function apiGetBranchDetails(branchId: string) {
     return ApiService.fetchData({
-        url: `/branches/${carId}`,
+        url: `/branches/${branchId}`,
         method: 'get',
     })
 }
 
-export async function apiUpdateBranch(carId: string, data: any) {
+export async function apiUpdateBranch(branchId: string, data: any) {
     return ApiService.fetchData({
-        url: `/branches/${carId}`,
+        url: `/branches/${branchId}`,
         method: 'put',
         data,
     })
 }
 
-export async function apiDeleteBranch(carId: string, data: any) {
+export async function apiDeleteBranch(branchId: string, data: any) {
     return ApiService.fetchData({
-        url: `/branches/${carId}`,
+        url: `/branches/${branchId}`,
         method: 'delete',
         data,
     })

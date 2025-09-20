@@ -1,3 +1,5 @@
+// src/components/branch/BranchesTable.tsx
+
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DataTable from '@/components/shared/DataTable'
@@ -16,7 +18,7 @@ import BranchesTableTools from './BranchesTableTools'
 import { Button, Notification, Tooltip, toast } from '@/components/ui'
 import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi'
 import { ConfirmDialog } from '@/components/shared'
-import { apiDeleteBranch } from '@/services/CrmService'
+import { apiDeleteBranch } from '@/services/BranchService' 
 
 injectReducer('branchesListSlice', reducer)
 
@@ -44,7 +46,7 @@ const BranchesTable = () => {
         if (!selectedBranch) return
 
         try {
-            // await apiDeleteBranch(selectedBranch._id); // تفعيل دالة حذف الفرع
+            await apiDeleteBranch(selectedBranch._id)
             toast.push(
                 <Notification
                     title="تم الحذف بنجاح"
@@ -113,7 +115,7 @@ const BranchesTable = () => {
                                     icon={<HiOutlinePencil />}
                                     onClick={(e) => {
                                         e.stopPropagation()
-                                        navigate(`/app/crm/branches/edit/${row._id}`)
+                                        navigate(`/branches/edit-branch/${row._id}`) // تم تحديث المسار هنا
                                     }}
                                 />
                             </Tooltip>
@@ -184,7 +186,6 @@ const BranchesTable = () => {
                 />
             ) : (
                 <div className="text-center py-8">
-         
                     <h4 className="text-lg font-medium text-gray-600 dark:text-gray-300">
                         لا توجد فروع متاحة
                     </h4>

@@ -50,20 +50,19 @@ type BranchFormProps = {
 
 const BranchForm = forwardRef<FormikRef, BranchFormProps>((props, ref) => {
     const { onDiscard, onSuccess, onError } = props
-
     const navigate = useNavigate()
 
-    
     const onFormSubmit = async (
         values: InitialData,
         { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
     ) => {
         setSubmitting(true)
         try {
+            // استدعاء دالة API لإضافة فرع جديد
             await apiAddNewBranch(values)
             setSubmitting(false)
             
-            navigate('/home-page')
+            navigate('/branches')
             
             toast.push(
                 <Notification
@@ -73,7 +72,6 @@ const BranchForm = forwardRef<FormikRef, BranchFormProps>((props, ref) => {
                     تم إضافة الفرع بنجاح
                 </Notification>
                 )
-            
         } catch (error) {
             console.error('API Error:', error)
             setSubmitting(false)

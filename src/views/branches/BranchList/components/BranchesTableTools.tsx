@@ -32,17 +32,11 @@ export const BranchesTableTools = () => {
             <h4 className="text-2xl font-bold">قائمة الفروع</h4>
             
             <div className="flex flex-col lg:flex-row items-center gap-3 w-full lg:w-auto">
-                <BranchesTableSearch />
                 
-                <Select
-                    size="sm"
-                    placeholder="ترتيب حسب"
-                    options={sortOptions}
-                    onChange={(option) => handleSortChange(option?.value || '')}
-                    className="min-w-[150px]"
-                />
+                
+        
 
-                <Link to="/app/crm/branches/add-branch">
+                <Link to="/branches/create-branch">
                     <Button
                         variant="solid"
                         size="sm"

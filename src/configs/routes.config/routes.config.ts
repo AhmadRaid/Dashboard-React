@@ -261,6 +261,18 @@ export const protectedRoutes = [
                     )
             ),
             authority: [],
+        },
+
+        {
+            key: 'branches.BranchesEdit',
+            path: '/branches/edit-branch/:branchId',
+            component: lazy(
+                () =>
+                    import(
+                        '@/views/branches/BranchEdit'
+                    )
+            ),
+            authority: [],
         }
 
 ]
