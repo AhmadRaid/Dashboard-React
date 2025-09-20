@@ -14,8 +14,10 @@ export const InvoicesTableTools = () => {
 
     const statusOptions = [
         { label: 'جميع الحالات', value: '' },
-        { label: 'مدفوعة', value: 'paid' },
-        { label: 'غير مدفوعة', value: 'unpaid' },
+        { label: 'مفتوحة', value: 'paid' },
+        { label: 'معلقة', value: 'unpaid' },
+        { label: 'مقبولة', value: 'unpaid' },
+        { label: 'مرفوضة', value: 'unpaid' },
     ]
 
     const sortOptions = [
