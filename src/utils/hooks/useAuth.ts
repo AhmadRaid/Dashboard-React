@@ -45,7 +45,7 @@ function useAuth() {
                 // حفظ التوكن في الكوكيز من الواجهة الأمامية
                 Cookies.set('accessToken', accessToken, {
                     expires: 1, // ينتهي بعد يوم واحد
-                    secure: process.env.NODE_ENV === 'production',
+                    secure: true,
                     sameSite: 'Strict'
                 });
 
@@ -85,7 +85,7 @@ function useAuth() {
                 // حفظ التوكن في الكوكيز من الواجهة الأمامية
                 Cookies.set('accessToken', accessToken, {
                     expires: 1, // ينتهي بعد يوم واحد
-                    secure: process.env.NODE_ENV === 'production',
+                    secure: true,
                     sameSite: 'Strict'
                 });
 
