@@ -174,13 +174,7 @@ const CarsTable = () => {
                 />
             ) : (
                 <div className="text-center py-8">
-                    <div className="mb-4">
-                        <img
-                            src="/img/empty-car.png"
-                            alt="لا توجد سيارات"
-                            className="mx-auto w-32 opacity-70"
-                        />
-                    </div>
+               
                     <h4 className="text-lg font-medium text-gray-600 dark:text-gray-300">
                         لا توجد سيارات متاحة
                     </h4>
