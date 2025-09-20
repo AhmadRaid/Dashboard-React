@@ -18,7 +18,10 @@ const CreateOrder = () => {
             )
             return
         }
+
         const response = await apiAddOrder(clientId, data)
+
+        
         return response.data
     }
 

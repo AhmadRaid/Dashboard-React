@@ -4,211 +4,320 @@ import React, { useEffect, useMemo, useRef } from 'react'
 import dayjs from 'dayjs'
 import { useNavigate, Link } from 'react-router-dom'
 import DataTable from '@/components/shared/DataTable'
-import type { DataTableResetHandle, ColumnDef } from '@/components/shared/DataTable'
+import type {
+    DataTableResetHandle,
+    ColumnDef,
+} from '@/components/shared/DataTable'
+import { Button } from '@/components/ui'
 import reducer, {
-    getInvoices,
-    useAppDispatch,
-    useAppSelector,
-    setTableData,
+    getInvoices,
+    useAppDispatch,
+    useAppSelector,
+    setTableData,
+    updateInvoiceStatus,
 } from '../store'
 import { injectReducer } from '@/store'
 import InvoicesTableTools from './InvoicesTableTools'
+import { InvoiceStatus } from '@/@types/invoice'
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/Popover'
 
+// حقن reducer في المتجر العام
 injectReducer('invoiceListSlice', reducer)
 
 const InvoiceList = () => {
-    const tableRef = useRef<DataTableResetHandle>(null)
-    const dispatch = useAppDispatch()
-    const navigate = useNavigate()
+    const tableRef = useRef<DataTableResetHandle>(null)
+    const dispatch = useAppDispatch()
+    const navigate = useNavigate()
 
-    const { pageIndex, limit, sort, query, startDate, endDate, total } = useAppSelector(
-        (state) => state.invoiceListSlice.data.tableData
-    )
+    const { pageIndex, limit, sort, query, startDate, endDate, total, status } =
+        useAppSelector((state) => state.invoiceListSlice.data.tableData)
 
-    const loading = useAppSelector(
-        (state) => state.invoiceListSlice.data.loading
-    )
-    const invoiceData = useAppSelector(
-        (state) => state.invoiceListSlice.data.invoiceList
-    )
+    const loading = useAppSelector(
+        (state) => state.invoiceListSlice.data.loading
+    )
+    const invoiceData = useAppSelector(
+        (state) => state.invoiceListSlice.data.invoiceList
+    )
 
-    useEffect(() => {
-        dispatch(getInvoices())
-    }, [pageIndex, limit, sort, query, startDate, endDate, dispatch])
+    useEffect(() => {
+        dispatch(getInvoices())
+    }, [pageIndex, limit, sort, query, startDate, endDate, status, dispatch])
 
-    const normalizedData = useMemo(() => {
-        if (!invoiceData) return []
+    const normalizedData = useMemo(() => {
+        if (!invoiceData) return []
 
-        return invoiceData.map((invoice) => ({
-            ...invoice,
-            totalAmount: invoice.totalAmount?.toLocaleString() || '0',
-            invoiceDate: dayjs(invoice.invoiceDate).format('DD/MM/YYYY')
-        }))
-    }, [invoiceData])
+        return invoiceData.map((invoice) => ({
+            ...invoice,
+            totalAmount: invoice.totalAmount?.toLocaleString() || '0',
+            invoiceDate: dayjs(invoice.invoiceDate).format('DD/MM/YYYY'),
+        }))
+    }, [invoiceData])
 
-    const columns: ColumnDef<any>[] = useMemo(
-        () => [
-            {
-                header: 'رقم الفاتورة',
-                accessorKey: 'invoiceNumber',
-                cell: (props) => {
-                    const id = props.row.original._id
-                    const num = props.getValue() || 'غير محدد'
-                    return (
-                        <Link
-                            to={`/invoices/${id}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-indigo-600 hover:text-indigo-800 underline"
-                            title="عرض تفاصيل الفاتورة"
-                        >
-                            {String(num)}
-                        </Link>
-                    ) as any
-                },
-            },
-            {
-                header: 'اسم العميل',
-                cell: (props) => {
-                    const client = props.row.original.clientDetails;
-                    if (!client) {
-                        return 'غير محدد';
-                    }
-                    return `${client.firstName} ${client.secondName} ${client.thirdName} ${client.lastName}`;
-                },
-            },
-            {
-                header: 'الخدمات',
-                cell: (props) => {
-                    const services = props.row.original.orderDetails?.services
-                    if (!services || services.length === 0) {
-                        return (
-                            <div className="text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-default py-1">
-                                لا توجد خدمات لعرضها
-                            </div>
-                        )
-                    }
+    // ✅ دالة الألوان المحسنة مع تباين أعلى
+    const getStatusColorClass = (status: string) => {
+        switch (status) {
+            case 'open':
+                return 'bg-blue-100 text-blue-800 border border-blue-300' // أزرق واضح
+            case 'pending':
+                return 'bg-yellow-100 text-yellow-800 border border-yellow-300' // أصفر واضح
+            case 'approved':
+                return 'bg-green-100 text-green-800 border border-green-300' // أخضر واضح
+            case 'rejected':
+                return 'bg-red-100 text-red-800 border border-red-300' // أحمر واضح
+            default:
+                return 'bg-gray-100 text-gray-800 border border-gray-300'
+        }
+    }
 
-                    const translateServiceType = (type: string) => {
-                        switch (type) {
-                            case 'protection':
-                                return 'حماية'
-                            case 'polish':
-                                return 'تلميع'
-                            case 'insulator':
-                                return 'عازل حراري'
-                            case 'additions':
-                                return 'إضافات'
-                            default:
-                                return type
-                        }
-                    }
+    // ✅ دالة ألوان للحقول الأخرى
+    const getFieldColorClass = (fieldType: string, value: any) => {
+        switch (fieldType) {
+            case 'amount':
+                return value > 10000 ? 'bg-purple-50 text-purple-700 font-medium' : 'bg-gray-50 text-gray-700'
+            case 'date':
+                return 'bg-cyan-50 text-cyan-700'
+            case 'services':
+                return 'bg-orange-50 text-orange-700'
+            case 'client':
+                return 'bg-teal-50 text-teal-700'
+            default:
+                return 'bg-gray-50 text-gray-700'
+        }
+    }
 
-                    return (
-                        <div className="space-y-2">
-                            {services.map((service: any, index: number) => (
-                                <React.Fragment key={index}>
-                                    <div className="flex items-center">
-                                        <span className="font-medium">
-                                            {translateServiceType(service.serviceType)}
-                                        </span>
-                                    </div>
-                                    {index < services.length - 1 && (
-                                        <div className="border-t border-dashed border-gray-400/80 dark:border-gray-500/80 my-2"></div>
-                                    )}
-                                </React.Fragment>
-                            ))}
-                        </div>
-                    )
-                },
-            },
-            
-            {
-                header: 'المجموع',
-                accessorKey: 'totalAmount',
-                cell: (props) => `${props.getValue()} ر.س`,
-            },
-            {
-                header: 'تاريخ الفاتورة',
-                accessorKey: 'createdAt',
-                cell: (props) => {
-                    const createdAt = props.row.original.createdAt
-                    if (!createdAt) return 'غير متاح'
-                    return new Date(createdAt).toLocaleDateString('en-GB', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                    })
-                },
-            },
-            {
-                header: 'الحالة',
-                accessorKey: 'status',
-                cell: (props) => {
-                    const status = props.getValue()
-                    let statusText = ''
-                    let statusClass = ''
+    const handleStatusChange = async (
+        option: { label: string; value: string },
+        invoiceId: string
+    ) => {
+        if (option?.value) {
+            await dispatch(
+                updateInvoiceStatus({
+                    id: invoiceId,
+                    status: option.value as InvoiceStatus,
+                })
+            )
+            dispatch(getInvoices())
+        }
+    }
 
-                    switch (status) {
-                        case 'open':
-                            statusText = 'مفتوحة'
-                            statusClass = 'bg-blue-500' // لون أزرق لحالة "مفتوحة"
-                            break
-                        case 'pending':
-                            statusText = 'قيد الانتظار'
-                            statusClass = 'bg-yellow-500' // لون أصفر لحالة "قيد الانتظار"
-                            break
-                        case 'approved':
-                            statusText = 'موافق عليها'
-                            statusClass = 'bg-green-500' // لون أخضر لحالة "موافق عليها"
-                            break
-                        case 'rejected':
-                            statusText = 'مرفوضة'
-                            statusClass = 'bg-red-500' // لون أحمر لحالة "مرفوضة"
-                            break
-                        default:
-                            statusText = 'غير محدد'
-                            statusClass = 'bg-gray-400'
-                    }
+    const columns: ColumnDef<any>[] = useMemo(
+        () => [
+            {
+                header: 'رقم الفاتورة',
+                accessorKey: 'invoiceNumber',
+                cell: (props) => {
+                    const id = props.row.original._id
+                    const num = props.getValue() || 'غير محدد'
+                    return (
+                        <div className={`p-2 rounded-lg ${getFieldColorClass('invoiceNumber', num)}`}>
+                            <Link
+                                to={`/invoices/${id}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-indigo-600 hover:text-indigo-800 underline font-bold"
+                                title="عرض تفاصيل الفاتورة"
+                            >
+                                {String(num)}
+                            </Link>
+                        </div>
+                    ) as any
+                },
+            },
+            {
+                header: 'اسم العميل',
+                cell: (props) => {
+                    const client = props.row.original.clientDetails
+                    if (!client) {
+                        return <div className="p-2 rounded-lg bg-gray-50 text-gray-400">غير محدد</div>
+                    }
+                    const clientName = `${client.firstName} ${client.secondName} ${client.thirdName} ${client.lastName}`
+                    return (
+                        <div className={`p-2 rounded-lg ${getFieldColorClass('client', clientName)}`}>
+                            {clientName}
+                        </div>
+                    )
+                },
+            },
+            {
+                header: 'الخدمات',
+                cell: (props) => {
+                    const services = props.row.original.orderDetails?.services
+                    if (!services || services.length === 0) {
+                        return (
+                            <div className="p-2 rounded-lg bg-gray-50 text-gray-400">
+                                لا توجد خدمات لعرضها
+                            </div>
+                        )
+                    }
 
-                    return (
-                        <span className={`badge ${statusClass} text-white`}>
-                            {statusText}
-                        </span>
-                    )
-                },
-            },
-        ],
-        []
-    )
+                    const translateServiceType = (type: string) => {
+                        switch (type) {
+                            case 'protection':
+                                return 'حماية'
+                            case 'polish':
+                                return 'تلميع'
+                            case 'insulator':
+                                return 'عازل حراري'
+                            case 'additions':
+                                return 'إضافات'
+                            default:
+                                return type
+                        }
+                    }
 
-    return (
-        <div className="p-4">
-            <InvoicesTableTools />
-            {loading ? (
-                <div className="text-center py-8">جاري تحميل البيانات...</div>
-            ) : normalizedData.length > 0 ? (
-                <DataTable
-                    ref={tableRef}
-                    columns={columns}
-                    data={normalizedData}
-                    loading={loading}
-                    pagingData={{
-                        total: total || normalizedData.length,
-                        pageIndex,
-                        pageSize: limit,
-                    }}
-                    onPaginationChange={(page) =>
-                        dispatch(setTableData({ pageIndex: page }))
-                    }
-                    onRowClick={(row) =>
-                        navigate(`/invoices/${row.original._id}`)
-                    }
-                />
-            ) : (
-                <div className="text-center py-8">لا توجد فواتير متاحة</div>
-            )}
-        </div>
-    )
+                    return (
+                        <div className={`p-2 rounded-lg ${getFieldColorClass('services', services)}`}>
+                            <div className="space-y-2">
+                                {services.map((service: any, index: number) => (
+                                    <React.Fragment key={index}>
+                                        <div className="flex items-center">
+                                            <span className="font-medium">
+                                                {translateServiceType(
+                                                    service.serviceType
+                                                )}
+                                            </span>
+                                        </div>
+                                        {index < services.length - 1 && (
+                                            <div className="border-t border-dashed border-gray-400/80 dark:border-gray-500/80 my-2"></div>
+                                        )}
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                        </div>
+                    )
+                },
+            },
+            {
+                header: 'المجموع',
+                accessorKey: 'totalAmount',
+                cell: (props) => {
+                    const value = props.getValue()
+                    return (
+                        <div className={`p-2 rounded-lg ${getFieldColorClass('amount', value)}`}>
+                            {`${value} ر.س`}
+                        </div>
+                    )
+                }
+            },
+            {
+                header: 'تاريخ الفاتورة',
+                accessorKey: 'createdAt',
+                cell: (props) => {
+                    const createdAt = props.row.original.createdAt
+                    if (!createdAt) return <div className="p-2 rounded-lg bg-gray-50 text-gray-400">غير متاح</div>
+                    const dateStr = new Date(createdAt).toLocaleDateString('en-GB', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                    })
+                    return (
+                        <div className={`p-2 rounded-lg ${getFieldColorClass('date', dateStr)}`}>
+                            {dateStr}
+                        </div>
+                    )
+                },
+            },
+            {
+                header: 'الحالة',
+                accessorKey: 'status',
+                cell: (props) => {
+                    const status = props.getValue() as InvoiceStatus
+                    const invoiceId = props.row.original._id
+                    const [isOpen, setIsOpen] = React.useState(false)
+
+                    const statusOptions = [
+                        { label: 'مفتوحة', value: 'open' },
+                        { label: 'معلقة', value: 'pending' },
+                        { label: 'مقبولة', value: 'approved' },
+                        { label: 'مرفوضة', value: 'rejected' },
+                    ]
+
+                    const currentStatusOption = statusOptions.find(
+                        (opt) => opt.value === status
+                    ) || { label: 'غير محدد', value: '' }
+
+                    const handleStatusChangeAndClose = (option: {
+                        label: string
+                        value: string
+                    }) => {
+                        handleStatusChange(option, invoiceId)
+                        setIsOpen(false)
+                    }
+
+                    return (
+                        <div onClick={(e) => e.stopPropagation()} className="p-2">
+                            <Popover
+                                open={isOpen}
+                                onOpenChange={setIsOpen}
+                                placement="bottom-start"
+                            >
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        size="sm"
+                                        className={`w-36 font-semibold rounded-lg ${getStatusColorClass(
+                                            status
+                                        )} transition-colors duration-200 hover:brightness-95`}
+                                    >
+                                        {currentStatusOption.label}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="p-2 w-48">
+                                    <div className="space-y-1">
+                                        {statusOptions.map((option) => (
+                                            <button
+                                                key={option.value}
+                                                onClick={() =>
+                                                    handleStatusChangeAndClose(
+                                                        option
+                                                    )
+                                                }
+                                                className={`w-full text-right px-3 py-2 text-sm rounded-md transition-colors duration-200 hover:bg-gray-100 ${option.value === status ? 'font-bold' : ''}`}
+                                            >
+                                                {option.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                    )
+                },
+            },
+        ],
+        [handleStatusChange, getStatusColorClass]
+    )
+
+    return (
+        <div className="p-4">
+            <InvoicesTableTools />
+            {loading ? (
+                <div className="text-center py-8">جاري تحميل البيانات...</div>
+            ) : normalizedData.length > 0 ? (
+                <DataTable
+                    ref={tableRef}
+                    columns={columns}
+                    data={normalizedData}
+                    loading={loading}
+                    pagingData={{
+                        total: total || normalizedData.length,
+                        pageIndex,
+                        pageSize: limit,
+                    }}
+                    onPaginationChange={(page) =>
+                        dispatch(setTableData({ pageIndex: page }))
+                    }
+                    onRowClick={(row) =>
+                        navigate(`/invoices/${row.original._id}`)
+                    }
+                />
+            ) : (
+                <div className="text-center py-8">لا توجد فواتير متاحة</div>
+            )}
+        </div>
+    )
 }
 
 export default InvoiceList

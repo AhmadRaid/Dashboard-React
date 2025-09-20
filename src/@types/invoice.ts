@@ -13,7 +13,7 @@ export interface ServiceItem {
     total: number
 }
 
-export type InvoiceStatus = 'paid' | 'unpaid' | 'partially_paid' | 'cancelled'
+export type InvoiceStatus = 'open' | 'pending' | 'approved' | 'rejected'
 
 // src/@types/invoice.d.ts (or add to an existing types file)
 

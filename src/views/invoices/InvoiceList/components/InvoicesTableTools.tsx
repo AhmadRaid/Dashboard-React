@@ -8,16 +8,16 @@ import { useAppDispatch, useAppSelector, setTableData, resetFilters } from '../s
 
 export const InvoicesTableTools = () => {
     const dispatch = useAppDispatch()
-    const { startDate, endDate } = useAppSelector(
+    const { startDate, endDate, status } = useAppSelector(
         (state) => state.invoiceListSlice.data.tableData
     )
 
     const statusOptions = [
         { label: 'جميع الحالات', value: '' },
-        { label: 'مفتوحة', value: 'paid' },
-        { label: 'معلقة', value: 'unpaid' },
-        { label: 'مقبولة', value: 'unpaid' },
-        { label: 'مرفوضة', value: 'unpaid' },
+        { label: 'مفتوحة', value: 'open' },
+        { label: 'معلقة', value: 'pending' },
+        { label: 'مقبولة', value: 'approved' }, 
+        { label: 'مرفوضة', value: 'rejected' }, 
     ]
 
     const sortOptions = [
@@ -27,7 +27,8 @@ export const InvoicesTableTools = () => {
 
     const handleStatusFilter = (status: string) => {
         dispatch(setTableData({ 
-            pageIndex: 1
+            pageIndex: 1,
+            status: status
         }))
     }
 
@@ -40,6 +41,7 @@ export const InvoicesTableTools = () => {
             pageIndex: 1
         }))
     }
+
 
     const handleStartDateChange = (date: Date | null) => {
         dispatch(setTableData({
@@ -55,13 +57,11 @@ export const InvoicesTableTools = () => {
         }))
     }
 
-    const handleResetAllFilters = () => {
-        dispatch(resetFilters())
-    }
+
 
     return (
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-5 gap-3">
-            <h4 className="text-2xl font-bold">جدول الفواتير</h4>
+            <h4 className="text-2xl font-bold">قائمة الفواتير</h4>
             
             <div className="flex flex-col lg:flex-row items-center gap-3 w-full lg:w-auto">
                 <InvoicesTableSearch />
@@ -72,6 +72,7 @@ export const InvoicesTableTools = () => {
                     options={statusOptions}
                     onChange={(option) => handleStatusFilter(option?.value || '')}
                     className="min-w-[150px]"
+                    value={statusOptions.find(opt => opt.value === status) || statusOptions[0]}
                 />
 
                 <div className="flex items-center gap-3">
@@ -100,9 +101,6 @@ export const InvoicesTableTools = () => {
                     onChange={(option) => handleSortChange(option?.value || '')}
                     className="min-w-[150px]"
                 />
-
-              
-
             </div>
         </div>
     )

@@ -579,7 +579,6 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                     onRowClick={handleRowClick}
                     skeletonAvatarColumns={[0]}
                     skeletonRowCount={pageSize}
-                    // wrapperClass="pb-28"
                     loading={false}
                     totalData={totalOrdersCount}
                     currentPage={currentPage}
