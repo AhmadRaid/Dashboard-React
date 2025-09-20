@@ -10,6 +10,7 @@ const CreateOrder = () => {
     const { clientId } = useParams()
 
     const addOrder = async (data: any) => {
+
         if (!clientId) {
             toast.push(
                 <Notification title="خطأ" type="danger">
@@ -18,9 +19,11 @@ const CreateOrder = () => {
             )
             return
         }
+        console.log('111111111111111111111111111',data);
 
         const response = await apiAddOrder(clientId, data)
 
+        console.log('4344444444444444444444444',response);
         
         return response.data
     }
@@ -57,6 +60,9 @@ const CreateOrder = () => {
                 }
             )
             setSubmitting(false)
+
+            console.log('eeeeeeeeeeeeeeeeeeee',error);
+            
         }
     }
 
