@@ -10,6 +10,9 @@ import cloneDeep from 'lodash/cloneDeep'
 import * as Yup from 'yup'
 import BranchFields from './BranchFields'
 import { apiAddNewBranch } from '@/services/BranchService'
+import { useNavigate } from 'react-router-dom'
+import { toast, Notification } from '@/components/ui'
+
 
 type FormikRef = FormikProps<any>
 
@@ -48,16 +51,29 @@ type BranchFormProps = {
 const BranchForm = forwardRef<FormikRef, BranchFormProps>((props, ref) => {
     const { onDiscard, onSuccess, onError } = props
 
+    const navigate = useNavigate()
+
+    
     const onFormSubmit = async (
         values: InitialData,
         { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
     ) => {
         setSubmitting(true)
         try {
-            // استدعاء دالة API لإضافة فرع جديد
             await apiAddNewBranch(values)
             setSubmitting(false)
-            onSuccess?.()
+            
+            navigate('/home-page')
+            
+            toast.push(
+                <Notification
+                    title="تمت الإضافة بنجاح"
+                    type="success"
+                >
+                    تم إضافة الفرع بنجاح
+                </Notification>
+                )
+            
         } catch (error) {
             console.error('API Error:', error)
             setSubmitting(false)
