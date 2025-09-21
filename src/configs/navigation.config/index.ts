@@ -223,16 +223,16 @@ const navigationConfig: NavigationTree[] = [
                 authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
                 subMenu: [],
             },
-            {
-                key: 'clientsMenu.clientsList',
-                path: '/invoices',
-                title: 'الفواتير المفتوحة',
-                translateKey: 'nav.clientsMenu.updateClient',
-                icon: 'userGroup', // أيقونة مجموعة المستخدمين
-                type: NAV_ITEM_TYPE_ITEM,
-                authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
-                subMenu: [],
-            },
+            // {
+            //     key: 'clientsMenu.clientsList',
+            //     path: '/invoices',
+            //     title: 'الفواتير المفتوحة',
+            //     translateKey: 'nav.clientsMenu.updateClient',
+            //     icon: 'userGroup', // أيقونة مجموعة المستخدمين
+            //     type: NAV_ITEM_TYPE_ITEM,
+            //     authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
+            //     subMenu: [],
+            // },
         ],
     },
 
