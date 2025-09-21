@@ -7,6 +7,7 @@ import { apiGetClientProfile, apiUpdateClient } from '@/services/ClientsService'
 import { useEffect, useState } from 'react'
 import { toast, Notification } from '@/components/ui'
 import * as Yup from 'yup'
+import { HiPlus, HiMinus } from 'react-icons/hi'
 
 const clientTypes = [
     { label: 'فرد', value: 'فرد' },
@@ -25,6 +26,7 @@ const UpdateDataClient = () => {
     const navigate = useNavigate()
     const [clientData, setClientData] = useState(null)
     const [loading, setLoading] = useState(true)
+    const [showSecondPhone, setShowSecondPhone] = useState(false)
 
     const validationSchema = Yup.object().shape({
         firstName: Yup.string().required('الاسم الأول مطلوب'),
@@ -40,6 +42,13 @@ const UpdateDataClient = () => {
             )
             .min(10, 'يجب أن يتكون رقم الهاتف من 10 أرقام')
             .max(10, 'يجب أن يتكون رقم الهاتف من 10 أرقام'),
+        secondPhone: Yup.string()
+            .nullable()
+            .optional()
+            .matches(
+                /^$|^05\d{8}$/,
+                'يجب أن يبدأ رقم الهاتف بـ 05 ويتكون من 10 أرقام'
+            ),
         clientType: Yup.string()
             .oneOf(
                 ['فرد', 'شركة', 'مسوق بعمولة'],
@@ -69,6 +78,9 @@ const UpdateDataClient = () => {
                 const response = await apiGetClientProfile(clientId)
                 if (response.data.data) {
                     setClientData(response.data.data)
+                    if (response.data.data.secondPhone) {
+                        setShowSecondPhone(true)
+                    }
                 } else {
                     throw new Error('Client not found')
                 }
@@ -90,8 +102,8 @@ const UpdateDataClient = () => {
     const handleSubmit = async (values, { setSubmitting }) => {
         const payload = Object.fromEntries(
             Object.entries(values).filter(
-                ([_, value]) =>
-                    value !== '' && value !== null && value !== undefined
+                ([key, value]) =>
+                    (value !== '' && value !== null && value !== undefined) || key === 'secondPhone'
             )
         )
 
@@ -158,13 +170,14 @@ const UpdateDataClient = () => {
                             lastName: clientData.lastName || '',
                             email: clientData.email || '',
                             phone: clientData.phone || '',
-                            clientType: clientData.clientType ,
+                            secondPhone: clientData.secondPhone || null,
+                            clientType: clientData.clientType,
                             branch: clientData.branch || '',
                         }}
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
                     >
-                        {({ isSubmitting, errors, touched }) => (
+                        {({ isSubmitting, errors, touched, setFieldValue }) => (
                             <Form>
                                 <FormContainer>
                                     {/* Personal Information Section */}
@@ -257,45 +270,91 @@ const UpdateDataClient = () => {
                                             </FormItem>
 
                                             <FormItem
-                                                label="رقم الجوال"
-                                                invalid={
-                                                    !!errors.phone &&
-                                                    !!touched.phone
-                                                }
+                                                label="رقم الهاتف"
+                                                invalid={!!errors.phone && !!touched.phone}
                                                 errorMessage={errors.phone}
                                             >
                                                 <Field name="phone">
-                                                    {({
-                                                        field,
-                                                        form,
-                                                    }: FieldProps) => (
-                                                        <Input
-                                                            {...field}
-                                                            placeholder="05XXXXXXXX"
-                                                            onChange={(e) => {
-                                                                const value =
-                                                                    e.target.value.replace(
-                                                                        /\D/g,
-                                                                        ''
-                                                                    )
-                                                                const formattedValue =
-                                                                    value.length >
-                                                                    0
-                                                                        ? '05' +
-                                                                          value.substring(
-                                                                              2,
-                                                                              10
-                                                                          )
-                                                                        : ''
-                                                                form.setFieldValue(
-                                                                    field.name,
-                                                                    formattedValue
-                                                                )
-                                                            }}
-                                                        />
+                                                    {({ field, form }: FieldProps) => (
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="relative flex-1">
+                                                                <span className="absolute inset-y-0 left-3 rtl:left-auto rtl:right-3 flex items-center text-gray-400 select-none pointer-events-none">+ </span>
+                                                                <Input
+                                                                    {...field}
+                                                                    type="text"
+                                                                    size="sm"
+                                                                    className="pl-6 rtl:pl-0 rtl:pr-6"
+                                                                    placeholder="05xxxxxxxx"
+                                                                    onChange={(e) => {
+                                                                        let digits = e.target.value.replace(/\D/g, '')
+                                                                        const rest = digits.startsWith('05') ? digits.slice(2) : digits.replace(/^0?5?/, '')
+                                                                        let normalized = '05' + rest
+                                                                        normalized = normalized.slice(0, 10)
+                                                                        form.setFieldValue(field.name, normalized)
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            {!showSecondPhone && (
+                                                                <Button
+                                                                    type="button"
+                                                                    size="sm"
+                                                                    variant="solid"
+                                                                    icon={<HiPlus />}
+                                                                    onClick={() => setShowSecondPhone(true)}
+                                                                    className="h-9 w-9 p-0"
+                                                                    title="إضافة رقم هاتف ثاني"
+                                                                />
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </Field>
                                             </FormItem>
+
+                                            {showSecondPhone && (
+                                                <FormItem
+                                                    label="رقم الهاتف الثاني"
+                                                    invalid={!!errors.secondPhone && !!touched.secondPhone}
+                                                    errorMessage={errors.secondPhone}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex-1">
+                                                            <Field name="secondPhone">
+                                                                {({ field, form }: FieldProps) => (
+                                                                    <div className="relative">
+                                                                        <span className="absolute inset-y-0 left-3 rtl:left-auto rtl:right-3 flex items-center text-gray-400 select-none pointer-events-none">+ </span>
+                                                                        <Input
+                                                                            {...field}
+                                                                            type="text"
+                                                                            size="sm"
+                                                                            className="pl-6 rtl:pl-0 rtl:pr-6"
+                                                                            placeholder="05xxxxxxxx"
+                                                                            onChange={(e) => {
+                                                                                let digits = e.target.value.replace(/\D/g, "")
+                                                                                const rest = digits.startsWith("05") ? digits.slice(2) : digits.replace(/^0?5?/, "")
+                                                                                let normalized = "05" + rest
+                                                                                normalized = normalized.slice(0, 10)
+                                                                                form.setFieldValue(field.name, normalized)
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                )}
+                                                            </Field>
+                                                        </div>
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            variant="solid"
+                                                            icon={<HiMinus />}
+                                                            onClick={() => {
+                                                                setShowSecondPhone(false)
+                                                                setFieldValue('secondPhone', null)
+                                                            }}
+                                                            className="h-9 w-9 p-0 bg-red-500 hover:bg-red-600"
+                                                            title="إزالة الرقم الثاني"
+                                                        />
+                                                    </div>
+                                                </FormItem>
+                                            )}
                                         </div>
                                     </div>
 
