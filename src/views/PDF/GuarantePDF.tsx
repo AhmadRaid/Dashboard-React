@@ -612,10 +612,7 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                         <View style={styles.clientInfoItem}>
                             <Text style={styles.label}>اسم العميل:</Text>
                             <Text style={styles.value}>
-                                {`${guaranteeDoc.client.firstName} 
-                                    ${guaranteeDoc.client.secondName} 
-                                ${guaranteeDoc.client.thirdName}
-                                ${guaranteeDoc.client.lastName}`}
+                                {`${guaranteeDoc.client.firstName} ${guaranteeDoc.client.secondName} ${guaranteeDoc.client.thirdName} ${guaranteeDoc.client.lastName}`}
                             </Text>
 
                             <Text style={[styles.label, { marginTop: 2 }]}>
@@ -900,7 +897,7 @@ const GuaranteePDF: React.FC<GuaranteePDFProps> = ({ guaranteeDoc }) => {
                                                     </Text>
                                                 </View>
                                             )}
-                                            {service.insulatorCoverage && (
+                                            {service.insulatorCoverage && ( 
                                                 <View
                                                     style={
                                                         styles.serviceDetailItem

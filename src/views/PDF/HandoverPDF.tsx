@@ -279,17 +279,17 @@ const styles = StyleSheet.create({
         borderRadius: 4,
     },
     disclaimer: {
-        fontSize: 9, // حجم خط مناسب
-        fontWeight: 'bold', // جعل النص غامق
-        color: '#B91C1C', // لون أحمر داكن ليلفت الانتباه
-        textAlign: 'center', // توسيط النص
-        marginTop: 15, // مسافة علوية
-        marginBottom: 15, // مسافة سفلية
-        padding: 12, // مسافة داخلية
-        backgroundColor: '#FEF2F2', // لون خلفية أحمر خفيف جدًا
-        borderWidth: 1, // إضافة إطار
-        borderColor: '#EF4444', // لون الإطار أحمر
-        borderRadius: 8, // حواف دائرية
+        fontSize: 9,
+        fontWeight: 'bold',
+        color: '#B91C1C',
+        textAlign: 'center',
+        marginTop: 15,
+        marginBottom: 15,
+        padding: 12,
+        backgroundColor: '#FEF2F2',
+        borderWidth: 1,
+        borderColor: '#EF4444',
+        borderRadius: 8,
     },
 })
 
@@ -342,21 +342,31 @@ const HandoverPDF: React.FC<HandoverDocumentProps> = ({
         // Protection Specifics
         if (service.serviceType === 'protection') {
             if (service.protectionFinish) {
+                const arabicFinish = service.protectionFinish === 'glossy' ? 'لامع' :
+                                      service.protectionFinish === 'matte' ? 'مطفى' :
+                                      service.protectionFinish === 'colored' ? 'ملون' :
+                                      service.protectionFinish;
                 fields.push({
                     label: 'اللمعان',
-                    value: service.protectionFinish,
+                    value: arabicFinish,
                 })
             }
             if (service.protectionSize) {
                 fields.push({
                     label: 'الحجم',
-                    value: service.protectionSize,
+                    value: service.protectionSize + ' مل',
                 })
             }
             if (service.protectionCoverage) {
+                const arabicCoverage = service.protectionCoverage === 'full' ? 'كامل' :
+                                       service.protectionCoverage === 'half' ? 'نص' :
+                                       service.protectionCoverage === 'quarter' ? 'ربع' :
+                                       service.protectionCoverage === 'edges' ? 'أطراف' :
+                                       service.protectionCoverage === 'other' ? 'أخرى' :
+                                       service.protectionCoverage;
                 fields.push({
                     label: 'التغطية',
-                    value: service.protectionCoverage,
+                    value: arabicCoverage,
                 })
             }
       
@@ -371,15 +381,25 @@ const HandoverPDF: React.FC<HandoverDocumentProps> = ({
         // Insulator Specifics
         if (service.serviceType === 'insulator') {
             if (service.insulatorType) {
+                const arabicInsulatorType = service.insulatorType === 'ceramic' ? 'سيراميك' :
+                                             service.insulatorType === 'carbon' ? 'كاربون' :
+                                             service.insulatorType === 'crystal' ? 'كريستال' :
+                                             service.insulatorType;
                 fields.push({
                     label: 'نوع العازل',
-                    value: service.insulatorType,
+                    value: arabicInsulatorType,
                 })
             }
             if (service.insulatorCoverage) {
+                const arabicInsulatorCoverage = service.insulatorCoverage === 'full' ? 'كامل' :
+                                                  service.insulatorCoverage === 'half' ? 'نص' :
+                                                  service.insulatorCoverage === 'piece' ? 'قطعة' :
+                                                  service.insulatorCoverage === 'shield' ? 'درع حماية' :
+                                                  service.insulatorCoverage === 'external' ? 'خارجية' :
+                                                  service.insulatorCoverage;
                 fields.push({
                     label: 'نطاق التغطية',
-                    value: service.insulatorCoverage,
+                    value: arabicInsulatorCoverage,
                 })
             }
         }
@@ -387,27 +407,34 @@ const HandoverPDF: React.FC<HandoverDocumentProps> = ({
         // Polish Specifics
         if (service.serviceType === 'polish') {
             if (service.polishType) {
+                const arabicPolishType = service.polishType === 'external' ? 'تلميع خارجي' :
+                                          service.polishType === 'internal' ? 'تلميع داخلي' :
+                                          service.polishType === 'internalAndExternal' ? 'تلميع خارجي وداخلي' :
+                                          service.polishType === 'seats' ? 'كراسي' :
+                                          service.polishType === 'piece' ? 'قطعة' :
+                                          service.polishType === 'water_polish' ? 'تلميع مائي' :
+                                          service.polishType;
                 fields.push({
                     label: 'نوع التلميع',
-                    value: service.polishType,
+                    value: arabicPolishType,
                 })
             }
             if (service.externalPolishLevel) {
                 fields.push({
                     label: 'مستوى التلميع الخارجي',
-                    value: service.externalPolishLevel,
+                    value: `مستوى ${service.externalPolishLevel}`,
                 })
             }
             if (service.internalPolishLevel) {
                 fields.push({
                     label: 'مستوى التلميع الداخلي',
-                    value: service.internalPolishLevel,
+                    value: `مستوى ${service.internalPolishLevel}`,
                 })
             }
             if (service.internalAndExternalPolishLevel) {
                 fields.push({
                     label: 'مستوى التلميع المشترك',
-                    value: service.internalAndExternalPolishLevel,
+                    value: `مستوى ${service.internalAndExternalPolishLevel}`,
                 })
             }
         }
@@ -415,15 +442,27 @@ const HandoverPDF: React.FC<HandoverDocumentProps> = ({
         // Additions Specifics
         if (service.serviceType === 'additions') {
             if (service.additionType) {
+                const arabicAdditionType = service.additionType === 'detailed_wash' ? 'غسيل تفصيلي' :
+                                            service.additionType === 'premium_wash' ? 'غسيل تفصيلي خاص' :
+                                            service.additionType === 'leather_pedals' ? 'دواسات جلد' :
+                                            service.additionType === 'blackout' ? 'تكحيل' :
+                                            service.additionType === 'nano_interior_decor' ? 'نانو داخلي ديكور' :
+                                            service.additionType === 'nano_interior_seats' ? 'نانو داخلي مقاعد' :
+                                            service.additionType;
                 fields.push({
                     label: 'نوع الإضافة',
-                    value: service.additionType,
+                    value: arabicAdditionType,
                 })
             }
             if (service.washScope) {
+                const arabicWashScope = service.washScope === 'full' ? 'كامل' :
+                                        service.washScope === 'external_only' ? 'خارجي فقط' :
+                                        service.washScope === 'internal_only' ? 'داخلي فقط' :
+                                        service.washScope === 'engine' ? 'محرك' :
+                                        service.washScope;
                 fields.push({
                     label: 'نطاق الغسيل',
-                    value: service.washScope,
+                    value: arabicWashScope,
                 })
             }
         }
@@ -612,34 +651,37 @@ const HandoverPDF: React.FC<HandoverDocumentProps> = ({
                     )}
                 </View>
                 ---
-                {/* Acknowledgment Section */}
-                <View style={styles.disclaimer}>
-                    <Text>
-                        شركة مظلة التميز غير مسؤولة عن أي اعطال مكانيكية او
-                        كهربائية كما انها ليست مسؤول عن أي أضرار تنتج للقطع
-                        المعاد طلائها أو التجارية
-                    </Text>
-                </View>
-                ---
-                {/* Signature Section */}
-                <View style={styles.signatureSection}>
-                    <View style={styles.signatureBox}>
-                        <Text style={styles.signatureLabel}>توقيع العميل</Text>
-                        <View style={styles.signatureLine} />
+                {/* Start of the new View with 'break' prop */}
+                <View break>
+                    {/* Acknowledgment Section */}
+                    <View style={styles.disclaimer}>
+                        <Text>
+                            شركة مظلة التميز غير مسؤولة عن أي اعطال مكانيكية او
+                            كهربائية كما انها ليست مسؤول عن أي أضرار تنتج للقطع
+                            المعاد طلائها أو التجارية
+                        </Text>
                     </View>
-                    <View style={styles.signatureBox}>
-                        <Text style={styles.signatureLabel}>توقيع الموظف:</Text>
-                        <View style={styles.signatureLine} />
+                    ---
+                    {/* Signature Section */}
+                    <View style={styles.signatureSection}>
+                        <View style={styles.signatureBox}>
+                            <Text style={styles.signatureLabel}>توقيع العميل</Text>
+                            <View style={styles.signatureLine} />
+                        </View>
+                        <View style={styles.signatureBox}>
+                            <Text style={styles.signatureLabel}>توقيع الموظف:</Text>
+                            <View style={styles.signatureLine} />
+                        </View>
                     </View>
-                </View>
-                ---
-                {/* Payment Note Section */}
-                <View style={styles.paymentNote}>
-                    <Text>
-                        يتم إرسال فاتورة للعميل بالمبلغ المدفوع مباشرة بعد
-                        الانتهاء من إجراءات الدخول. نرجو عدم التردد في حال لم
-                        تستلم فاتورتك، التواصل معنا.
-                    </Text>
+                    ---
+                    {/* Payment Note Section */}
+                    <View style={styles.paymentNote}>
+                        <Text>
+                            يتم إرسال فاتورة للعميل بالمبلغ المدفوع مباشرة بعد
+                            الانتهاء من إجراءات الدخول. نرجو عدم التردد في حال لم
+                            تستلم فاتورتك، التواصل معنا.
+                        </Text>
+                    </View>
                 </View>
                 ---
                 {/* Footer fixed */}

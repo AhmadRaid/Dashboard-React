@@ -55,6 +55,81 @@ type FormFieldsName = {
     }>
 }
 
+const serviceTypeOptions = [
+    { label: 'حماية', value: 'protection' },
+    { label: 'تلميع', value: 'polish' },
+    { label: 'عازل', value: 'insulator' },
+    { label: 'إضافات', value: 'additions' },
+    { label: 'حجز', value: 'booking' },
+    { label: 'صيانة', value: 'maintenance' },
+]
+
+const protectionCoverageOptions = [
+    { label: 'كامل', value: 'full' },
+    { label: 'نص', value: 'half' },
+    { label: 'ربع', value: 'quarter' },
+    { label: 'أطراف', value: 'edges' },
+    { label: 'اخرى', value: 'other' },
+]
+
+const protectionSizeOptions = [
+    { label: '10 مل', value: '10' },
+    { label: '8 مل', value: '8' },
+    { label: '7.5 مل', value: '7.5' },
+    { label: '6.5 مل', value: '6.5' },
+]
+
+const protectionFinishOptions = [
+    { label: 'لامع', value: 'glossy' },
+    { label: 'مطفى', value: 'matte' },
+    { label: 'ملون', value: 'colored' },
+]
+
+const insulatorTypeOptions = [
+    { label: 'سيراميك', value: 'ceramic' },
+    { label: 'كاربون', value: 'carbon' },
+    { label: 'كرستال', value: 'crystal' },
+]
+
+const insulatorCoverageOptions = [
+    { label: 'كامل', value: 'full' },
+    { label: 'نص', value: 'half' },
+    { label: 'قطعة', value: 'piece' },
+    { label: 'درع حماية', value: 'shield' },
+    { label: 'خارجية', value: 'external' },
+]
+
+const polishTypeOptions = [
+    { label: 'خارجي', value: 'external' },
+    { label: 'داخلي', value: 'internal' },
+    { label: 'داخلي وخارجي', value: 'internalAndExternal' },
+    { label: 'كراسي', value: 'seats' },
+    { label: 'قطعة', value: 'piece' },
+    { label: 'تلميع مائي', value: 'water_polish' },
+]
+
+const polishSubTypeOptions = [
+    { label: 'مستوى 1', value: '1' },
+    { label: 'مستوى 2', value: '2' },
+    { label: 'مستوى 3', value: '3' },
+]
+
+const additionTypeOptions = [
+    { label: 'غسيل تفصيلي', value: 'detailed_wash' },
+    { label: 'غسيل تفصيلي خاص', value: 'premium_wash' },
+    { label: 'دواسات جلد', value: 'leather_pedals' },
+    { label: 'تكحيل', value: 'blackout' },
+    { label: 'نانو داخلي ديكور', value: 'nano_interior_decor' },
+    { label: 'نانو داخلي مقاعد', value: 'nano_interior_seats' },
+]
+
+const washScopeOptions = [
+    { label: 'كامل', value: 'full' },
+    { label: 'خارجي فقط', value: 'external_only' },
+    { label: 'داخلي فقط', value: 'internal_only' },
+    { label: 'محرك', value: 'engine' },
+]
+
 type OrderFieldsProps = {
     touched: FormikTouched<FormFieldsName>
     errors: FormikErrors<FormFieldsName>
@@ -101,6 +176,19 @@ const renderReadOnlyValue = (
 )
 
 const ShowOrderFields = (props: OrderFieldsProps) => {
+    const renderReadOnlyValue = (value: string | number | null | undefined) => {
+        return (
+            <div className="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-md p-2 text-gray-800 dark:text-white flex items-center bg-gray-100 dark:bg-gray-700">
+                {value ?? '-'}
+            </div>
+        )
+    }
+
+    const getLabel = (options: any[], value: string | undefined) => {
+        const option = options.find((opt) => opt.value === value)
+        return option ? option.label : '-'
+    }
+
     const {
         values,
         readOnly = false,
@@ -124,7 +212,6 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
             case 'protection':
                 return (
                     <>
-                
                         <div className="flex flex-col">
                             <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
                                 <FaPalette className="ml-2 text-base text-gray-500" />{' '}
@@ -145,9 +232,10 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                                 حجم الفيلم
                             </label>
                             {renderReadOnlyValue(
-                                service.protectionSize
-                                    ? `${service.protectionSize} مل`
-                                    : '-'
+                                getLabel(
+                                    protectionSizeOptions,
+                                    service.protectionSize
+                                )
                             )}
                         </div>
                         <div className="flex flex-col">
@@ -155,7 +243,12 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                                 <FaShieldAlt className="ml-2 text-base text-gray-500" />{' '}
                                 نوع التغطية
                             </label>
-                            {renderReadOnlyValue(service.protectionCoverage)}
+                            {renderReadOnlyValue(
+                                getLabel(
+                                    protectionCoverageOptions,
+                                    service.protectionCoverage
+                                )
+                            )}{' '}
                         </div>
                     </>
                 )
@@ -167,14 +260,21 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                                 <FaWrench className="ml-2 text-base text-gray-500" />{' '}
                                 نوع التلميع
                             </label>
-                            {renderReadOnlyValue(service.polishType || '-')}
+                            {renderReadOnlyValue(
+                                getLabel(polishTypeOptions, service.polishType)
+                            )}{' '}
                         </div>
                         <div className="flex flex-col">
                             <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
                                 <FaWrench className="ml-2 text-base text-gray-500" />{' '}
-                                نوع التلميع الفرعي
+                                مستوى التلميع
                             </label>
-                            {renderReadOnlyValue(service.polishSubType || '-')}
+                            {renderReadOnlyValue(
+                                getLabel(
+                                    polishSubTypeOptions,
+                                    service.polishSubType
+                                )
+                            )}{' '}
                         </div>
                     </>
                 )
@@ -186,7 +286,12 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                                 <FaTools className="ml-2 text-base text-gray-500" />{' '}
                                 نوع العازل
                             </label>
-                            {renderReadOnlyValue(service.insulatorType || '-')}
+                            {renderReadOnlyValue(
+                                getLabel(
+                                    insulatorTypeOptions,
+                                    service.insulatorType
+                                )
+                            )}{' '}
                         </div>
                         <div className="flex flex-col">
                             <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
@@ -194,7 +299,10 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                                 تغطية العازل
                             </label>
                             {renderReadOnlyValue(
-                                service.insulatorCoverage || '-'
+                                getLabel(
+                                    insulatorCoverageOptions,
+                                    service.insulatorCoverage
+                                )
                             )}
                         </div>
                     </>
@@ -207,9 +315,25 @@ const ShowOrderFields = (props: OrderFieldsProps) => {
                                 <FaTag className="ml-2 text-base text-gray-500" />{' '}
                                 نوع الإضافة
                             </label>
-                            {renderReadOnlyValue(service.additionType || '-')}
+                            {renderReadOnlyValue(
+                                getLabel(
+                                    additionTypeOptions,
+                                    service.additionType
+                                )
+                            )}{' '}
+                               {(service.additionType === 'detailed_wash' ||
+                            service.additionType === 'premium_wash') && (
+                            <div className="flex flex-col">
+                                <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                                    <FaTag className="ml-2 text-base text-gray-500" />{' '}
+                                    نطاق الغسيل
+                                </label>
+                                {renderReadOnlyValue(
+                                    getLabel(washScopeOptions, service.washScope),
+                                )}
+                            </div>
+                        )}
                         </div>
-                        {/* You can add more fields specific to 'additions' here */}
                     </>
                 )
             default:

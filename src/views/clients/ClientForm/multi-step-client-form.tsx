@@ -259,6 +259,9 @@ const MultiStepClientForm = ({
                 }),
             }
 
+            console.log('22222222222s',checkData);
+            
+
             const res: any = await apiCheckNameIsExist(checkData)
             const exists: boolean = !!res?.data?.data?.exists
             const apiMessage: string = res?.data?.message || res?.data?.data?.message || ''
