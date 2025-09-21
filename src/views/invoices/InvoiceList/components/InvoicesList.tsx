@@ -61,33 +61,18 @@ const InvoiceList = () => {
     const getStatusColorClass = (status: string) => {
         switch (status) {
             case 'open':
-                return 'bg-blue-100 text-blue-800 border border-blue-300' // أزرق واضح
+                return 'text-blue-800 border border-blue-300' // أزرق واضح
             case 'pending':
-                return 'bg-yellow-100 text-yellow-800 border border-yellow-300' // أصفر واضح
+                return 'text-yellow-800 border border-yellow-300' // أصفر واضح
             case 'approved':
-                return 'bg-green-100 text-green-800 border border-green-300' // أخضر واضح
+                return 'text-green-800 border border-green-300' // أخضر واضح
             case 'rejected':
-                return 'bg-red-100 text-red-800 border border-red-300' // أحمر واضح
+                return 'text-red-800 border border-red-300' // أحمر واضح
             default:
                 return 'bg-gray-100 text-gray-800 border border-gray-300'
         }
     }
 
-    // ✅ دالة ألوان للحقول الأخرى
-    const getFieldColorClass = (fieldType: string, value: any) => {
-        switch (fieldType) {
-            case 'amount':
-                return value > 10000 ? 'bg-purple-50 text-purple-700 font-medium' : 'bg-gray-50 text-gray-700'
-            case 'date':
-                return 'bg-cyan-50 text-cyan-700'
-            case 'services':
-                return 'bg-orange-50 text-orange-700'
-            case 'client':
-                return 'bg-teal-50 text-teal-700'
-            default:
-                return 'bg-gray-50 text-gray-700'
-        }
-    }
 
     const handleStatusChange = async (
         option: { label: string; value: string },
@@ -113,16 +98,14 @@ const InvoiceList = () => {
                     const id = props.row.original._id
                     const num = props.getValue() || 'غير محدد'
                     return (
-                        <div className={`p-2 rounded-lg ${getFieldColorClass('invoiceNumber', num)}`}>
-                            <Link
-                                to={`/invoices/${id}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="text-indigo-600 hover:text-indigo-800 underline font-bold"
-                                title="عرض تفاصيل الفاتورة"
-                            >
-                                {String(num)}
-                            </Link>
-                        </div>
+                        <Link
+                            to={`/invoices/${id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-indigo-600 hover:text-indigo-800 underline font-bold"
+                            title="عرض تفاصيل الفاتورة"
+                        >
+                            {String(num)}
+                        </Link>
                     ) as any
                 },
             },
@@ -131,11 +114,11 @@ const InvoiceList = () => {
                 cell: (props) => {
                     const client = props.row.original.clientDetails
                     if (!client) {
-                        return <div className="p-2 rounded-lg bg-gray-50 text-gray-400">غير محدد</div>
+                        return <div className="text-gray-400">غير محدد</div>
                     }
                     const clientName = `${client.firstName} ${client.secondName} ${client.thirdName} ${client.lastName}`
                     return (
-                        <div className={`p-2 rounded-lg ${getFieldColorClass('client', clientName)}`}>
+                        <div>
                             {clientName}
                         </div>
                     )
@@ -147,7 +130,7 @@ const InvoiceList = () => {
                     const services = props.row.original.orderDetails?.services
                     if (!services || services.length === 0) {
                         return (
-                            <div className="p-2 rounded-lg bg-gray-50 text-gray-400">
+                            <div className="text-gray-400">
                                 لا توجد خدمات لعرضها
                             </div>
                         )
@@ -169,23 +152,21 @@ const InvoiceList = () => {
                     }
 
                     return (
-                        <div className={`p-2 rounded-lg ${getFieldColorClass('services', services)}`}>
-                            <div className="space-y-2">
-                                {services.map((service: any, index: number) => (
-                                    <React.Fragment key={index}>
-                                        <div className="flex items-center">
-                                            <span className="font-medium">
-                                                {translateServiceType(
-                                                    service.serviceType
-                                                )}
-                                            </span>
-                                        </div>
-                                        {index < services.length - 1 && (
-                                            <div className="border-t border-dashed border-gray-400/80 dark:border-gray-500/80 my-2"></div>
-                                        )}
-                                    </React.Fragment>
-                                ))}
-                            </div>
+                        <div className="space-y-2">
+                            {services.map((service: any, index: number) => (
+                                <React.Fragment key={index}>
+                                    <div className="flex items-center">
+                                        <span className="font-medium">
+                                            {translateServiceType(
+                                                service.serviceType
+                                            )}
+                                        </span>
+                                    </div>
+                                    {index < services.length - 1 && (
+                                        <div className="border-t border-dashed border-gray-400/80 dark:border-gray-500/80 my-2"></div>
+                                    )}
+                                </React.Fragment>
+                            ))}
                         </div>
                     )
                 },
@@ -196,7 +177,7 @@ const InvoiceList = () => {
                 cell: (props) => {
                     const value = props.getValue()
                     return (
-                        <div className={`p-2 rounded-lg ${getFieldColorClass('amount', value)}`}>
+                        <div>
                             {`${value} ر.س`}
                         </div>
                     )
@@ -207,14 +188,14 @@ const InvoiceList = () => {
                 accessorKey: 'createdAt',
                 cell: (props) => {
                     const createdAt = props.row.original.createdAt
-                    if (!createdAt) return <div className="p-2 rounded-lg bg-gray-50 text-gray-400">غير متاح</div>
+                    if (!createdAt) return <div className="text-gray-400">غير متاح</div>
                     const dateStr = new Date(createdAt).toLocaleDateString('en-GB', {
                         day: '2-digit',
                         month: '2-digit',
                         year: 'numeric',
                     })
                     return (
-                        <div className={`p-2 rounded-lg ${getFieldColorClass('date', dateStr)}`}>
+                        <div>
                             {dateStr}
                         </div>
                     )
@@ -259,7 +240,7 @@ const InvoiceList = () => {
                                         size="sm"
                                         className={`w-36 font-semibold rounded-lg ${getStatusColorClass(
                                             status
-                                        )} transition-colors duration-200 hover:brightness-95`}
+                                        ).replace('bg-', '!bg-')} transition-colors duration-200 hover:brightness-95`}
                                     >
                                         {currentStatusOption.label}
                                     </Button>
