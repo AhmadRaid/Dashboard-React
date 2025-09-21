@@ -1,14 +1,11 @@
-import { useParams } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import { Order } from '@/@types/order'
-import {
-    apiGetOrdersDetails,
-    apiChangeGurenteeStatus,
-} from '@/services/OrdersService'
-import { Button, toast } from '@/components/ui'
-import { HiOutlineArrowRight } from 'react-icons/hi'
-import { useNavigate } from 'react-router-dom'
-import AdaptableCard from '@/components/shared/AdaptableCard'
+import { useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Order } from '@/@types/order';
+
+import { Button, toast } from '@/components/ui';
+import { useNavigate } from 'react-router-dom';
+import AdaptableCard from '@/components/shared/AdaptableCard';
+import Notification from '@/components/ui/Notification';
 import {
     FiAlertCircle,
     FiLoader,
@@ -19,66 +16,66 @@ import {
     FiPercent,
     FiTag,
     FiInfo,
-    FiCheckCircle,
-    FiXCircle,
-    FiShield,
-} from 'react-icons/fi'
-import ShowOrderFields from './ShowOrderField'
+} from 'react-icons/fi';
+import ShowOrderFields from './ShowOrderField';
+import { apiChangeGurenteeStatus, apiGetOrdersDetails } from '@/services/OrdersService';
 
 const OrderDetails = () => {
-    const { orderId } = useParams()
-    const [order, setOrder] = useState<Order | null>(null)
-    const [loading, setLoading] = useState(true)
+    const { orderId } = useParams();
+    const [order, setOrder] = useState<Order | null>(null);
+    const [loading, setLoading] = useState(true);
     const [activatingGuarantee, setActivatingGuarantee] = useState<
         string | null
-    >(null)
+    >(null);
     const [deactivatingGuarantee, setDeactivatingGuarantee] = useState<
         string | null
-    >(null)
-    const navigate = useNavigate()
+    >(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        window.scrollTo(0, 0)
-        fetchOrderDetails()
-    }, [orderId])
+        window.scrollTo(0, 0);
+        fetchOrderDetails();
+    }, [orderId]);
 
     const fetchOrderDetails = async () => {
         try {
-            setLoading(true)
-            const response = await apiGetOrdersDetails(orderId)
-            setOrder(response.data.data)
+            setLoading(true);
+            const response = await apiGetOrdersDetails(orderId);
+            if (response.data && response.data.data) {
+                setOrder(response.data.data);
+            } else {
+                setOrder(null);
+            }
         } catch (error) {
-            console.error('Failed to fetch order details:', error)
+            console.error('Failed to fetch order details:', error);
             toast.push(
-                <Notification title="نجاح" type="error">
-                    فشل في تحميل تفاصيل الطلب'
+                <Notification title="فشل" type="error">
+                    فشل في تحميل تفاصيل الطلب.
                 </Notification>
-            )
+            );
+            setOrder(null);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
-    // In OrderDetails component, update the function calls to pass both serviceId and guaranteeId
-    // In OrderDetails component
     const handleActivateGuarantee = async (
         serviceId: string,
         guaranteeId: string
     ) => {
-        if (!orderId || !order) return
+        if (!orderId || !order) return;
         try {
-            setActivatingGuarantee(guaranteeId)
+            setActivatingGuarantee(guaranteeId);
             await apiChangeGurenteeStatus(orderId, serviceId, guaranteeId, {
                 status: 'active',
-            })
+            });
             toast.push(
                 <Notification title="نجاح" type="success">
-                    تم تفعيل الضمان بنجاح'
+                    تم تفعيل الضمان بنجاح.
                 </Notification>
-            )
-            // Update the order state directly
+            );
             setOrder((prevOrder) => {
-                if (!prevOrder) return null
+                if (!prevOrder) return null;
                 const updatedServices = prevOrder.services.map((service) => {
                     if (service._id === serviceId && service.guarantee) {
                         return {
@@ -87,43 +84,42 @@ const OrderDetails = () => {
                                 ...service.guarantee,
                                 status: 'active',
                             },
-                        }
+                        };
                     }
-                    return service
-                })
-                return { ...prevOrder, services: updatedServices }
-            })
+                    return service;
+                });
+                return { ...prevOrder, services: updatedServices };
+            });
         } catch (error) {
-            console.error('Failed to activate guarantee:', error)
+            console.error('Failed to activate guarantee:', error);
             toast.push(
                 <Notification title="فشل" type="error">
-                    فشل في تفعيل الضمان'
+                    فشل في تفعيل الضمان.
                 </Notification>
-            )
+            );
         } finally {
-            setActivatingGuarantee(null)
+            setActivatingGuarantee(null);
         }
-    }
+    };
 
     const handleDeactivateGuarantee = async (
         serviceId: string,
         guaranteeId: string
     ) => {
-        if (!orderId || !order) return
+        if (!orderId || !order) return;
         try {
-            setDeactivatingGuarantee(guaranteeId)
+            setDeactivatingGuarantee(guaranteeId);
             await apiChangeGurenteeStatus(orderId, serviceId, guaranteeId, {
                 status: 'inactive',
-            })
+            });
             toast.push(
                 <Notification title="نجاح" type="success">
-                    تم إلغاء تفعيل الضمان بنجاح'
+                    تم إلغاء تفعيل الضمان بنجاح.
                 </Notification>
-            )
+            );
 
-            // Update the order state directly
             setOrder((prevOrder) => {
-                if (!prevOrder) return null
+                if (!prevOrder) return null;
                 const updatedServices = prevOrder.services.map((service) => {
                     if (service._id === serviceId && service.guarantee) {
                         return {
@@ -132,23 +128,23 @@ const OrderDetails = () => {
                                 ...service.guarantee,
                                 status: 'inactive',
                             },
-                        }
+                        };
                     }
-                    return service
-                })
-                return { ...prevOrder, services: updatedServices }
-            })
+                    return service;
+                });
+                return { ...prevOrder, services: updatedServices };
+            });
         } catch (error) {
-            console.error('Failed to deactivate guarantee:', error)
+            console.error('Failed to deactivate guarantee:', error);
             toast.push(
                 <Notification title="فشل" type="error">
-                    فشل في إلغاء تفعيل الضمان'
+                    فشل في إلغاء تفعيل الضمان.
                 </Notification>
-            )
+            );
         } finally {
-            setDeactivatingGuarantee(null)
+            setDeactivatingGuarantee(null);
         }
-    }
+    };
 
     if (loading) {
         return (
@@ -158,7 +154,7 @@ const OrderDetails = () => {
                     جاري جلب بيانات الطلب...
                 </p>
             </div>
-        )
+        );
     }
 
     if (!order) {
@@ -170,8 +166,7 @@ const OrderDetails = () => {
                         خطأ في تحميل الطلب
                     </h3>
                     <p className="text-gray-600 max-w-md">
-                        تعذر العثور على الطلب المطلوب. قد يكون الرابط خاطئاً أو
-                        تم حذف الطلب.
+                        تعذر العثور على الطلب المطلوب. قد يكون الرابط خاطئاً أو تم حذف الطلب.
                     </p>
                 </div>
                 <button
@@ -182,17 +177,32 @@ const OrderDetails = () => {
                     <span>إعادة المحاولة</span>
                 </button>
             </div>
-        )
+        );
     }
+
+    const statusOptions = [
+        { label: 'مفتوحة', value: 'open' },
+        { label: 'معلقة', value: 'pending' },
+        { label: 'مقبولة', value: 'approved' },
+        { label: 'مرفوضة', value: 'rejected' },
+    ];
+
+    const currentStatusOption = statusOptions.find(
+        (opt) => opt.value === order.invoice.status
+    );
+
+    const statusLabel = currentStatusOption
+        ? currentStatusOption.label
+        : 'غير معرف';
 
     // دالة مساعدة لعرض بيانات الضمان بشكل صحيح
     const renderGuaranteeInfo = (guarantee) => {
-        if (!guarantee) return null
+        if (!guarantee) return null;
 
         if (typeof guarantee === 'string') {
             return (
                 <p className="text-xs text-gray-500 mt-1">ضمان: {guarantee}</p>
-            )
+            );
         }
 
         if (typeof guarantee === 'object') {
@@ -227,11 +237,11 @@ const OrderDetails = () => {
                         </p>
                     )}
                 </div>
-            )
+            );
         }
 
-        return null
-    }
+        return null;
+    };
 
     return (
         <div className="container mx-auto p-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
@@ -245,12 +255,11 @@ const OrderDetails = () => {
                     )}
                 </h3>
             </div>
-
             <div className="space-y-10">
                 <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
-                    <div class="bg-gradient-to-br from-gray-700 to-gray-500 rounded-t-lg p-6 mb-6 flex items-center shadow-md">
+                    <div className="bg-gradient-to-br from-gray-700 to-gray-500 rounded-t-lg p-6 mb-6 flex items-center shadow-md">
                         <div>
-                            <h5 class="text-2xl font-bold text-white flex items-center gap-3">
+                            <h5 className="text-2xl font-bold text-white flex items-center gap-3">
                                 <span>معلومات الطلب</span>
                                 <svg
                                     stroke="currentColor"
@@ -265,49 +274,50 @@ const OrderDetails = () => {
                                     <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"></path>
                                 </svg>
                             </h5>
-                            <p class="text-gray-100 text-opacity-90">
+                            <p className="text-gray-100 text-opacity-90">
                                 تفاصيل الطلب ووقت الإنشاء
                             </p>
                         </div>
                     </div>
-                    <div className=" grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-gray-50 p-5 rounded-lg">
-                            <h3 className="text-sm font-medium text-gray-500 mb-2">
-                                تاريخ الإنشاء
-                            </h3>
-                            <p className="text-lg font-medium text-gray-800">
-                                {new Date(order.createdAt).toLocaleDateString(
-                                    'en-GB',
-                                    {
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric',
-                                    }
-                                )}
-                            </p>
-                        </div>
-                        <div className="bg-gray-50 p-5 rounded-lg">
-                            <h3 className="text-sm font-medium text-gray-500 mb-2">
-                                حالة الطلب
-                            </h3>
-                            <span
-                                className={`inline-block px-4 py-1 rounded-full text-white font-semibold ${
-                                    order.status === 'طلب جديد'
-                                        ? 'bg-green-500'
-                                        : order.status === 'طلب صيانة'
-                                        ? 'bg-yellow-500'
-                                        : order.status === 'ملغي'
-                                        ? 'bg-red-500'
-                                        : 'bg-gray-500'
-                                }`}
-                            >
-                                {order.status}
-                            </span>
+                    <div className="p-8">
+                        <div className=" grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-gray-50 p-5 rounded-lg">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">
+                                    تاريخ الإنشاء
+                                </h3>
+                                <p className="text-lg font-medium text-gray-800">
+                                    {new Date(order.createdAt).toLocaleDateString(
+                                        'en-GB',
+                                        {
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric',
+                                        }
+                                    )}
+                                </p>
+                            </div>
+                            <div className="bg-gray-50 p-5 rounded-lg">
+                                <h3 className="text-sm font-medium text-gray-500 mb-2">
+                                    حالة الطلب
+                                </h3>
+                                <span
+                                    className={`inline-block px-4 py-1 rounded-full text-white font-semibold ${
+                                        order.status === 'طلب جديد'
+                                            ? 'bg-green-500'
+                                            : order.status === 'طلب صيانة'
+                                            ? 'bg-yellow-500'
+                                            : order.status === 'ملغي'
+                                            ? 'bg-red-500'
+                                            : 'bg-gray-500'
+                                    }`}
+                                >
+                                    {order.status}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* قسم معلومات السيارة والخدمات */}
                 <ShowOrderFields
                     values={{
                         carModel: order.carModel,
@@ -331,18 +341,16 @@ const OrderDetails = () => {
                     deactivatingGuarantee={deactivatingGuarantee}
                 />
 
-                {/* قسم التفاصيل المالية */}
                 {order.invoice && (
                     <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
-                        <div class="bg-gradient-to-br from-gray-700 to-gray-500 rounded-t-lg p-6 mb-6 flex items-center shadow-md">
+                        <div className="bg-gradient-to-br from-gray-700 to-gray-500 rounded-t-lg p-6 mb-6 flex items-center shadow-md">
                             <div>
-                                <h5 class="text-2xl font-bold text-white flex items-center gap-3">
+                                <h5 className="text-2xl font-bold text-white flex items-center gap-3">
                                     <span>التفاصيل المالية</span>
                                     <FiDollarSign className="text-3xl" />
                                 </h5>
-                                <p class="text-gray-100 text-opacity-90">
-                                    تفاصيل السيارة الأساسية والمعلومات الفنية
-                                    لطلب الخدمة.
+                                <p className="text-gray-100 text-opacity-90">
+                                    تفاصيل المالية للخدمات التي تم تقديمها للعميل 
                                 </p>
                             </div>
                         </div>
@@ -390,7 +398,7 @@ const OrderDetails = () => {
                                         حالة الفاتورة
                                     </span>
                                     <span className="text-2xl font-bold text-yellow-800">
-                                        {order.invoice.status || 'مدفوعة'}
+                                        {statusLabel}
                                     </span>
                                 </div>
                             </div>
@@ -441,7 +449,7 @@ const OrderDetails = () => {
                 )}
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default OrderDetails
+export default OrderDetails;
