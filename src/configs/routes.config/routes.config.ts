@@ -198,7 +198,7 @@ export const protectedRoutes = [
     {
         key: 'taskMenu.TaskList',
         path: '/tasks',
-        component: lazy(() => import('@/views/tasks/TaskForm/TaskForm')),
+        component: lazy(() => import('@/views/tasks/TaskList/components/TasksTable')),
         authority: [],
     },
 
@@ -208,6 +208,14 @@ export const protectedRoutes = [
         component: lazy(() => import('@/views/tasks/TaskForm/TaskForm')),
         authority: [],
     },
+
+    {
+        key: 'taskMenu.UpdateTask',
+        path: '/tasks/edit/:taskId',
+        component: lazy(() => import('@/views/tasks/TaskEdit')),
+        authority: [],
+    },
+
 
 
     /////////////////////////////////// Offer Price ////////////////////////////////////////

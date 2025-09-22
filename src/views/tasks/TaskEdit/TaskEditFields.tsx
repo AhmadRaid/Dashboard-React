@@ -1,7 +1,7 @@
 import AdaptableCard from '@/components/shared/AdaptableCard'
 import Input from '@/components/ui/Input'
 import { FormItem } from '@/components/ui/Form'
-import { Field, FormikErrors, FormikTouched, FieldProps } from 'formik'
+import { Field, FormikErrors, FormikTouched } from 'formik'
 import { Select } from '@/components/ui'
 import { useState, useEffect } from 'react'
 import { apiGetBranches } from '@/services/BranchService'
@@ -12,24 +12,24 @@ type FormFieldsName = {
     priority: string
     startDate: string
     endDate: string
-    branchId: string // Changed from assignedTo to branch
+    branchId: string
 }
 
 type TaskFieldsProps = {
     touched: FormikTouched<FormFieldsName>
     errors: FormikErrors<FormFieldsName>
-    values: any
-    setFieldValue: (field: string, value: any) => void
+    values: FormFieldsName
+    setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void
 }
 
 const priorityOptions = [
-    { label: 'عالي', value: 'high' },
-    { label: 'متوسط', value: 'medium' },
-    { label: 'منخفض', value: 'low' },
+    { label: 'عالية', value: 'high' },
+    { label: 'متوسطة', value: 'medium' },
+    { label: 'منخفضة', value: 'low' },
 ]
 
-const TaskFields = (props: TaskFieldsProps) => {
-    const { values, touched, errors, setFieldValue } = props
+const TaskEditFields = (props: TaskFieldsProps) => {
+    const { touched, errors, values } = props
 
     const [branchOptions, setBranchOptions] = useState<
         { label: string; value: string }[]
@@ -39,27 +39,25 @@ const TaskFields = (props: TaskFieldsProps) => {
         const fetchBranches = async () => {
             try {
                 const response = await apiGetBranches()
-                if (response.data) {
+                if (response.data && response.data.data && response.data.data.branches) {
                     const options = response.data.data.branches.map((branch: any) => ({
-                        label: branch.name, // Assuming the branch object has a 'name' property
-                        value: branch._id, // Assuming the branch object has an 'id' property
+                        label: branch.name,
+                        value: branch._id,
                     }))
                     setBranchOptions(options)
                 }
             } catch (error) {
-                console.error("Failed to fetch branches:", error)
+                console.error('Failed to fetch branches:', error)
             }
         }
         fetchBranches()
     }, [])
 
     return (
-        <AdaptableCard divider className="mb-4">
-            <h5 className="text-lg font-semibold">معلومات المهمة</h5>
-            <p className="mb-6 text-sm text-gray-500">
-                قسم لإعداد معلومات المهمة الأساسية
+        <AdaptableCard className="mb-4" divider>
+            <p className="mb-6">
+                املأ النموذج بالمعلومات المطلوبة لإنشاء أو تعديل المهمة.
             </p>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormItem
                     label="عنوان المهمة"
@@ -67,11 +65,9 @@ const TaskFields = (props: TaskFieldsProps) => {
                     errorMessage={errors.title}
                 >
                     <Field
-                        name="title"
-                        size="sm"
-                        autoComplete="off"
                         type="text"
-                        placeholder="أدخل عنوان المهمة"
+                        name="title"
+                        autoComplete="off"
                         component={Input}
                     />
                 </FormItem>
@@ -82,11 +78,9 @@ const TaskFields = (props: TaskFieldsProps) => {
                     errorMessage={errors.description}
                 >
                     <Field
+                        type="text"
                         name="description"
-                        as="textarea"
-                        rows={3}
-                        size="sm"
-                        placeholder="أدخل وصف المهمة"
+                        autoComplete="off"
                         component={Input}
                     />
                 </FormItem>
@@ -97,14 +91,14 @@ const TaskFields = (props: TaskFieldsProps) => {
                     errorMessage={errors.priority}
                 >
                     <Field name="priority">
-                        {({ field, form }: FieldProps) => (
+                        {({ field, form }: any) => (
                             <Select
                                 field={field}
-                                size="sm"
                                 form={form}
                                 options={priorityOptions}
                                 value={priorityOptions.find(
-                                    (option) => option.value === values.priority
+                                    (option) =>
+                                        option.value === values.priority
                                 )}
                                 onChange={(option) => {
                                     form.setFieldValue(
@@ -119,19 +113,19 @@ const TaskFields = (props: TaskFieldsProps) => {
                 </FormItem>
 
                 <FormItem
-                    label="الفرع" // Changed label to "الفرع"
-                    invalid={!!errors.branchId && !!touched.branchId} // Changed from assignedTo to branch
-                    errorMessage={errors.branchId} // Changed from assignedTo to branch
+                    label="الفرع"
+                    invalid={!!errors.branchId && !!touched.branchId}
+                    errorMessage={errors.branchId}
                 >
                     <Field name="branchId">
-                        {({ field, form }: FieldProps) => (
+                        {({ field, form }: any) => (
                             <Select
                                 field={field}
-                                size="sm"
                                 form={form}
                                 options={branchOptions}
                                 value={branchOptions.find(
-                                    (option) => option.value === values.branchId
+                                    (option) =>
+                                        option.value === values.branchId
                                 )}
                                 onChange={(option) => {
                                     form.setFieldValue(
@@ -175,4 +169,4 @@ const TaskFields = (props: TaskFieldsProps) => {
     )
 }
 
-export default TaskFields
+export default TaskEditFields

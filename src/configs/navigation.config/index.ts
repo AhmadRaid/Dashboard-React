@@ -237,6 +237,38 @@ const navigationConfig: NavigationTree[] = [
     },
 
     {
+        key: 'invoicesMenu',
+        path: '',
+        title: 'المهام',
+        translateKey: 'nav.invoicesMenu.invoicesMenu',
+        icon: 'invoices',
+        type: NAV_ITEM_TYPE_COLLAPSE,
+        authority: [],
+        subMenu: [
+            {
+                key: 'taskMenu.tasksList',
+                path: '/tasks',
+                title: 'قائمة المهام',
+                translateKey: 'nav.clientsMenu.updateClient',
+                icon: 'userGroup', // أيقونة مجموعة المستخدمين
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
+                subMenu: [],
+            },
+            {
+                key: 'clientsMenu.clientsList',
+                path: '/tasks/add',
+                title: 'اضافة مهام',
+                translateKey: 'nav.clientsMenu.updateClient',
+                icon: 'userGroup', // أيقونة مجموعة المستخدمين
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [userRoles.ADMIN, userRoles.EMPLOYEE],
+                subMenu: [],
+            },
+        ],
+    },
+
+    {
         key: 'branchesMenu',
         path: '',
         title: 'الافرع',

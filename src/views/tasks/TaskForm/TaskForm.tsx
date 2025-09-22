@@ -8,72 +8,48 @@ import { HiOutlineTrash } from 'react-icons/hi'
 import { AiOutlineSave } from 'react-icons/ai'
 import * as Yup from 'yup'
 import TaskFields from './TaskFields'
+import { apiAddNewTask } from '@/services/TaskService'
+import toast from '@/components/ui/toast'
+import Notification from '@/components/ui/Notification'
+import { useNavigate } from 'react-router-dom'
 
 type FormikRef = FormikProps<any>
 
 type InitialData = {
-    taskTitle: string
-    taskDescription: string
-    taskPriority: string
-    taskStatus: string
-    estimatedTime: string
-    timeUnit: string
+    title: string
+    description: string
+    priority: string
     startDate: string
     endDate: string
-    assignedTo: string
-    taskCategory: string
+    branchId: string
 }
 
 const initialData: InitialData = {
-    taskTitle: '',
-    taskDescription: '',
-    taskPriority: '',
-    taskStatus: '',
-    estimatedTime: '',
-    timeUnit: '',
+    title: '',
+    description: '',
+    priority: '',
     startDate: '',
     endDate: '',
-    assignedTo: '',
-    taskCategory: '',
+    branchId: '',
 }
 
 export const validationSchema = Yup.object().shape({
-    taskTitle: Yup.string()
+    title: Yup.string()
         .required('عنوان المهمة مطلوب')
         .min(5, 'يجب أن يكون عنوان المهمة على الأقل 5 أحرف')
         .max(100, 'يجب ألا يتجاوز عنوان المهمة 100 حرف'),
-
-    taskDescription: Yup.string()
-        .max(500, 'يجب ألا يتجاوز وصف المهمة 500 حرف'),
-
-    taskPriority: Yup.string()
+    description: Yup.string().max(500, 'يجب ألا يتجاوز وصف المهمة 500 حرف'),
+    priority: Yup.string()
         .oneOf(['high', 'medium', 'low'], 'اختر أولوية صحيحة')
         .required('أولوية المهمة مطلوبة'),
-
-    taskStatus: Yup.string()
-        .oneOf(['not_started', 'in_progress', 'completed', 'pending'], 'اختر حالة صحيحة')
-        .required('حالة المهمة مطلوبة'),
-
-    estimatedTime: Yup.number()
-        .min(0, 'يجب أن يكون الوقت المقدر رقمًا موجبًا')
-        .nullable(),
-
-    timeUnit: Yup.string()
-        .oneOf(['minutes', 'hours', 'days', 'weeks'], 'اختر وحدة وقت صحيحة'),
-
-    startDate: Yup.date()
-        .nullable(),
-
+    startDate: Yup.date().nullable(),
     endDate: Yup.date()
         .nullable()
-        .min(Yup.ref('startDate'), 'يجب أن يكون تاريخ الانتهاء بعد تاريخ البدء'),
-
-    assignedTo: Yup.string()
-        .max(50, 'يجب ألا يتجاوز اسم المسؤول 50 حرف'),
-
-    taskCategory: Yup.string()
-        .oneOf(['development', 'design', 'testing', 'documentation', 'meeting'], 'اختر فئة صحيحة')
-        .required('فئة المهمة مطلوبة'),
+        .min(
+            Yup.ref('startDate'),
+            'يجب أن يكون تاريخ الانتهاء بعد تاريخ البدء'
+        ),
+    branchId: Yup.string().max(50, 'يجب ألا يتجاوز اسم الفرع 50 حرف'),
 })
 
 type TaskFormProps = {
@@ -81,7 +57,10 @@ type TaskFormProps = {
     type: 'edit' | 'new'
     onDiscard?: () => void
     onDelete?: () => void
-    onFormSubmit?: (formData: any, setSubmitting: (isSubmitting: boolean) => void) => void
+    onFormSubmit?: (
+        formData: any,
+        setSubmitting: (isSubmitting: boolean) => void
+    ) => void
 }
 
 const DeleteTaskButton = ({ onDelete }: { onDelete: any }) => {
@@ -128,13 +107,41 @@ const DeleteTaskButton = ({ onDelete }: { onDelete: any }) => {
 }
 
 const TaskForm = forwardRef<FormikRef, TaskFormProps>((props, ref) => {
-    const {
-        type,
-        initialData: initialDataProp,
-        onFormSubmit,
-        onDiscard,
-        onDelete,
-    } = props
+    const { type, initialData: initialDataProp, onDiscard, onDelete } = props
+    const navigate = useNavigate()
+
+    const onFormSubmit = async (
+        values: any,
+        setSubmitting: (isSubmitting: boolean) => void
+    ) => {
+        try {
+            const data = { ...values }
+            const success = await apiAddNewTask(data)
+
+            // You can optionally call the parent's onFormSubmit if it exists
+            props.onFormSubmit?.(data, setSubmitting)
+            if (success) {
+                toast.push(
+                    <Notification
+                        title="نجحت الاضافة"
+                        type="success"
+                        duration={2500}
+                    >
+                        تم اضافة الطلب بنجاح
+                    </Notification>,
+                    {
+                        placement: 'top-center',
+                    }
+                )
+                navigate(`/tasks`)
+            }
+        } catch (error) {
+            console.error('Failed to add task:', error)
+            // Handle error, e.g., show a toast message
+        } finally {
+            setSubmitting(false)
+        }
+    }
 
     return (
         <>
@@ -145,22 +152,16 @@ const TaskForm = forwardRef<FormikRef, TaskFormProps>((props, ref) => {
                     ...initialDataProp,
                 }}
                 validationSchema={validationSchema}
-                onSubmit={(values, { setSubmitting }) => {
-                    const data = {
-                        ...values,
-                        estimatedTime: values.estimatedTime ? parseInt(values.estimatedTime) : null,
-                    }
-                    onFormSubmit?.(data, setSubmitting)
-                }}
+                onSubmit={onFormSubmit} // Use the new onFormSubmit handler
             >
-                {({ values, touched, errors, isSubmitting }) => (
+                {({ values, touched, errors, isSubmitting, setFieldValue }) => (
                     <Form>
                         <FormContainer>
                             <TaskFields
                                 touched={touched}
                                 errors={errors}
                                 values={values}
-                                setFieldValue={() => {}}
+                                setFieldValue={setFieldValue}
                             />
 
                             <StickyFooter
@@ -169,9 +170,7 @@ const TaskForm = forwardRef<FormikRef, TaskFormProps>((props, ref) => {
                             >
                                 <div>
                                     {type === 'edit' && (
-                                        <DeleteTaskButton
-                                            onDelete={onDelete}
-                                        />
+                                        <DeleteTaskButton onDelete={onDelete} />
                                     )}
                                 </div>
 
@@ -191,7 +190,7 @@ const TaskForm = forwardRef<FormikRef, TaskFormProps>((props, ref) => {
                                         icon={<AiOutlineSave />}
                                         type="submit"
                                     >
-                                        {type === 'new' ? 'إضافة' : 'تحديث'}
+                                        {'إضافة'}
                                     </Button>
                                 </div>
                             </StickyFooter>
