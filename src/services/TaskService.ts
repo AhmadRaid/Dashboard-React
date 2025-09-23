@@ -1,8 +1,15 @@
 import ApiService from './ApiService'
 
-export async function apiGetTasks() {
+export async function apiGetTasksForSpecificBranch() {
     return ApiService.fetchData({
         url: '/tasks',
+        method: 'get',
+    })
+}
+
+export async function apiGetTasks() {
+    return ApiService.fetchData({
+        url: '/tasks/admin-all',
         method: 'get',
     })
 }
@@ -15,24 +22,32 @@ export async function apiAddNewTask(data: any) {
     })
 }
 
-export async function apiGetTaskDetails(branchId: string) {
+export async function apiGetTaskDetails(taskId: string) {
     return ApiService.fetchData({
-        url: `/tasks/${branchId}`,
+        url: `/tasks/${taskId}`,
         method: 'get',
     })
 }
 
-export async function apiUpdateTask(branchId: string, data: any) {
+export async function apiUpdateTask(taskId: string, data: any) {
     return ApiService.fetchData({
-        url: `/tasks/${branchId}`,
+        url: `/tasks/${taskId}`,
         method: 'put',
         data,
     })
 }
 
-export async function apiDeleteTask(branchId: string, data: any) {
+export async function apiMakeTaskCompleted(taskId: string, data: any) {
     return ApiService.fetchData({
-        url: `/tasks/${branchId}`,
+        url: `/tasks/${taskId}/complete`,
+        method: 'put',
+        data,
+    })
+}
+
+export async function apiDeleteTask(taskId: string, data: any) {
+    return ApiService.fetchData({
+        url: `/tasks/${taskId}`,
         method: 'delete',
         data,
     })
