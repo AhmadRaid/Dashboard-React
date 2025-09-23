@@ -150,6 +150,7 @@ const SignInForm = (props: SignInFormProps) => {
                                                 )
                                             }}
                                             placeholder="اختر الفرع"
+                                             className="text-right"
                                         />
                                     )}
                                 </Field>
