@@ -12,7 +12,6 @@ import * as Yup from 'yup'
 import type { CommonProps } from '@/@types/common'
 import { Notification, toast, Select } from '@/components/ui'
 import { useState, useEffect } from 'react'
-import { apiGetBranches } from '@/services/BranchService'
 
 interface SignInFormProps extends CommonProps {
     disableSubmit?: boolean
@@ -21,17 +20,13 @@ interface SignInFormProps extends CommonProps {
 }
 
 type SignInFormSchema = {
-    employeeId: string
-    branch: string
+    email: string
     password: string
-    rememberMe: boolean
 }
 
 const validationSchema = Yup.object().shape({
-    employeeId: Yup.string().required('يرجى إدخال الرقم الوظيفي'),
-    branch: Yup.string().required('يرجى إدخال اسم الفرع'),
+    email: Yup.string().required('يرجى إدخال الايميل'),
     password: Yup.string().required('يرجى إدخال كلمة المرور'),
-    rememberMe: Yup.boolean(),
 })
 
 const SignInForm = (props: SignInFormProps) => {
@@ -44,39 +39,15 @@ const SignInForm = (props: SignInFormProps) => {
 
     const [message, setMessage] = useTimeOutMessage()
     const { signIn } = useAuth()
-    const [branchOptions, setBranchOptions] = useState<
-        { label: string; value: string }[]
-    >([])
-
-    useEffect(() => {
-        const fetchBranches = async () => {
-            try {
-                const response = await apiGetBranches()
-
-                if (response.data) {
-                    const options = response.data.data.branches.map(
-                        (branch: any) => ({
-                            label: branch.name,
-                            value: branch._id,
-                        })
-                    )
-                    setBranchOptions(options)
-                }
-            } catch (error) {
-                console.error('Failed to fetch branches:', error)
-            }
-        }
-        fetchBranches()
-    }, [])
 
     const onSignIn = async (
         values: SignInFormSchema,
         setSubmitting: (isSubmitting: boolean) => void
     ) => {
-        const { employeeId, branch, password } = values
+        const { email, password } = values
         setSubmitting(true)
 
-        const result = await signIn({ employeeId, branch, password })
+        const result = await signIn({ email, password })
 
         if (result?.status === 'failed') {
             setMessage(result.message)
@@ -95,10 +66,8 @@ const SignInForm = (props: SignInFormProps) => {
             )}
             <Formik
                 initialValues={{
-                    employeeId: '',
-                    branch: '',
+                    email: '',
                     password: '',
-                    rememberMe: true,
                 }}
                 validationSchema={validationSchema}
                 onSubmit={(values, { setSubmitting }) => {
@@ -113,48 +82,19 @@ const SignInForm = (props: SignInFormProps) => {
                     <Form>
                         <FormContainer>
                             <FormItem
-                                label="الرقم الوظيفي"
-                                invalid={
-                                    !!(errors.employeeId && touched.employeeId)
-                                }
-                                errorMessage={errors.employeeId}
+                                label="البريد الالكتروني"
+                                invalid={!!(errors.email && touched.email)}
+                                errorMessage={errors.email}
                             >
                                 <Field
                                     type="text"
-                                    name="employeeId"
-                                    placeholder="أدخل الرقم الوظيفي"
+                                    name="email"
+                                    placeholder="أدخل الايميل"
                                     autoComplete="off"
                                     component={Input}
                                 />
                             </FormItem>
-                            <FormItem
-                                label="اسم الفرع"
-                                invalid={!!(errors.branch && touched.branch)}
-                                errorMessage={errors.branch}
-                            >
-                                <Field name="branch">
-                                    {({ field, form }: FieldProps) => (
-                                        <Select
-                                            field={field}
-                                            form={form}
-                                            options={branchOptions}
-                                            value={branchOptions.find(
-                                                (option) =>
-                                                    option.value ===
-                                                    values.branch
-                                            )}
-                                            onChange={(option) => {
-                                                form.setFieldValue(
-                                                    field.name,
-                                                    option?.value
-                                                )
-                                            }}
-                                            placeholder="اختر الفرع"
-                                             className="text-right"
-                                        />
-                                    )}
-                                </Field>
-                            </FormItem>
+
                             <FormItem
                                 label="كلمة المرور"
                                 invalid={

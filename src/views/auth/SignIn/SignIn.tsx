@@ -4,8 +4,7 @@ const SignIn = () => {
     return (
         <>
             <div className="mb-8">
-                <h3 className="mb-1">شركة مظلة التميز ترحب بك</h3>
-                <p>يرجى إدخال بياناتك الوظيفية لتسجيل الدخول.</p>
+                <h3 className="mb-4"> مرحبا بك في موقع اماني للتصميم والتسويق</h3>
             </div>
             <SignInForm disableSubmit={false} />
         </>

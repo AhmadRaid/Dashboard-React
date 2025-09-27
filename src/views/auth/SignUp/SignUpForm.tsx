@@ -87,7 +87,7 @@ const SignUpForm = (props: SignUpFormProps) => {
                         onSignUp(values, setSubmitting)
                     } else {
                         setSubmitting(false)
-                    }
+                    }   
                 }}
             >
                 {({ touched, errors, isSubmitting, values, setFieldValue }) => (

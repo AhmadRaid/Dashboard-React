@@ -2,7 +2,7 @@ import classNames from 'classnames'
 import { APP_NAME } from '@/constants/app.constant'
 import type { CommonProps } from '@/@types/common'
 import LogoImage from '@/assets/images/logosm.png'
-import LogoImageFull from '@/assets/images/logo.png'
+import LogoImageFull from '@/assets/images/logo.jpg'
 import { Link } from 'react-router-dom' // استيراد Link
 
 interface LogoProps extends CommonProps {
@@ -35,7 +35,6 @@ const Logo = (props: LogoProps) => {
                 {' '}
               {' '}
                 <img
-                    className={imgClass}
                     src={type === 'full' ? LogoImageFull : LogoImage}
                     alt={`${APP_NAME} logo`}
                 />
